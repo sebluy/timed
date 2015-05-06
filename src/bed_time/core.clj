@@ -12,3 +12,4 @@
     (init)
     (.addShutdownHook (Runtime/getRuntime) (Thread. destroy))
     (run-jetty app {:port port :join? false})))
+

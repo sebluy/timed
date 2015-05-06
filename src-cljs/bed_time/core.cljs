@@ -1,9 +1,8 @@
 (ns bed-time.core
-  (:require [reagent.core :as reagent :refer [atom]]
-            [secretary.core :as secretary]
+  (:require [bed-time.bed-times :refer [bed-times-page]]
+            [reagent.core :as reagent]
             [reagent.session :as session]
-            [reagent-forms.core :refer [bind-fields]]
-            [ajax.core :refer [GET POST]])
+            [secretary.core :as secretary])
   (:require-macros [secretary.core :refer [defroute]]))
 
 (defn navbar []
@@ -27,25 +26,6 @@
 (defn home-page []
   [:div
    [:h2 "Welcome to ClojureScript"]])
-
-(defn bed-times-updater [bed-times]
-  (fn [response]
-    (reset! bed-times (map (fn [time]
-                             (.toUTCString (time :time)))
-                           (response :bed-times)))))
-
-(defn get-bed-times [bed-times]
-  (println "getting /bed-times")
-  (GET "/bed-times" {:handler (bed-times-updater bed-times)
-                     :response-format :edn}))
-
-(defn bed-times-page []
-  (let [bed-times (atom '())]
-    (get-bed-times bed-times)
-    (fn []
-      [:ul
-       (for [bed-time @bed-times]
-         ^{:key bed-time} [:li bed-time])])))
 
 (def pages
   {:home #'home-page
