@@ -45,11 +45,21 @@
       (for [n (range (count current-bed-times))]
         (show-bed-time bed-times current-bed-times n)))]])
 
+(defn tonights-bed-time [bed-times]
+  (let [current-bed-times @bed-times]
+    (if-not (empty? current-bed-times)
+      (let [last-bed-time (last current-bed-times)
+            fifteen-minutes (* 1000 60 15)
+            new-bed-time (js/Date. (- (.getTime last-bed-time)
+                                      fifteen-minutes))]
+        (.toLocaleTimeString new-bed-time)))))
+
 (defn header [bed-times]
   [:div.page-header
-   [:h1 "Bed Times"
+   [:h1 "Bed Times"]
+   [:h2 "Tonight: " (tonights-bed-time bed-times)
     [:div.pull-right
-      (go-to-bed-button bed-times)]]])
+     (go-to-bed-button bed-times)]]])
 
 (defn bed-times-page []
   (let [bed-times (atom [])]
