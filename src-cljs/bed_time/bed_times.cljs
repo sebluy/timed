@@ -12,13 +12,21 @@
   (GET "/bed-times" {:handler (bed-times-updater bed-times)
                      :response-format :edn}))
 
+(defn go-to-bed-handler [bed-times]
+  (fn [response]
+    (let [new-bed-time (response :new-bed-time)]
+      (if-not (nil? new-bed-time)
+        (swap! bed-times #(conj % new-bed-time))))))
+
+(defn go-to-bed [bed-times]
+  (POST "/go-to-bed" {:handler (go-to-bed-handler bed-times)
+                      :response-format :edn}))
+
 (defn go-to-bed-button [bed-times]
   [:input.btn.btn-large.btn-success
    {:type "button"
     :value "Go to bed!"
-    :on-click (fn [] (swap!
-                       bed-times
-                       #(conj % (js/Date.))))}])
+    :on-click #(go-to-bed bed-times)}])
 
 (defn remove-at-index [v n]
   (vec (concat (subvec v 0 n) (subvec v (inc n) (count v)))))

@@ -1,7 +1,7 @@
 (ns bed-time.routes.home
   (:require [bed-time.layout :as layout]
             [bed-time.db.core :as db]
-            [compojure.core :refer [defroutes GET]]
+            [compojure.core :refer [defroutes GET POST]]
             [clojure.java.io :as io]
             [ring.util.response :refer [response]]))
 
@@ -11,8 +11,10 @@
 (defn get-bed-times []
   (response {:bed-times (db/get-bed-times)}))
 
-(get-bed-times)
+(defn go-to-bed []
+  (response {:new-bed-time (db/add-bed-time-now!)}))
 
 (defroutes home-routes
   (GET "/" [] (home-page))
-  (GET "/bed-times" [] (get-bed-times)))
+  (GET "/bed-times" [] (get-bed-times))
+  (POST "/go-to-bed" [] (go-to-bed)))

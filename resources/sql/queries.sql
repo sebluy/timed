@@ -2,7 +2,7 @@
 SELECT *
 FROM bedtimes
 
---name: add-bed-time!
+--name: insert-bed-time!
 INSERT
 INTO bedtimes
 (time)

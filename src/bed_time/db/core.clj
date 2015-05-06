@@ -14,9 +14,11 @@
 
 (defqueries "sql/queries.sql" {:connection db-spec})
 
-(defn add-bed-time [time]
-  (add-bed-time!
-    {:time (c/to-sql-time time)}))
+(defn add-bed-time! [time]
+  (insert-bed-time!
+    {:time (c/to-sql-time time)})
+  time)
 
 (defn add-bed-time-now! []
-  (add-bed-time (l/local-now)))
+  (add-bed-time! (c/to-date (l/local-now))))
+

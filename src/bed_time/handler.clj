@@ -70,7 +70,6 @@
 (def app
   (-> (routes
         home-routes
-        
         base-routes)
       development-middleware
       production-middleware))

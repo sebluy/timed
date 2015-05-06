@@ -9,35 +9,29 @@
       [:div.navbar.navbar-inverse.navbar-fixed-top
        [:div.container
         [:div.navbar-header
-         [:a.navbar-brand {:href "#/"} "bed-time"]]
+         [:a.navbar-brand
+          {:on-click #(secretary/dispatch! "#/bed-times")}
+          "Bed Time!"]]
         [:div.navbar-collapse.collapse
          [:ul.nav.navbar-nav
-          [:li {:class (when (= :home (session/get :page)) "active")}
-           [:a {:on-click #(secretary/dispatch! "#/")} "Home"]]
-          [:li {:class (when (= :about (session/get :page)) "active")}
-           [:a {:on-click #(secretary/dispatch! "#/about")} "About"]]
           [:li {:class (when (= :bed-times (session/get :page)) "active")}
            [:a {:on-click
-                #(secretary/dispatch! "#/bed-times")} "Bed Times"]]]]]])
+                #(secretary/dispatch! "#/bed-times")} "Bed Times"]]
+          [:li {:class (when (= :about (session/get :page)) "active")}
+           [:a {:on-click #(secretary/dispatch! "#/about")} "About"]]]]]])
 
 (defn about-page []
   [:div "this is the story of bed-time... work in progress"])
 
-(defn home-page []
-  [:div
-   [:h2 "Welcome to ClojureScript"]])
-
 (def pages
-  {:home #'home-page
-   :about #'about-page
-   :bed-times #'bed-times-page})
+  {:bed-times #'bed-times-page
+   :about #'about-page})
 
 (defn page []
   [(pages (session/get :page))])
 
-(defroute "/" [] (session/put! :page :home))
-(defroute "/about" [] (session/put! :page :about))
 (defroute "/bed-times" [] (session/put! :page :bed-times))
+(defroute "/about" [] (session/put! :page :about))
 
 (defn mount-components []
   (reagent/render-component [navbar] (.getElementById js/document "navbar"))
@@ -45,7 +39,6 @@
 
 (defn init! []
   (secretary/set-config! :prefix "#")
-  (session/put! :page :home)
+  (session/put! :page :bed-times)
   (mount-components))
-
 
