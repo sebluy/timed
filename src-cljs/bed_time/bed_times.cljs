@@ -31,11 +31,21 @@
 (defn remove-at-index [v n]
   (vec (concat (subvec v 0 n) (subvec v (inc n) (count v)))))
 
+(defn delete-handler [n bed-times]
+  (fn [response]
+    (swap! bed-times #(remove-at-index % n))))
+
+(defn delete [n bed-times]
+  (POST "/delete-bed-time" {:params {:time (get @bed-times n)}
+                            :handler (delete-handler n bed-times)
+                            :format :edn
+                            :response-format :edn}))
+
 (defn delete-button [n bed-times]
   [:input.btn.btn-sm.btn-danger
    {:type "button"
     :value "Delete!"
-    :on-click (fn [] (swap! bed-times #(remove-at-index % n)))}])
+    :on-click #(delete n bed-times)}])
 
 (defn show-bed-time [bed-times current-bed-times n]
   (let [bed-time (get current-bed-times n)]

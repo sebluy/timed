@@ -14,6 +14,9 @@
 
 (defqueries "sql/queries.sql" {:connection db-spec})
 
+(defn delete-bed-time! [time]
+  (delete-bed-time-sql! {:time (c/to-sql-time time)}))
+
 (defn add-bed-time! [time]
   (insert-bed-time!
     {:time (c/to-sql-time time)})

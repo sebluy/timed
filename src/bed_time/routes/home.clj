@@ -14,7 +14,12 @@
 (defn go-to-bed []
   (response {:new-bed-time (db/add-bed-time-now!)}))
 
+(defn delete-bed-time [time]
+  (db/delete-bed-time! time)
+  (response {}))
+
 (defroutes home-routes
   (GET "/" [] (home-page))
   (GET "/bed-times" [] (get-bed-times))
-  (POST "/go-to-bed" [] (go-to-bed)))
+  (POST "/go-to-bed" [] (go-to-bed))
+  (POST "/delete-bed-time" [time] (delete-bed-time time)))

@@ -11,9 +11,13 @@ VALUES (:time)
 --name: get-bed-time
 SELECT *
 FROM bedtimes
-WHERE date(time) = :date
+WHERE time = :time
 
 --name: clear-bed-times!
 DELETE
 FROM bedtimes
 
+--name: delete-bed-time-sql!
+DELETE
+FROM bedtimes
+WHERE time = :time
