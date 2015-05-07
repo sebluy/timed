@@ -7,10 +7,11 @@
     [clj-time.format :as f]))
 
 (def db-spec
-  {:subprotocol "postgresql"
-   :subname "//localhost/bedtime"
-   :user "admin"
-   :password "admin"})
+  (or (System/getenv "DATABASE_URL")
+      {:subprotocol "postgresql"
+       :subname "//localhost/bedtime"
+       :user "admin"
+       :password "admin"}))
 
 (defqueries "sql/queries.sql" {:connection db-spec})
 
