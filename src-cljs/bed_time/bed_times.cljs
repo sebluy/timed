@@ -5,7 +5,7 @@
 (defn bed-times-updater [bed-times]
   (fn [response]
     (reset! bed-times (into [] (map (fn [time] (time :time))
-                                    (response :bed-times))))))
+                                     (response :bed-times))))))
 
 (defn get-bed-times [bed-times]
   (println "getting bed-times...")
@@ -16,7 +16,7 @@
   (fn [response]
     (let [new-bed-time (response :new-bed-time)]
       (if-not (nil? new-bed-time)
-        (swap! bed-times #(conj % new-bed-time))))))
+        (swap! bed-times #(into [new-bed-time] %))))))
 
 (defn go-to-bed [bed-times]
   (POST "/go-to-bed" {:handler (go-to-bed-handler bed-times)
@@ -29,7 +29,7 @@
     :on-click #(go-to-bed bed-times)}])
 
 (defn remove-at-index [v n]
-  (vec (concat (subvec v 0 n) (subvec v (inc n) (count v)))))
+  (into (subvec v 0 n) (subvec v (inc n) (count v))))
 
 (defn delete-handler [n bed-times]
   (fn [response]
@@ -73,11 +73,9 @@
         (.toLocaleTimeString new-bed-time)))))
 
 (defn header [bed-times]
-  [:div.page-header
-   [:h1 "Bed Times"]
    [:h2 "Tonight: " (tonights-bed-time bed-times)
     [:div.pull-right
-     (go-to-bed-button bed-times)]]])
+     (go-to-bed-button bed-times)]])
 
 (defn bed-times-page []
   (let [bed-times (atom [])]

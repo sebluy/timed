@@ -1,6 +1,7 @@
 -- name: get-bed-times
 SELECT *
 FROM bedtimes
+ORDER BY time DESC
 
 --name: insert-bed-time!
 INSERT
