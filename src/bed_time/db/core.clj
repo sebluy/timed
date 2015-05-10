@@ -1,10 +1,8 @@
 (ns bed-time.db.core
   (:require
     [yesql.core :refer [defqueries]]
-    [clj-time.local :as l]
     [clj-time.coerce :as c]
-    [clj-time.core :as t]
-    [clj-time.format :as f]))
+    [clj-time.core :as t]))
 
 (def db-spec
   (or (System/getenv "DATABASE_URL")
@@ -15,14 +13,17 @@
 
 (defqueries "sql/queries.sql" {:connection db-spec})
 
-(defn delete-bed-time! [time]
-  (delete-bed-time-sql! {:time (c/to-sql-time time)}))
-
-(defn add-bed-time! [time]
-  (insert-bed-time!
-    {:time (c/to-sql-time time)})
-  time)
-
 (defn add-bed-time-now! []
-  (add-bed-time! (c/to-date (l/local-now))))
+  (let [now (t/now)]
+    (add-bed-time!
+      {:date (c/to-sql-date now)
+       :bed_time (c/to-sql-time now)})
+    now))
+
+(defn add-today! []
+  (let [now (t/now)]
+    (add-new-day!
+      {:date (c/to-sql-date now)
+       :wake_up_time (c/to-sql-time now)})
+    now))
 

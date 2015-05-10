@@ -1,24 +1,26 @@
--- name: get-bed-times
+-- name: get-days
 SELECT *
-FROM bedtimes
-ORDER BY time DESC
+FROM days
+ORDER BY date DESC
 
---name: insert-bed-time!
+--name: add-new-day!
 INSERT
-INTO bedtimes
-(time)
-VALUES (:time)
+INTO days
+VALUES
+(:date, :wake_up_time)
 
---name: get-bed-time
-SELECT *
-FROM bedtimes
-WHERE time = :time
+--name: add-bed-time!
+UPDATE
+days
+SET bed_time = :bed_time
+WHERE date = :date
 
---name: clear-bed-times!
+--name: clear-days!
 DELETE
-FROM bedtimes
+FROM days
 
---name: delete-bed-time-sql!
+--name: delete-day!
 DELETE
-FROM bedtimes
-WHERE time = :time
+FROM days
+WHERE date = :date
+

@@ -2,15 +2,16 @@
   (:require [reagent.core :refer [atom]]
             [ajax.core :refer [GET POST]]))
 
-(defn bed-times-updater [bed-times]
+(defn days-updater [days]
   (fn [response]
-    (reset! bed-times (into [] (map (fn [time] (time :time))
-                                     (response :bed-times))))))
+    (reset! days (into {} (map (fn [day]
+                                 [(get day :date) day])
+                               (response :days))))))
 
-(defn get-bed-times [bed-times]
-  (println "getting bed-times...")
-  (GET "/bed-times" {:handler (bed-times-updater bed-times)
-                     :response-format :edn}))
+(defn get-days [days]
+  (println "getting days....")
+  (GET "/days" {:handler (days-updater days)
+                :response-format :edn}))
 
 (defn go-to-bed-handler [bed-times]
   (fn [response]
@@ -28,40 +29,37 @@
     :value "Go to bed!"
     :on-click #(go-to-bed bed-times)}])
 
-(defn remove-at-index [v n]
-  (into (subvec v 0 n) (subvec v (inc n) (count v))))
-
-(defn delete-handler [n bed-times]
+(defn delete-handler [days date]
   (fn [response]
-    (swap! bed-times #(remove-at-index % n))))
+    (swap! days #(dissoc % date))))
 
-(defn delete [n bed-times]
-  (POST "/delete-bed-time" {:params {:time (get @bed-times n)}
-                            :handler (delete-handler n bed-times)
-                            :format :edn
-                            :response-format :edn}))
+(defn delete [days date]
+  (POST "/delete-day" {:params {:date date}
+                       :handler (delete-handler days date)
+                       :format :edn
+                       :response-format :edn}))
 
-(defn delete-button [n bed-times]
+(defn delete-button [days day]
   [:input.btn.btn-sm.btn-danger
    {:type "button"
     :value "Delete!"
-    :on-click #(delete n bed-times)}])
+    :on-click #(delete days day)}])
 
-(defn show-bed-time [bed-times current-bed-times n]
-  (let [bed-time (get current-bed-times n)]
-    ^{:key n}
+(defn show-day [days day]
+  (let [date (day :date)]
+    ^{:key date}
     [:tr
-     [:td (.toLocaleDateString bed-time)]
-     [:td (.toLocaleTimeString bed-time)]
-     [:td (delete-button n bed-times)]]))
+     [:td (.toLocaleDateString date)]
+     [:td (.toLocaleTimeString (day :wake_up_time))]
+     [:td (.toLocaleTimeString (day :bed_time))]
+     [:td (delete-button days date)]]))
 
-(defn bed-time-list [bed-times]
+(defn day-list [days]
   [:table.table
-   [:thead [:tr [:td "Date"] [:td "Time"]]]
+   [:thead [:tr [:td "Date"] [:td "Wake Up Time"] [:td "Bed Time"]]]
    [:tbody
-    (let [current-bed-times @bed-times]
-      (for [n (range (count current-bed-times))]
-        (show-bed-time bed-times current-bed-times n)))]])
+    (for [day (vals @days)]
+      (show-day days day))]])
 
 (defn tonights-bed-time [bed-times]
   (let [current-bed-times @bed-times]
@@ -78,10 +76,10 @@
      (go-to-bed-button bed-times)]])
 
 (defn bed-times-page []
-  (let [bed-times (atom [])]
-    (get-bed-times bed-times)
+  (let [days (atom [])]
+    (get-days days)
     (fn []
       [:div.col-md-6.col-md-offset-3
-       (header bed-times)
-       (bed-time-list bed-times)])))
+ ;      (header bed-times)
+       (day-list days)])))
 

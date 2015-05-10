@@ -1,1 +1,5 @@
-CREATE TABLE bedtimes (time TIMESTAMP WITH TIME ZONE);
+CREATE TABLE days
+(date DATE PRIMARY KEY,
+wake_up_time TIME,
+bed_time TIME);
+

@@ -3,23 +3,28 @@
             [bed-time.db.core :as db]
             [compojure.core :refer [defroutes GET POST]]
             [clojure.java.io :as io]
+            [clj-time.coerce :refer [to-sql-date]]
             [ring.util.response :refer [response]]))
 
 (defn home-page []
   (layout/render "home.html"))
 
-(defn get-bed-times []
-  (response {:bed-times (db/get-bed-times)}))
+(defn get-days []
+  (response {:days (db/get-days)}))
+
+(defn wake-up []
+  (response {:wake-up-time (db/add-today!)}))
 
 (defn go-to-bed []
-  (response {:new-bed-time (db/add-bed-time-now!)}))
+  (response {:bed-time (db/add-bed-time-now!)}))
 
-(defn delete-bed-time [time]
-  (db/delete-bed-time! time)
+(defn delete-day [date]
+  (db/delete-day! {:date (to-sql-date date)})
   (response {}))
 
 (defroutes home-routes
   (GET "/" [] (home-page))
-  (GET "/bed-times" [] (get-bed-times))
+  (GET "/days" [] (get-days))
+  (POST "/wake-up" [] (wake-up))
   (POST "/go-to-bed" [] (go-to-bed))
-  (POST "/delete-bed-time" [time] (delete-bed-time time)))
+  (POST "/delete-day" [date] (delete-day date)))

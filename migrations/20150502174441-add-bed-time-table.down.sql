@@ -1,1 +1,1 @@
-DROP TABLE bedtimes;
+DROP TABLE days;
