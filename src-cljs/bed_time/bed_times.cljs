@@ -9,27 +9,24 @@
                                (response :days))))))
 
 (defn get-days [days]
-  (println "getting days....")
   (GET "/days" {:handler (days-updater days)
                 :response-format :edn}))
 
-(defn todays-date []
-  (let [today (js/Date.)]
-    (.setHours today 0 0 0 0)
-    today))
+(defn date [datetime]
+  (let [date (js/Date. (.getTime datetime))]
+    (.setHours date 0 0 0 0)
+    date))
 
-(defn go-to-bed-handler [days]
+(defn go-to-bed-handler [days bed-time]
   (fn [response]
-    (println "Response handled")))
-;   (let [new-bed-time (response :bed-time)]
-;     (if-not (nil? new-bed-time)
-;       (let [date (todays-date)]
-;         (swap! days #(assoc-in % [date :bed-time] new-bed-time)))))))
+    (swap! days #(assoc-in % [(date bed-time) :bed_time] bed-time))))
 
 (defn go-to-bed [days]
-  (println "Posting /go-to-bed")
-  (POST "/go-to-bed" {:handler (go-to-bed-handler days)
-                     :response-format :edn}))
+  (let [bed-time (js/Date.)]
+    (POST "/go-to-bed" {:params {:bed-time bed-time}
+                        :handler (go-to-bed-handler days bed-time)
+                        :format :edn
+                        :response-format :edn})))
 
 (defn go-to-bed-button [days]
   [:input.btn.btn-large.btn-success
@@ -37,19 +34,18 @@
     :value "Go to bed!"
     :on-click #(go-to-bed days)}])
 
-(defn wake-up-handler [days]
+(defn wake-up-handler [days wake-up-time]
   (fn [response]
-    (println "Response recieved")))
-;   (let [new-wake-up-time (response :wake-up-time)]
-;     (if-not (nil? new-wake-up-time)
-;       (let [date (todays-date)]
-;         (swap! days #(assoc % date {:date date
-;                                     :wake_up_time new-wake-up-time})))))))
+    (let [date (date wake-up-time)]
+      (swap! days #(assoc % date {:date date
+                                  :wake_up_time wake-up-time})))))
 
 (defn wake-up [days]
-  (println "Posting /wake-up")
-  (POST "/wake-up" {:handler (wake-up-handler days)
-                    :response-format :edn}))
+  (let [wake-up-time (js/Date.)]
+    (POST "/wake-up" {:params {:wake-up-time wake-up-time}
+                      :handler (wake-up-handler days wake-up-time)
+                      :format :edn
+                      :response-format :edn})))
 
 (defn wake-up-button [days]
   [:input.btn.btn-large.btn-info

@@ -6,17 +6,25 @@
             [clj-time.coerce :refer [to-sql-date]]
             [ring.util.response :refer [response]]))
 
+(defn datetime-sql [datetime time-key]
+  (let [millis (.getTime datetime)
+        date (java.sql.Date. millis)
+        time (java.sql.Time. millis)]
+    {:date date time-key time}))
+
 (defn home-page []
   (layout/render "home.html"))
 
 (defn get-days []
   (response {:days (db/get-days)}))
 
-(defn wake-up []
-  (response {:wake-up-time (db/add-today!)}))
+(defn wake-up [wake-up-time]
+  (db/add-new-day! (datetime-sql wake-up-time :wake_up_time))
+  (response {}))
 
-(defn go-to-bed []
-  (response {:bed-time (db/add-bed-time-now!)}))
+(defn go-to-bed [bed-time]
+  (db/add-bed-time! (datetime-sql bed-time :bed_time))
+  (response {}))
 
 (defn delete-day [date]
   (db/delete-day! {:date (to-sql-date date)})
@@ -25,6 +33,7 @@
 (defroutes home-routes
   (GET "/" [] (home-page))
   (GET "/days" [] (get-days))
-  (POST "/wake-up" [] (wake-up))
-  (POST "/go-to-bed" [] (go-to-bed))
+  (POST "/wake-up" [wake-up-time] (wake-up wake-up-time))
+  (POST "/go-to-bed" [bed-time] (go-to-bed bed-time))
   (POST "/delete-day" [date] (delete-day date)))
+
