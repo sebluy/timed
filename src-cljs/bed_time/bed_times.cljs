@@ -2,14 +2,16 @@
   (:require [reagent.core :refer [atom]]
             [ajax.core :refer [GET POST]]))
 
-(defn days-updater [days]
+(def days (atom {}))
+
+(defn days-updater []
   (fn [response]
     (reset! days (into {} (map (fn [day]
                                  [(get day :date) day])
                                (response :days))))))
 
-(defn get-days [days]
-  (GET "/days" {:handler (days-updater days)
+(defn get-days []
+  (GET "/days" {:handler (days-updater)
                 :response-format :edn}))
 
 (defn date [datetime]
@@ -17,98 +19,99 @@
     (.setHours date 0 0 0 0)
     date))
 
-(defn go-to-bed-handler [days bed-time]
+(defn go-to-bed-handler [bed-time]
   (fn [response]
-    (swap! days #(assoc-in % [(date bed-time) :bed_time] bed-time))))
+    (swap! days #(assoc-in % [(date bed-time) :bed-time] bed-time))))
 
-(defn go-to-bed [days]
+(defn go-to-bed []
   (let [bed-time (js/Date.)]
     (POST "/go-to-bed" {:params {:bed-time bed-time}
-                        :handler (go-to-bed-handler days bed-time)
+                        :handler (go-to-bed-handler bed-time)
                         :format :edn
                         :response-format :edn})))
 
-(defn go-to-bed-button [days]
+(defn go-to-bed-button []
   [:input.btn.btn-large.btn-success
    {:type "button"
     :value "Go to bed!"
-    :on-click #(go-to-bed days)}])
+    :on-click #(go-to-bed)}])
 
-(defn wake-up-handler [days wake-up-time]
+(defn wake-up-handler [wake-up-time]
   (fn [response]
     (let [date (date wake-up-time)]
       (swap! days #(assoc % date {:date date
-                                  :wake_up_time wake-up-time})))))
+                                  :wake-up-time wake-up-time})))))
 
-(defn wake-up [days]
+(defn wake-up []
   (let [wake-up-time (js/Date.)]
     (POST "/wake-up" {:params {:wake-up-time wake-up-time}
-                      :handler (wake-up-handler days wake-up-time)
+                      :handler (wake-up-handler wake-up-time)
                       :format :edn
                       :response-format :edn})))
 
-(defn wake-up-button [days]
+(defn wake-up-button []
   [:input.btn.btn-large.btn-info
    {:type "button"
     :value "Wake Up!"
-    :on-click #(wake-up days)}])
+    :on-click #(wake-up)}])
 
-(defn delete-handler [days date]
+(defn delete-handler [date]
   (fn [response]
     (swap! days #(dissoc % date))))
 
-(defn delete [days date]
-  (println "Posting /delete-day")
+(defn delete [date]
   (POST "/delete-day" {:params {:date date}
-                       :handler (delete-handler days date)
+                       :handler (delete-handler date)
                        :format :edn
                        :response-format :edn}))
 
-(defn delete-button [days day]
+(defn delete-button [day]
   [:input.btn.btn-sm.btn-danger
    {:type "button"
     :value "Delete!"
-    :on-click #(delete days day)}])
+    :on-click #(delete day)}])
 
-(defn show-day [days day]
+(defn show-day [day]
   (let [date (day :date)
-        wake-up-time (day :wake_up_time)
-        bed-time (day :bed_time)]
+        wake-up-time (day :wake-up-time)
+        bed-time (day :bed-time)]
     ^{:key date}
     [:tr
      [:td (.toLocaleDateString date)]
      [:td (.toLocaleTimeString wake-up-time)]
      [:td (if-not (nil? bed-time) (.toLocaleTimeString bed-time))]
-     [:td (delete-button days date)]]))
+     [:td (delete-button date)]]))
 
-(defn day-list [days]
+(defn day-list []
   [:table.table
    [:thead [:tr [:td "Date"] [:td "Wake Up Time"] [:td "Bed Time"]]]
    [:tbody
     (for [day (vals @days)]
-      (show-day days day))]])
+      (show-day day))]])
 
-(defn tonights-bed-time [days]
+(defn tonights-bed-time []
   (let [current-days @days]
     (if-not (empty? current-days)
-      (let [most-recent-bed-time ((first (vals current-days)) :bed_time)]
+      (let [most-recent-bed-time ((first (vals current-days)) :bed-time)]
         (if-not (nil? most-recent-bed-time)
           (let [fifteen-minutes (* 1000 60 15)
                 new-bed-time (js/Date. (- (.getTime most-recent-bed-time)
                                           fifteen-minutes))]
             (.toLocaleTimeString new-bed-time)))))))
 
-(defn header [days]
-   [:h2 "Tonight: " (tonights-bed-time days)
-    [:div.pull-right
-     (wake-up-button days)
-     (go-to-bed-button days)]])
+(defn header []
+  [:h2 "Tonight: " (tonights-bed-time)
+   [:div.pull-right
+    (let [today (get @days (date (js/Date.)))]
+      (if (nil? today)
+        (wake-up-button)
+        (if (nil? (today :bed-time))
+          (go-to-bed-button))))]])
 
 (defn bed-times-page []
-  (let [days (atom [])]
-    (get-days days)
-    (fn []
-      [:div.col-md-6.col-md-offset-3
-       (header days)
-       (day-list days)])))
+  (get-days)
+  (fn []
+    [:div.col-md-6.col-md-offset-3
+     (header)
+     (day-list)]))
 
