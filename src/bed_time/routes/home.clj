@@ -15,11 +15,11 @@
 (defn home-page []
   (layout/render "home.html"))
 
-(defn hyphen-keys [m]
-  (into {} (map #(vector (underscore-to-hyphen (first %)) (second %)) m)))
-
 (defn underscore-to-hyphen [sym]
   (symbol (clojure.string/replace sym #"_" "-")))
+
+(defn hyphen-keys [m]
+  (into {} (map #(vector (underscore-to-hyphen (first %)) (second %)) m)))
 
 (defn get-days []
   (response {:days (map hyphen-keys (db/get-days))}))
