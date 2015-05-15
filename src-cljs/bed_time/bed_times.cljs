@@ -108,30 +108,52 @@
         (if (nil? (today :bed-time))
           (go-to-bed-button))))]])
 
-(defn label-and-input [label value]
-  [:div.form-group
-   [:label label]
-   [:input {:type "text"
-            :class "form-control"
-            :value @value
-            :on-change #(reset! value (-> % .-target .-value))}]])
+(defn update-date-map [element date-map]
+  (let [date-str (-> element .-target .-value)
+        date-val (js/Date. (.parse js/Date date-str))]
+    (reset! date-map {:value date-val
+                      :string date-str})))
 
-(defn update-bed-time [details]
-  (doseq [detail details] 
-    (println (.toLocaleTimeString (js/Date. (.parse js/Date @detail))))))
+(defn locale-date-string-if-not-nil [date]
+  (if-not (nil? date)
+    (.toLocaleDateString date)))
+
+(defn date-input [date-map]
+  (let [current-date-map @date-map]
+    [:div.form-group
+     [:label "Date: " (locale-date-string-if-not-nil
+                        (current-date-map :value))]
+     [:input {:type "text"
+              :class "form-control"
+              :value (current-date-map :string)
+              :on-change #(update-date-map % date-map)}]]))
+
+(defn str->date->str [date-str]
+  (.toLocaleDateString (js/Date. (.parse js/Date date-str))))
+
+(defn string->time->string [date-string time-string]
+  (if-not (nil? time-string)
+    (.toLocaleTimeString
+      (js/Date. (.parse js/Date (str @date-string " " time-string))))))
+
+(defn update-bed-time [date-string wake-up-time-string bed-time-string]
+  (let [date (js/Date. (.parse js/Date @date-string))
+        wake-up-time (js/Date. (.parse js/Date @wake-up-time-string))
+        bed-time (js/Date. (.parse js/Date @bed-time-string))]
+    (swap! days #(assoc % date {:date date
+                                :wake-up-time wake-up-time
+                                :bed-time bed-time}))))
 
 (defn update-bed-time-form []
-  (let [date (atom nil)
-        wake-up-time (atom nil)
-        bed-time (atom nil)]
+  (let [date (atom {})
+        wake-up-time (atom {})
+        bed-time (atom {})]
     [:form
-     [label-and-input "Date" date]
-     [label-and-input "Wake Up Time" wake-up-time]
-     [label-and-input "Bed Time" bed-time]
+     [date-input date]
      [:input.btn.btn-primary
       {:type "button"
        :value "Add"
-       :on-click #(update-bed-time [date wake-up-time bed-time])}]]))
+       :on-click #(update-bed-time date wake-up-time bed-time)}]]))
 
 (defn page-header [element]
   [:div.page-header
