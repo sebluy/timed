@@ -108,10 +108,40 @@
         (if (nil? (today :bed-time))
           (go-to-bed-button))))]])
 
+(defn label-and-input [label value]
+  [:div.form-group
+   [:label label]
+   [:input {:type "text"
+            :class "form-control"
+            :value @value
+            :on-change #(reset! value (-> % .-target .-value))}]])
+
+(defn update-bed-time [details]
+  (doseq [detail details] 
+    (println (.toLocaleTimeString (js/Date. (.parse js/Date @detail))))))
+
+(defn update-bed-time-form []
+  (let [date (atom nil)
+        wake-up-time (atom nil)
+        bed-time (atom nil)]
+    [:form
+     [label-and-input "Date" date]
+     [label-and-input "Wake Up Time" wake-up-time]
+     [label-and-input "Bed Time" bed-time]
+     [:input.btn.btn-primary
+      {:type "button"
+       :value "Add"
+       :on-click #(update-bed-time [date wake-up-time bed-time])}]]))
+
+(defn page-header [element]
+  [:div.page-header
+    [element]])
+
 (defn bed-times-page []
   (get-days)
   (fn []
     [:div.col-md-6.col-md-offset-3
-     (header)
-     (day-list)]))
+     [page-header header]
+     [page-header update-bed-time-form]
+     [day-list]]))
 
