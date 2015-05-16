@@ -1,6 +1,7 @@
 (ns bed-time.bed-times
   (:require [reagent.core :refer [atom]]
-            [ajax.core :refer [GET POST]]))
+            [ajax.core :refer [GET POST]])
+  (:require-macros [bed-time.macros :as macros]))
 
 (def days (atom {}))
 
@@ -108,38 +109,51 @@
         (if (nil? (today :bed-time))
           (go-to-bed-button))))]])
 
-(defn update-date-map [element date-map]
-  (let [date-str (-> element .-target .-value)
-        date-val (js/Date. (.parse js/Date date-str))]
+;;;; New day form
+
+(defn parse-date-str [date-str]
+  (->> date-str (.parse js/Date) js/Date.))
+
+(defn get-event-value [event]
+  (-> event .-target .-value))
+
+(defn update-date-map [event date-map]
+  (let [date-str (get-event-value event)
+        date-val (parse-date-str date-str)]
     (reset! date-map {:value date-val
                       :string date-str})))
 
-(defn locale-date-string-if-not-nil [date]
-  (if-not (nil? date)
-    (.toLocaleDateString date)))
+(defn update-time-map [event date-map time-map]
+  (let [date-str (@date-map :string)
+        time-str (get-event-value event)
+        time-val (parse-date-str (str date-str " " time-str))]
+    (reset! time-map {:value time-val
+                      :string time-str})))
 
 (defn date-input [date-map]
-  (let [current-date-map @date-map]
+  (let [current-date-map @date-map
+        date-val (current-date-map :value)]
     [:div.form-group
-     [:label "Date: " (locale-date-string-if-not-nil
-                        (current-date-map :value))]
+     [:label "Date: " (some-> date-val .toLocaleDateString)]
      [:input {:type "text"
               :class "form-control"
               :value (current-date-map :string)
               :on-change #(update-date-map % date-map)}]]))
 
-(defn str->date->str [date-str]
-  (.toLocaleDateString (js/Date. (.parse js/Date date-str))))
+(defn time-input [date-map time-map label]
+  (let [current-time-map @time-map
+        time-val (current-time-map :value)]
+    [:div.form-group
+     [:label label ": " (some-> time-val .toLocaleTimeString)]
+     [:input {:type "text"
+              :class "form-control"
+              :value (current-time-map :string)
+              :on-change #(update-time-map % date-map time-map)}]]))
 
-(defn string->time->string [date-string time-string]
-  (if-not (nil? time-string)
-    (.toLocaleTimeString
-      (js/Date. (.parse js/Date (str @date-string " " time-string))))))
-
-(defn update-bed-time [date-string wake-up-time-string bed-time-string]
-  (let [date (js/Date. (.parse js/Date @date-string))
-        wake-up-time (js/Date. (.parse js/Date @wake-up-time-string))
-        bed-time (js/Date. (.parse js/Date @bed-time-string))]
+(defn update-bed-time [date-map wake-up-time-map bed-time-map]
+  (let [date (@date-map :value)
+        wake-up-time (@wake-up-time-map :value)
+        bed-time (@bed-time-map :value)]
     (swap! days #(assoc % date {:date date
                                 :wake-up-time wake-up-time
                                 :bed-time bed-time}))))
@@ -150,10 +164,14 @@
         bed-time (atom {})]
     [:form
      [date-input date]
+     [time-input date wake-up-time "Wake Up Time"]
+     [time-input date bed-time "Bed Time"]
      [:input.btn.btn-primary
       {:type "button"
        :value "Add"
        :on-click #(update-bed-time date wake-up-time bed-time)}]]))
+
+;;;; Top Level Layout
 
 (defn page-header [element]
   [:div.page-header
