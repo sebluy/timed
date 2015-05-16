@@ -1,18 +1,20 @@
 (ns bed-time.bed-times
   (:require [reagent.core :refer [atom]]
-            [ajax.core :refer [GET POST]])
-  (:require-macros [bed-time.macros :as macros]))
+            [ajax.core :refer [GET POST]]))
 
-(def days (atom {}))
 
-(defn days-updater []
-  (fn [response]
-    (reset! days (into {} (map (fn [day]
-                                 [(get day :date) day])
-                               (response :days))))))
+(defn date-comparator [day1 day2]
+  (> (.getTime day1) (.getTime day2)))
+
+(def days (atom (sorted-map-by date-comparator)))
+
+(defn days-updater [response]
+  (swap! days #(into % (map (fn [day]
+                              [(get day :date) day])
+                            (response :days)))))
 
 (defn get-days []
-  (GET "/days" {:handler (days-updater)
+  (GET "/days" {:handler days-updater
                 :response-format :edn}))
 
 (defn date [datetime]
@@ -117,59 +119,56 @@
 (defn get-event-value [event]
   (-> event .-target .-value))
 
-(defn update-date-map [event date-map]
+(defn update-date-map [event day-map]
   (let [date-str (get-event-value event)
         date-val (parse-date-str date-str)]
-    (reset! date-map {:value date-val
-                      :string date-str})))
+    (swap! day-map #(assoc % :date {:value date-val
+                                  :string date-str}))))
 
-(defn update-time-map [event date-map time-map]
-  (let [date-str (@date-map :string)
+(defn update-time-map [event day-map key]
+  (let [date-str (get-in @day-map [:date :string])
         time-str (get-event-value event)
         time-val (parse-date-str (str date-str " " time-str))]
-    (reset! time-map {:value time-val
-                      :string time-str})))
+    (swap! day-map #(assoc % key {:value time-val
+                                :string time-str}))))
 
-(defn date-input [date-map]
-  (let [current-date-map @date-map
-        date-val (current-date-map :value)]
+(defn date-input [day-map]
+  (let [current-date-map (@day-map :date)
+        date-val (get current-date-map :value)]
     [:div.form-group
      [:label "Date: " (some-> date-val .toLocaleDateString)]
      [:input {:type "text"
               :class "form-control"
-              :value (current-date-map :string)
-              :on-change #(update-date-map % date-map)}]]))
+              :value (get current-date-map :string)
+              :on-change #(update-date-map % day-map)}]]))
 
-(defn time-input [date-map time-map label]
-  (let [current-time-map @time-map
-        time-val (current-time-map :value)]
+(defn time-input [day-map key label]
+  (let [current-time-map (get @day-map key)
+        time-val (get current-time-map :value)]
     [:div.form-group
      [:label label ": " (some-> time-val .toLocaleTimeString)]
      [:input {:type "text"
               :class "form-control"
-              :value (current-time-map :string)
-              :on-change #(update-time-map % date-map time-map)}]]))
+              :value (get current-time-map :string)
+              :on-change #(update-time-map % day-map key)}]]))
 
-(defn update-bed-time [date-map wake-up-time-map bed-time-map]
-  (let [date (@date-map :value)
-        wake-up-time (@wake-up-time-map :value)
-        bed-time (@bed-time-map :value)]
-    (swap! days #(assoc % date {:date date
-                                :wake-up-time wake-up-time
-                                :bed-time bed-time}))))
+(defn update-bed-time [day-map]
+  (let [day (into {} (map (fn [[field info]]
+                            [field (info :value)])
+                          @day-map))
+        date (day :date)]
+    (swap! days #(assoc % date day))))
 
 (defn update-bed-time-form []
-  (let [date (atom {})
-        wake-up-time (atom {})
-        bed-time (atom {})]
+  (let [day (atom {})]
     [:form
-     [date-input date]
-     [time-input date wake-up-time "Wake Up Time"]
-     [time-input date bed-time "Bed Time"]
+     [date-input day]
+     [time-input day :wake-up-time "Wake Up Time"]
+     [time-input day :bed-time "Bed Time"]
      [:input.btn.btn-primary
       {:type "button"
        :value "Add"
-       :on-click #(update-bed-time date wake-up-time bed-time)}]]))
+       :on-click #(update-bed-time day)}]]))
 
 ;;;; Top Level Layout
 
