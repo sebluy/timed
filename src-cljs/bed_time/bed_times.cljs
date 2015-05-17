@@ -119,6 +119,9 @@
 (defn get-event-value [event]
   (-> event .-target .-value))
 
+(defn datetime-invalid? [datetime]
+  (or (nil? datetime) (js/isNaN (.getTime datetime))))
+
 (defn update-day-map [day-map field field-str]
   (let [current-day-map @day-map]
     (cond
@@ -146,19 +149,26 @@
             (swap! day-map #(assoc % :bed-time
                    {:value time-val :string field-str})))))))
   (println day-map))
+
+(defn update-date-field [date-field event]
+  (let [text (get-event-value event)
+        value (parse-date-str text)
+        error (if (datetime-invalid? value) "Invalid Date")]
+    (reset! date-field {:value (parse-date-str text)
+                        :text text
+                        :error error})))
            
-(defn date-input [day-map]
-  (let [current-date-map (@day-map :date)
-        date-val (get current-date-map :value)]
+(defn date-input [date-field]
+  (let [{:keys [value text error]} @date-field]
     [:div.form-group
-     [:label "Date: " (some-> date-val .toLocaleDateString)]
+     [:label "Date: " (if error
+                        [:span.label.label-danger error]
+                        [:span.label.label-info
+                         (some-> value .toLocaleDateString)])]
      [:input {:type "text"
               :class "form-control"
-              :value (get current-date-map :string)
-              :on-change #(update-day-map
-                            day-map
-                            :date
-                            (get-event-value %))}]]))
+              :value text
+              :on-change #(update-date-field date-field %)}]]))
 
 (defn time-input [day-map key label]
   (let [current-time-map (get @day-map key)
@@ -181,15 +191,17 @@
     (swap! days #(assoc % date day))))
 
 (defn update-bed-time-form []
-  (let [day (atom {})]
+  (let [date-field (atom {})
+        wake-up-time-field (atom {})
+        bed-time-field (atom {})]
     [:form
-     [date-input day]
-     [time-input day :wake-up-time "Wake Up Time"]
-     [time-input day :bed-time "Bed Time"]
-     [:input.btn.btn-primary
-      {:type "button"
-       :value "Add"
-       :on-click #(update-bed-time day)}]]))
+     [date-input date-field]]))
+;     [time-input  "Wake Up Time"]
+;     [time-input day :bed-time "Bed Time"]
+;     [:input.btn.btn-primary
+;      {:type "button"
+;       :value "Add"
+;       :on-click #(update-bed-time day)}]]))
 
 ;;;; Top Level Layout
 
