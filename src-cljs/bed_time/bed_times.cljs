@@ -113,8 +113,8 @@
 
 ;;;; New day form
 
-(defn parse-date-str [date-str]
-  (->> date-str (.parse js/Date) js/Date.))
+(defn parse-datetime-str [datetime-str]
+  (->> datetime-str (.parse js/Date) js/Date.))
 
 (defn get-event-value [event]
   (-> event .-target .-value))
@@ -122,86 +122,71 @@
 (defn datetime-invalid? [datetime]
   (or (nil? datetime) (js/isNaN (.getTime datetime))))
 
-(defn update-day-map [day-map field field-str]
-  (let [current-day-map @day-map]
-    (cond
-      (= field :date)
-      (let [date-val (parse-date-str field-str)]
-        (swap! day-map #(assoc % :date {:value date-val :string field-str}))
-        (println (.getTime date-val))
-        (if (= (.getTime date-val) NaN)
-          (do (swap! day-map #(assoc-in % [:bed-time :value] nil))
-              (swap! day-map #(assoc-in % [:wake-up-time :value] nil)))))
-      
-      (= field :wake-up-time)
-      (let [date-val (get-in current-day-map [:date :value])]
-        (if-not (or (nil? date-val) (= (.getTime date-val) NaN))
-          (let [date-str (get-in current-day-map [:date :string])
-                time-val (parse-date-str (str date-str " " field-str))]
-            (swap! day-map #(assoc % :wake-up-time
-                   {:value time-val :string field-str})))))
-
-      (= field :bed-time)
-      (let [date-val (get-in current-day-map [:date :value])]
-        (if-not (or (nil? date-val) (= (.getTime date-val) NaN))
-          (let [date-str (get-in current-day-map [:date :string])
-                time-val (parse-date-str (str date-str " " field-str))]
-            (swap! day-map #(assoc % :bed-time
-                   {:value time-val :string field-str})))))))
-  (println day-map))
-
-(defn update-date-field [date-field event]
+(defn update-field [field event value-fn error-fn]
   (let [text (get-event-value event)
-        value (parse-date-str text)
-        error (if (datetime-invalid? value) "Invalid Date")]
-    (reset! date-field {:value (parse-date-str text)
-                        :text text
-                        :error error})))
-           
-(defn date-input [date-field]
-  (let [{:keys [value text error]} @date-field]
+        value (value-fn text)
+        error (error-fn text value)]
+    (reset! field {:text text :value value :error error})))
+
+(def update-time-field
+  (let [default-date-str "1970-01-01"
+        value-fn #(parse-datetime-str (str default-date-str " " %))
+        error-fn #(if (or (empty? %1) (datetime-invalid? %2)) "Invalid Time")]
+    (fn [field event]
+      (update-field field event value-fn error-fn))))
+
+(def update-date-field
+  (let [value-fn #(parse-datetime-str %)
+        error-fn #(if (datetime-invalid? %2) "Invalid Date")]
+    (fn [field event]
+      (update-field field event value-fn error-fn))))
+
+(defn error-label [error alternate]
+  (if error
+    [:span.label.label-danger error]
+    [:span.label.label-success alternate]))
+
+(defn text-input [field pre-label label-fn update-fn]
+  (let [{:keys [text value error]} @field
+        label (label-fn text value error)]
     [:div.form-group
-     [:label "Date: " (if error
-                        [:span.label.label-danger error]
-                        [:span.label.label-info
-                         (some-> value .toLocaleDateString)])]
+     [:label pre-label (error-label error label)]
      [:input {:type "text"
               :class "form-control"
               :value text
-              :on-change #(update-date-field date-field %)}]]))
+              :on-change #(update-fn field %)}]]))
 
-(defn time-input [day-map key label]
-  (let [current-time-map (get @day-map key)
-        time-val (get current-time-map :value)]
-    [:div.form-group
-     [:label label ": " (some-> time-val .toLocaleTimeString)]
-     [:input {:type "text"
-              :class "form-control"
-              :value (get current-time-map :string)
-              :on-change #(update-day-map
-                            day-map
-                            key
-                            (get-event-value %))}]]))
+(def date-input
+  (let [pre-label "Date: "
+        label-fn #(some-> %2 .toLocaleDateString)]
+    (fn [field]
+      (text-input field pre-label label-fn update-date-field))))
+          
+(def time-input
+  (let [label-fn #(some-> %2 .toLocaleTimeString)]
+    (fn [field pre-label]
+      (text-input field pre-label label-fn update-time-field))))
 
-(defn update-bed-time [day-map]
-  (let [day (into {} (map (fn [[field info]]
-                            [field (info :value)])
-                          @day-map))
-        date (day :date)]
-    (swap! days #(assoc % date day))))
+(defn update-day [day]
+  (let [{:keys [date wake-up-time bed-time] :as current-day}
+        (into {} (map #(update-in % [1] deref) day))]
+    (println current-day)
+    (if (every? #(and (not (get % :error)) (get % :value)) (vals current-day))
+      (println "All good in the hood")
+      (println "Ich don't think so"))))
 
 (defn update-bed-time-form []
-  (let [date-field (atom {})
-        wake-up-time-field (atom {})
-        bed-time-field (atom {})]
+  (let [{:keys [date wake-up-time bed-time] :as day}
+        (into {} (for [field [:date :wake-up-time :bed-time]]
+                   [field (atom {})]))]
     [:form
-     [date-input date-field]]))
-;     [time-input  "Wake Up Time"]
-;     [time-input day :bed-time "Bed Time"]
-;     [:input.btn.btn-primary
-;      {:type "button"
-;       :value "Add"
-;       :on-click #(update-bed-time day)}]]))
+     [date-input date]
+     [time-input wake-up-time "Wake Up Time: "]
+     [time-input bed-time "Bed Time: "]
+     [:input.btn.btn-primary
+      {:type "button"
+       :value "Add"
+       :on-click #(update-day day)}]]))
 
 ;;;; Top Level Layout
 
