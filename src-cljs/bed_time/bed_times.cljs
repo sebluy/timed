@@ -119,19 +119,34 @@
 (defn get-event-value [event]
   (-> event .-target .-value))
 
-(defn update-date-map [event day-map]
-  (let [date-str (get-event-value event)
-        date-val (parse-date-str date-str)]
-    (swap! day-map #(assoc % :date {:value date-val
-                                  :string date-str}))))
+(defn update-day-map [day-map field field-str]
+  (let [current-day-map @day-map]
+    (cond
+      (= field :date)
+      (let [date-val (parse-date-str field-str)]
+        (swap! day-map #(assoc % :date {:value date-val :string field-str}))
+        (println (.getTime date-val))
+        (if (= (.getTime date-val) NaN)
+          (do (swap! day-map #(assoc-in % [:bed-time :value] nil))
+              (swap! day-map #(assoc-in % [:wake-up-time :value] nil)))))
+      
+      (= field :wake-up-time)
+      (let [date-val (get-in current-day-map [:date :value])]
+        (if-not (or (nil? date-val) (= (.getTime date-val) NaN))
+          (let [date-str (get-in current-day-map [:date :string])
+                time-val (parse-date-str (str date-str " " field-str))]
+            (swap! day-map #(assoc % :wake-up-time
+                   {:value time-val :string field-str})))))
 
-(defn update-time-map [event day-map key]
-  (let [date-str (get-in @day-map [:date :string])
-        time-str (get-event-value event)
-        time-val (parse-date-str (str date-str " " time-str))]
-    (swap! day-map #(assoc % key {:value time-val
-                                :string time-str}))))
-
+      (= field :bed-time)
+      (let [date-val (get-in current-day-map [:date :value])]
+        (if-not (or (nil? date-val) (= (.getTime date-val) NaN))
+          (let [date-str (get-in current-day-map [:date :string])
+                time-val (parse-date-str (str date-str " " field-str))]
+            (swap! day-map #(assoc % :bed-time
+                   {:value time-val :string field-str})))))))
+  (println day-map))
+           
 (defn date-input [day-map]
   (let [current-date-map (@day-map :date)
         date-val (get current-date-map :value)]
@@ -140,7 +155,10 @@
      [:input {:type "text"
               :class "form-control"
               :value (get current-date-map :string)
-              :on-change #(update-date-map % day-map)}]]))
+              :on-change #(update-day-map
+                            day-map
+                            :date
+                            (get-event-value %))}]]))
 
 (defn time-input [day-map key label]
   (let [current-time-map (get @day-map key)
@@ -150,7 +168,10 @@
      [:input {:type "text"
               :class "form-control"
               :value (get current-time-map :string)
-              :on-change #(update-time-map % day-map key)}]]))
+              :on-change #(update-day-map
+                            day-map
+                            key
+                            (get-event-value %))}]]))
 
 (defn update-bed-time [day-map]
   (let [day (into {} (map (fn [[field info]]
