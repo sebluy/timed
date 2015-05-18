@@ -1,8 +1,6 @@
 (ns bed-time.db.core
   (:require
-    [yesql.core :refer [defqueries]]
-    [clj-time.coerce :as c]
-    [clj-time.core :as t]))
+    [yesql.core :refer [defqueries]]))
 
 (def db-spec
   (or (System/getenv "DATABASE_URL")

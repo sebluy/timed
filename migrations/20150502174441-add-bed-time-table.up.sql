@@ -1,5 +1,4 @@
-CREATE TABLE days
-(date DATE PRIMARY KEY,
-wake_up_time TIME,
-bed_time TIME);
-
+CREATE TABLE days (
+  bed_time timestamp PRIMARY KEY,
+  wake_up_time timestamp
+);

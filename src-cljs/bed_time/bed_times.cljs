@@ -8,11 +8,8 @@
 
 (def days (atom (sorted-map-by date-comparator)))
 
-(defn days-updater [response]
-  (println (response :days))
-  (swap! days #(into % (map (fn [day]
-                              [(get day :date) day])
-                            (response :days)))))
+(defn days-updater [{incoming-days :days}]
+  (swap! days #(into % incoming-days)))
 
 (defn get-days []
   (GET "/days" {:handler days-updater
@@ -69,28 +66,25 @@
                        :format :edn
                        :response-format :edn}))
 
-(defn delete-button [date]
+(defn delete-button [bed-time]
   [:input.btn.btn-sm.btn-danger
    {:type "button"
     :value "Delete!"
-    :on-click #(delete date)}])
+    :on-click #(delete bed-time)}])
 
-(defn show-day [day]
-  (let [date (day :date)
-        wake-up-time (day :wake-up-time)
-        bed-time (day :bed-time)]
-    ^{:key date}
-    [:tr
-     [:td (.toLocaleDateString date)]
-     [:td (.toLocaleTimeString wake-up-time)]
-     [:td (if-not (nil? bed-time) (.toLocaleTimeString bed-time))]
-     [:td (delete-button date)]]))
+(defn show-day [[bed-time wake-up-time]]
+  ^{:key bed-time}
+  [:tr
+   [:td (.toLocaleString bed-time)]
+   [:td (some-> wake-up-time .toLocaleString)]
+   [:td (/ (- (.getTime wake-up-time) (.getTime bed-time)) 3600000.0)]
+   [:td (delete-button wake-up-time)]])
 
 (defn day-list []
   [:table.table
-   [:thead [:tr [:td "Date"] [:td "Wake Up Time"] [:td "Bed Time"]]]
+   [:thead [:tr [:td "Bed Time"] [:td "Wake Up Time"] [:td "Sleep Time"]]]
    [:tbody
-    (for [day (vals @days)]
+    (for [day @days]
       (show-day day))]])
 
 (defn tonights-bed-time []
@@ -103,7 +97,7 @@
                                           fifteen-minutes))]
             (.toLocaleTimeString new-bed-time)))))))
 
-(defn header []
+#_(defn header []
   [:h2 "Tonight: " (tonights-bed-time)
    [:div.pull-right
     (let [today (get @days (date (js/Date.)))]
@@ -130,15 +124,8 @@
     (reset! field {:text text :value value :error error})))
 
 (def update-time-field
-  (let [default-date-str "1970-01-01"
-        value-fn #(parse-datetime-str (str default-date-str " " %))
-        error-fn #(if (or (empty? %1) (datetime-invalid? %2)) "Invalid Time")]
-    (fn [field event]
-      (update-field field event value-fn error-fn))))
-
-(def update-date-field
   (let [value-fn #(parse-datetime-str %)
-        error-fn #(if (datetime-invalid? %2) "Invalid Date")]
+        error-fn #(if (datetime-invalid? %2) "Invalid Time")]
     (fn [field event]
       (update-field field event value-fn error-fn))))
 
@@ -157,49 +144,29 @@
               :value text
               :on-change #(update-fn field %)}]]))
 
-(def date-input
-  (let [pre-label "Date: "
-        label-fn #(some-> %2 .toLocaleDateString)]
-    (fn [field]
-      (text-input field pre-label label-fn update-date-field))))
-          
-(def time-input
-  (let [label-fn #(some-> %2 .toLocaleTimeString)]
+(def datetime-input
+  (let [label-fn #(some-> %2 .toLocaleString)]
     (fn [field pre-label]
       (text-input field pre-label label-fn update-time-field))))
 
 (defn day-form-valid? [day]
   (every? #(and (not (get % :error)) (get % :value)) (vals day)))
 
-(defn clean-day [day]
-  (let [{:keys [date bed-time wake-up-time]} day
-        year (.getFullYear date)
-        month (.getMonth date)
-        day (.getDate date)]
-    {:date
-     (doto date (.setHours 0) (.setMinutes 0) (.setSeconds 0))
-     :wake-up-time
-     (doto wake-up-time (.setFullYear year) (.setMonth month) (.setDate day))
-     :bed-time
-     (doto bed-time (.setFullYear year) (.setMonth month) (.setDate day))}))
-
 (defn update-day [day-form]
   (let [current-day-form
         (into {} (map #(update-in % [1] deref) day-form))]
     (if (day-form-valid? current-day-form)
-      (let [{:keys [date] :as current-day}
+      (let [{:keys [wake-up-time bed-time] :as current-day}
             (into {} (map #(update-in % [1] :value) current-day-form))]
-        (println (clean-day current-day))))))
-;        (swap! days #(assoc % date (clean-day current-day)))))))
+        (swap! days #(assoc % bed-time wake-up-time))))))
 
 (defn update-bed-time-form []
-  (let [{:keys [date wake-up-time bed-time] :as day}
-        (into {} (for [field [:date :wake-up-time :bed-time]]
+  (let [{:keys [bed-time wake-up-time] :as day}
+        (into {} (for [field [:bed-time :wake-up-time]]
                    [field (atom {})]))]
     [:form
-     [date-input date]
-     [time-input wake-up-time "Wake Up Time: "]
-     [time-input bed-time "Bed Time: "]
+     [datetime-input bed-time "Bed Time: "]
+     [datetime-input wake-up-time "Wake Up Time: "]
      [:input.btn.btn-primary
       {:type "button"
        :value "Add"
@@ -215,7 +182,7 @@
   (get-days)
   (fn []
     [:div.col-md-6.col-md-offset-3
-     [page-header header]
+;     [page-header header]
      [page-header update-bed-time-form]
      [day-list]]))
 
