@@ -9,6 +9,7 @@
 (def days (atom (sorted-map-by date-comparator)))
 
 (defn days-updater [response]
+  (println (response :days))
   (swap! days #(into % (map (fn [day]
                               [(get day :date) day])
                             (response :days)))))
@@ -68,11 +69,11 @@
                        :format :edn
                        :response-format :edn}))
 
-(defn delete-button [day]
+(defn delete-button [date]
   [:input.btn.btn-sm.btn-danger
    {:type "button"
     :value "Delete!"
-    :on-click #(delete day)}])
+    :on-click #(delete date)}])
 
 (defn show-day [day]
   (let [date (day :date)
@@ -167,13 +168,29 @@
     (fn [field pre-label]
       (text-input field pre-label label-fn update-time-field))))
 
-(defn update-day [day]
-  (let [{:keys [date wake-up-time bed-time] :as current-day}
-        (into {} (map #(update-in % [1] deref) day))]
-    (println current-day)
-    (if (every? #(and (not (get % :error)) (get % :value)) (vals current-day))
-      (println "All good in the hood")
-      (println "Ich don't think so"))))
+(defn day-form-valid? [day]
+  (every? #(and (not (get % :error)) (get % :value)) (vals day)))
+
+(defn clean-day [day]
+  (let [{:keys [date bed-time wake-up-time]} day
+        year (.getFullYear date)
+        month (.getMonth date)
+        day (.getDate date)]
+    {:date
+     (doto date (.setHours 0) (.setMinutes 0) (.setSeconds 0))
+     :wake-up-time
+     (doto wake-up-time (.setFullYear year) (.setMonth month) (.setDate day))
+     :bed-time
+     (doto bed-time (.setFullYear year) (.setMonth month) (.setDate day))}))
+
+(defn update-day [day-form]
+  (let [current-day-form
+        (into {} (map #(update-in % [1] deref) day-form))]
+    (if (day-form-valid? current-day-form)
+      (let [{:keys [date] :as current-day}
+            (into {} (map #(update-in % [1] :value) current-day-form))]
+        (println (clean-day current-day))))))
+;        (swap! days #(assoc % date (clean-day current-day)))))))
 
 (defn update-bed-time-form []
   (let [{:keys [date wake-up-time bed-time] :as day}
