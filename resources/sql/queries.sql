@@ -1,5 +1,5 @@
 -- name: get-days
-SELECT *
+SELECT bed_time, wake_up_time
 FROM days
 ORDER BY bed_time DESC
 
@@ -9,11 +9,13 @@ INTO days
 VALUES
 (:bed_time, :wake_up_time)
 
---name: add-bed-time!
+--name: update-day!
 UPDATE
 days
-SET bed_time = :bed_time
-WHERE date = :date
+SET
+bed_time = :bed_time
+wake_up_time = :wake_up_time
+WHERE bed_time = :bed_time
 
 --name: clear-days!
 DELETE

@@ -56,29 +56,30 @@
     :value "Wake Up!"
     :on-click #(wake-up)}])
 
-(defn delete-handler [date]
+(defn delete-handler [[bed-time _]]
   (fn [response]
-    (swap! days #(dissoc % date))))
+    (swap! days #(dissoc % bed-time))))
 
-(defn delete [date]
-  (POST "/delete-day" {:params {:date date}
-                       :handler (delete-handler date)
+(defn delete-day [day]
+  (println "posting :day " day)
+  (POST "/delete-day" {:params {:day day}
+                       :handler (delete-handler day)
                        :format :edn
                        :response-format :edn}))
 
-(defn delete-button [bed-time]
+(defn delete-day-button [day]
   [:input.btn.btn-sm.btn-danger
    {:type "button"
     :value "Delete!"
-    :on-click #(delete bed-time)}])
+    :on-click #(delete-day day)}])
 
-(defn show-day [[bed-time wake-up-time]]
+(defn show-day [[bed-time wake-up-time :as day]]
   ^{:key bed-time}
   [:tr
    [:td (.toLocaleString bed-time)]
    [:td (some-> wake-up-time .toLocaleString)]
    [:td (/ (- (.getTime wake-up-time) (.getTime bed-time)) 3600000.0)]
-   [:td (delete-button wake-up-time)]])
+   [:td (delete-day-button day)]])
 
 (defn day-list []
   [:table.table
@@ -152,13 +153,24 @@
 (defn day-form-valid? [day]
   (every? #(and (not (get % :error)) (get % :value)) (vals day)))
 
+(defn add-handler [{:keys [bed-time wake-up-time]}]
+  (fn [response]
+    (swap! days #(assoc % bed-time wake-up-time))))
+
+(defn add [day]
+  (POST "/add-day" {:params {:day day}
+                    :handler (add-handler day)
+                    :format :edn
+                    :response-format :edn}))
+
 (defn update-day [day-form]
   (let [current-day-form
         (into {} (map #(update-in % [1] deref) day-form))]
     (if (day-form-valid? current-day-form)
       (let [{:keys [wake-up-time bed-time] :as current-day}
             (into {} (map #(update-in % [1] :value) current-day-form))]
-        (swap! days #(assoc % bed-time wake-up-time))))))
+        (if-not (get @days bed-time)
+          (add current-day))))))
 
 (defn update-bed-time-form []
   (let [{:keys [bed-time wake-up-time] :as day}
@@ -169,7 +181,7 @@
      [datetime-input wake-up-time "Wake Up Time: "]
      [:input.btn.btn-primary
       {:type "button"
-       :value "Add"
+       :value "Update"
        :on-click #(update-day day)}]]))
 
 ;;;; Top Level Layout
