@@ -36,26 +36,17 @@
   :uberjar-name "bed-time.jar"
   :jvm-opts ["-server"]
 
-  :env {:repl-port 7001}
-
   :main bed-time.core
 
-  :plugins [[lein-ring "0.9.1"]
-            [lein-environ "1.0.0"]
+  :plugins [[lein-environ "1.0.0"]
             [lein-ancient "0.6.5"]
             [ragtime/ragtime.lein "0.3.8"]
             [lein-cljsbuild "1.0.5"]]
-  
-  :ring {:handler bed-time.handler/app
-         :init    bed-time.handler/init
-         :destroy bed-time.handler/destroy
-         :uberwar-name "bed-time.war"}
   
   :ragtime
   {:migrations ragtime.sql.files/migrations
    :database
    "jdbc:postgresql://localhost/bedtime?user=admin&password=admin"}
-  
   
   :clean-targets ^{:protect false} ["resources/public/js"]
   
@@ -86,22 +77,16 @@
    :dev {:dependencies [[ring-mock "0.1.5"]
                         [ring/ring-devel "1.3.2"]
                         [pjstadig/humane-test-output "0.7.0"]
-                        [weasel "0.6.0"]]
-         :source-paths ["env/dev/clj"]
-         :plugins [[lein-figwheel "0.2.9"]]
+                        [figwheel "0.3.3"]
+                        [figwheel-sidecar "0.3.3"]]
+
          :cljsbuild
          {:builds
           {:app
            {:source-paths ["env/dev/cljs"] :compiler {:source-map true}}}} 
 
-         :figwheel
-         {:http-server-root "public"
-          :server-port 3449
-          :nrepl-port 7888
-          :css-dirs ["resources/public/css"]
-          :ring-handler bed-time.handler/app}
-         
-         :repl-options {:init-ns bed-time.repl}
+         :repl-options {:init-ns bed-time.core}
+
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]
          :env {:dev true}}})

@@ -188,7 +188,7 @@
 
 (defn page-header [element]
   [:div.page-header
-    [element]])
+   [element]])
 
 (defn bed-times-page []
   (get-days)

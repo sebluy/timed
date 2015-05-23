@@ -1,15 +1,13 @@
 (ns ^:figwheel-no-load bed-time.app
   (:require [bed-time.core :as core]
             [figwheel.client :as figwheel :include-macros true]
-            [weasel.repl :as weasel]
+            [clojure.browser.repl :as repl]
             [reagent.core :as r]))
 
 (enable-console-print!)
 
 (figwheel/watch-and-reload
   :websocket-url "ws://localhost:3449/figwheel-ws"
-  :jsload-callback core/mount-components)
-
-(weasel/connect "ws://localhost:9001" :verbose true)
+  :jsload-callback core/init!)
 
 (core/init!)
