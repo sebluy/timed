@@ -6,7 +6,9 @@
             [ring.util.response :refer [response]]))
 
 (defn sql-datetime [datetime]
-  (java.sql.Timestamp. (.getTime datetime)))
+  (some-> datetime
+          .getTime
+          java.sql.Timestamp.))
 
 (defn home-page []
   (layout/render "home.html"))
@@ -27,7 +29,6 @@
   (response {}))
 
 (defn delete-day [[bed-time _]]
-  (println bed-time)
   (db/delete-day! {:bed_time (sql-datetime bed-time)})
   (response {}))
 

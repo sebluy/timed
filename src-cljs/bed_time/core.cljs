@@ -1,5 +1,5 @@
 (ns bed-time.core
-  (:require [bed-time.bed-times :refer [bed-times-page]]
+  (:require [bed-time.bed-time :refer [bed-time-page]]
             [reagent.core :as reagent]
             [reagent.session :as session]
             [secretary.core :as secretary])
@@ -24,7 +24,7 @@
   [:div "this is the story of bed-time... work in progress"])
 
 (def pages
-  {:bed-times #'bed-times-page
+  {:bed-times #'bed-time-page
    :about #'about-page})
 
 (defn page []
