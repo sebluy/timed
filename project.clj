@@ -64,21 +64,24 @@
   
   :profiles
   {:uberjar {:omit-source true
+             :source-paths ["env/prod/clj"]
              :env {:production true}
-              :hooks [leiningen.cljsbuild]
-              :cljsbuild
-              {:jar true
-               :builds
-               {:app
-                {:source-paths ["env/prod/cljs"]
-                 :compiler {:optimizations :advanced :pretty-print false}}}} 
-             
+             :hooks [leiningen.cljsbuild]
+             :cljsbuild
+             {:jar true
+              :builds
+              {:app
+               {:source-paths ["env/prod/cljs"]
+                :compiler {:optimizations :advanced :pretty-print false}}}} 
              :aot :all}
+
    :dev {:dependencies [[ring-mock "0.1.5"]
                         [ring/ring-devel "1.3.2"]
                         [pjstadig/humane-test-output "0.7.0"]
                         [figwheel "0.3.3"]
                         [figwheel-sidecar "0.3.3"]]
+
+         :source-paths ["env/dev/clj"]
 
          :cljsbuild
          {:builds
@@ -89,4 +92,5 @@
 
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]
+
          :env {:dev true}}})
