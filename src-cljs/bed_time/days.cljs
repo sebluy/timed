@@ -8,7 +8,6 @@
 (def days (atom (sorted-map-by date-comparator)))
 
 (defn days-updater [{incoming-days :days}]
-  (println incoming-days)
   (swap! days #(into % incoming-days)))
 
 (defn get-days []

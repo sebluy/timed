@@ -13,7 +13,7 @@ VALUES
 UPDATE
 days
 SET
-bed_time = :bed_time
+bed_time = :bed_time,
 wake_up_time = :wake_up_time
 WHERE bed_time = :bed_time
 

@@ -19,18 +19,18 @@
     :value "Go to bed!"
     :on-click #(go-to-bed)}])
 
-(defn wake-up-handler [wake-up-time]
+(defn wake-up-handler [{:keys [bed-time wake-up-time]}]
   (fn [response]
-    (let [date nil]
-      (swap! days #(assoc % date {:date date
-                                  :wake-up-time wake-up-time})))))
+    (swap! days #(assoc % bed-time wake-up-time))))
 
 (defn wake-up []
-  (let [wake-up-time (js/Date.)]
-    (POST "/wake-up" {:params {:wake-up-time wake-up-time}
-                      :handler (wake-up-handler wake-up-time)
-                      :format :edn
-                      :response-format :edn})))
+  (let [[bed-time _] (first @days)
+        wake-up-time (js/Date.)
+        day {:bed-time bed-time :wake-up-time wake-up-time}]
+    (POST "/update-day" {:params {:day day}
+                         :handler (wake-up-handler day)
+                         :format :edn
+                         :response-format :edn})))
 
 (defn wake-up-button []
   [:input.btn.btn-large.btn-info
@@ -41,15 +41,14 @@
 (defn tonights-bed-time []
   (let [current-days @days]
     (if-not (empty? current-days)
-      (let [most-recent-bed-time ((first (vals current-days)) :bed-time)]
-        (if-not (nil? most-recent-bed-time)
-          (let [fifteen-minutes (* 1000 60 15)
-                new-bed-time (js/Date. (- (.getTime most-recent-bed-time)
-                                          fifteen-minutes))]
-            (.toLocaleTimeString new-bed-time)))))))
+      (let [[most-recent-bed-time _] (first current-days)]
+        (let [fifteen-minutes (* 1000 60 15)
+              new-bed-time (js/Date. (- (.getTime most-recent-bed-time)
+                                        fifteen-minutes))]
+          (.toLocaleTimeString new-bed-time))))))
 
 (defn header []
-  [:h2 "Tonight: Working on it..."
+  [:h2 "Tonight: " (tonights-bed-time)
    [:div.pull-right
     (wake-up-button)
     (go-to-bed-button)]])
