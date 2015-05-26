@@ -2,7 +2,8 @@
   (:require [bed-time.bed-time :refer [bed-time-page]]
             [reagent.core :as reagent]
             [reagent.session :as session]
-            [secretary.core :as secretary])
+            [secretary.core :as secretary]
+            [bed-time.plot :as plot])
   (:require-macros [secretary.core :refer [defroute]]))
 
 (defn navbar []
@@ -40,5 +41,6 @@
 (defn init! []
   (secretary/set-config! :prefix "#")
   (session/put! :page :bed-times)
+  (plot/init)
   (mount-components))
 

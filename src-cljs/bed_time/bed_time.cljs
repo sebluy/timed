@@ -2,7 +2,8 @@
   (:require [bed-time.days :refer [days get-days]]
             [bed-time.day-list :refer [day-list]]
             [bed-time.form :refer [update-form]]
-            [bed-time.header :refer [header]]))
+            [bed-time.header :refer [header]]
+            [bed-time.plot :refer [plot]]))
 
 (defn page-header [element]
   [:div.page-header
@@ -14,5 +15,6 @@
     [:div.col-md-6.col-md-offset-3
      [page-header header]
      [page-header update-form]
-     [day-list]]))
+     [day-list]
+     [plot]]))
 
