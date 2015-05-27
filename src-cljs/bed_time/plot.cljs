@@ -8,23 +8,32 @@
 (defonce loading-chan (chan))
 
 (defn init []
-  (.load js/google "visualization" "1.0" (clj->js {:packages [:timeline]}))
+  (.load js/google "visualization" "1.0" (clj->js {:packages
+                                                   [:corechart :bar]}))
   (.setOnLoadCallback js/google #(close! loading-chan)))
 
-(defn days-data-table []
-  (.arrayToDataTable js/google.visualization
-                     (clj->js
-                       (into [["Day" "Bed Time" "Wake Up Time"]]
-                             (map (fn [[bed-time wake-up-time]]
-                                    [(.toLocaleDateString bed-time)
-                                     bed-time
-                                     wake-up-time])
-                                  @days)))))
+(defn time-slept []
+  (reverse (map (fn [[bed-time wake-up-time]]
+         [(.toLocaleDateString bed-time)
+          (/ (- (.getTime wake-up-time)
+                (.getTime bed-time))
+             3600000.0)])
+       @days)))
 
+(defn time-slept-data-table []
+  (doto (google.visualization.DataTable.)
+    (.addColumn "string" "Date")
+    (.addColumn "number" "Time Slept")
+    (.addRows (clj->js (time-slept)))))
+                             
 (defn draw-plot []
-  (let [data (days-data-table)
-        options {:height 450}]
-    (doto (google.visualization.Timeline. (dom/getElement "plot-div"))
+  (let [data (time-slept-data-table)
+        options {:title "Daily Amount of Time Slept"
+                 :legend {:position "none"}
+                 :height 450
+                 :vAxis {:title "Time Slept (hours)"
+                         :viewWindow {:min 0}}}]
+    (doto (google.visualization.ColumnChart. (dom/getElement "plot-div"))
       (.draw data
              (clj->js options)))))
 
@@ -33,7 +42,9 @@
 
 (defn load-plot []
   (go (<! loading-chan)
-      (draw-plot)))
+      (if (not (empty? @days))
+        (draw-plot)
+        (println "Plot rendered before days"))))
 
 (defn plot []
   (reagent/create-class
