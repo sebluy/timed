@@ -57,7 +57,8 @@
      :compiler
      {:output-dir "resources/public/js/out"
       :externs ["react/externs/react.js"
-                "externs/google_loader_api.js"]
+                "externs/google_loader_api.js"
+                "externs/google_visualization_api.js"]
       :optimizations :none
       :output-to "resources/public/js/app.js"
       :pretty-print true}}}}
