@@ -18,15 +18,13 @@
     {:days (into {} (map #(into {} (list [(% :bed_time) (% :wake_up_time)]))
                          (db/get-days)))}))
 
-(defn update-day [{:keys [bed-time wake-up-time]}]
-  (db/update-day! {:bed_time (sql-datetime bed-time)
-                   :wake_up_time (sql-datetime wake-up-time)})
-  (response {}))
-
-(defn add-day [{:keys [bed-time wake-up-time]}]
-  (db/add-day! {:bed_time (sql-datetime bed-time)
-                :wake_up_time (sql-datetime wake-up-time)})
-  (response {}))
+(defn update-day [{:keys [bed-time wake-up-time new]}]
+  (let [db-day {:bed_time (sql-datetime bed-time)
+                :wake_up_time (sql-datetime wake-up-time)}]
+    (if new
+      (db/add-day! db-day)
+      (db/update-day! db-day))
+    (response {})))
 
 (defn delete-day [[bed-time _]]
   (db/delete-day! {:bed_time (sql-datetime bed-time)})
@@ -36,6 +34,5 @@
   (GET "/" [] (home-page))
   (GET "/days" [] (get-days))
   (POST "/update-day" [day] (update-day day))
-  (POST "/add-day" [day] (add-day day))
   (POST "/delete-day" [day] (delete-day day)))
 

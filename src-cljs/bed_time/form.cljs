@@ -1,5 +1,5 @@
 (ns bed-time.form
-  (:require [bed-time.days :refer [days]]
+  (:require [bed-time.days :as days]
             [reagent.core :refer [atom]]
             [ajax.core :refer [POST]]))
 
@@ -47,24 +47,15 @@
 (defn day-form-valid? [day]
   (every? #(and (not (get % :error)) (get % :value)) (vals day)))
 
-(defn add-handler [{:keys [bed-time wake-up-time]}]
-  (fn [response]
-    (swap! days #(assoc % bed-time wake-up-time))))
-
-(defn add [day]
-  (POST "/add-day" {:params {:day day}
-                    :handler (add-handler day)
-                    :format :edn
-                    :response-format :edn}))
-
 (defn update-day [day-form]
   (let [current-day-form
         (into {} (map #(update-in % [1] deref) day-form))]
     (if (day-form-valid? current-day-form)
       (let [{:keys [wake-up-time bed-time] :as current-day}
             (into {} (map #(update-in % [1] :value) current-day-form))]
-        (if-not (get @days bed-time)
-          (add current-day))))))
+        (if (get @days/days bed-time)
+          (days/update-day current-day)
+          (days/update-day (merge {:new true} current-day)))))))
 
 (defn update-form []
   (let [{:keys [bed-time wake-up-time] :as day}

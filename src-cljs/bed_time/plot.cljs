@@ -2,14 +2,14 @@
   (:require [cljs.core.async :refer [<! chan close! timeout]]
             [reagent.core :as reagent]
             [goog.dom :as dom]
-            [bed-time.days :refer [days]])
+            [bed-time.days :as days])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defonce loading-chan (chan))
 
 (defn init []
-  (.load js/google "visualization" "1.0" (clj->js {:packages
-                                                   [:corechart :bar]}))
+  (.load js/google "visualization" "1.0"
+         (clj->js {:packages [:corechart :bar]}))
   (.setOnLoadCallback js/google #(close! loading-chan)))
 
 (defn time-slept []
@@ -18,7 +18,7 @@
           (/ (- (.getTime wake-up-time)
                 (.getTime bed-time))
              3600000.0)])
-       @days)))
+       @days/days)))
 
 (defn time-slept-data-table []
   (doto (google.visualization.DataTable.)
@@ -42,9 +42,8 @@
 
 (defn load-plot []
   (go (<! loading-chan)
-      (if (not (empty? @days))
-        (draw-plot)
-        (println "Plot rendered before days"))))
+      (<! days/loading-chan)
+      (draw-plot)))
 
 (defn plot []
   (reagent/create-class

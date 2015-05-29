@@ -1,13 +1,15 @@
 (ns bed-time.day-list
-  (:require [ajax.core :refer [POST]]
-            [bed-time.days :refer [days]]))
+  (:require [ajax.core :as ajax]
+            [bed-time.days :as days]
+            [goog.string :as string]))
+
 
 (defn delete-handler [[bed-time _]]
   (fn [response]
-    (swap! days #(dissoc % bed-time))))
+    (swap! days/days #(dissoc % bed-time))))
 
 (defn delete-day [day]
-  (POST "/delete-day" {:params {:day day}
+  (ajax/POST "/delete-day" {:params {:day day}
                        :handler (delete-handler day)
                        :format :edn
                        :response-format :edn}))
@@ -19,9 +21,9 @@
     :on-click #(delete-day day)}])
 
 (defn time-slept [[bed-time wake-up-time]]
-  (/ (- (.getTime wake-up-time)
-        (.getTime bed-time))
-     3600000.0))
+  (string/format "%.2f" (/ (- (.getTime wake-up-time)
+                                   (.getTime bed-time))
+                                3600000.0)))
 
 (defn show-day [[bed-time wake-up-time :as day]]
   ^{:key (.getTime bed-time)}
@@ -33,8 +35,9 @@
 
 (defn day-list []
   [:table.table
-   [:thead [:tr [:td "Bed Time"] [:td "Wake Up Time"] [:td "Sleep Time"]]]
+   [:thead
+    [:tr [:td "Bed Time"] [:td "Wake Up Time"] [:td "Time Slept (Hours)"]]]
    [:tbody
-    (for [day @days]
+    (for [day @days/days]
       (show-day day))]])
 
