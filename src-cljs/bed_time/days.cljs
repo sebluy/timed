@@ -5,26 +5,23 @@
 
 (defonce loading-chan (chan))
 
-(defn date-comparator [day1 day2]
-  (> (.getTime day1) (.getTime day2)))
+(defonce days
+  (let [date-comparator (fn [day1 day2]
+                          (> (.getTime day1) (.getTime day2)))]
+    (reagent/atom (sorted-map-by date-comparator))))
 
-(defonce days (reagent/atom (sorted-map-by date-comparator)))
-
-(defn update-handler [{:keys [bed-time wake-up-time]}]
-  (fn [response]
-    (swap! days #(assoc % bed-time wake-up-time))))
-
-(defn update-day [day]
-  (ajax/POST "/update-day" {:params {:day day}
-                            :handler (update-handler day)
-                            :format :edn
-                            :response-format :edn}))
-
-(defn get-days-handler [{incoming-days :days}]
-  (swap! days #(into % incoming-days))
-  (close! loading-chan))
+(defn update-day [{:keys [bed-time wake-up-time] :as day}]
+  (let [handler (fn [_]
+                  (swap! days #(assoc % bed-time wake-up-time)))]
+    (ajax/POST "/update-day" {:params {:day day}
+                              :handler handler
+                              :format :edn
+                              :response-format :edn})))
 
 (defn get-days []
-  (ajax/GET "/days" {:handler get-days-handler
-                     :response-format :edn}))
+  (let [handler (fn [{incoming-days :days}]
+                  (swap! days #(into % incoming-days))
+                  (close! loading-chan))]
+    (ajax/GET "/days" {:handler handler
+                       :response-format :edn})))
 

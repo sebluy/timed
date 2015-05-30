@@ -2,16 +2,8 @@
   (:require [ajax.core :as ajax]
             [bed-time.days :as days]))
 
-(defn go-to-bed-handler [bed-time]
-  (fn [response]
-    (swap! days/days #(assoc % bed-time nil))))
-
 (defn go-to-bed []
-  (let [bed-time (js/Date.)]
-    (ajax/POST "/add-day" {:params {:day {:bed-time bed-time}}
-                           :handler (go-to-bed-handler bed-time)
-                           :format :edn
-                           :response-format :edn})))
+  (days/update-day {:bed-time (js/Date.) :new true}))
 
 (defn go-to-bed-button []
   [:input.btn.btn-large.btn-success
@@ -19,18 +11,9 @@
     :value "Go to bed!"
     :on-click #(go-to-bed)}])
 
-(defn wake-up-handler [{:keys [bed-time wake-up-time]}]
-  (fn [response]
-    (swap! days/days #(assoc % bed-time wake-up-time))))
-
 (defn wake-up []
-  (let [[bed-time _] (first @days/days)
-        wake-up-time (js/Date.)
-        day {:bed-time bed-time :wake-up-time wake-up-time}]
-    (ajax/POST "/update-day" {:params {:day day}
-                              :handler (wake-up-handler day)
-                              :format :edn
-                              :response-format :edn})))
+  (days/update-day {:bed-time (first (first @days/days))
+               :wake-up-time (js/Date.)}))
 
 (defn wake-up-button []
   [:input.btn.btn-large.btn-info
@@ -49,7 +32,7 @@
 
 (defn header []
   [:h2 "Tonight: " (tonights-bed-time)
-   [:div.pull-right
+   [:div.pull-right.btn-group
     (wake-up-button)
     (go-to-bed-button)]])
 

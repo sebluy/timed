@@ -14,11 +14,11 @@
 
 (defn time-slept []
   (reverse (map (fn [[bed-time wake-up-time]]
-         [(.toLocaleDateString bed-time)
-          (/ (- (.getTime wake-up-time)
-                (.getTime bed-time))
-             3600000.0)])
-       @days/days)))
+                  [(.toLocaleDateString bed-time)
+                   (/ (- (.getTime wake-up-time)
+                         (.getTime bed-time))
+                      3600000.0)])
+                (filter #(not (nil? (second %))) @days/days))))
 
 (defn time-slept-data-table []
   (doto (google.visualization.DataTable.)
@@ -43,7 +43,8 @@
 (defn load-plot []
   (go (<! loading-chan)
       (<! days/loading-chan)
-      (draw-plot)))
+      (draw-plot)
+      (add-watch days/days :plot draw-plot)))
 
 (defn plot []
   (reagent/create-class
