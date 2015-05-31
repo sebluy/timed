@@ -2,7 +2,8 @@
   (:require [cljs.core.async :refer [<! chan close! timeout]]
             [reagent.core :as reagent]
             [goog.dom :as dom]
-            [bed-time.days :as days])
+            [bed-time.days :as days]
+            [bed-time.util :as util])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defonce loading-chan (chan))
@@ -13,12 +14,9 @@
   (.setOnLoadCallback js/google #(close! loading-chan)))
 
 (defn time-slept []
-  (reverse (map (fn [[bed-time wake-up-time]]
-                  [(.toLocaleDateString bed-time)
-                   (/ (- (.getTime wake-up-time)
-                         (.getTime bed-time))
-                      3600000.0)])
-                (filter #(not (nil? (second %))) @days/days))))
+  (let [pairs (fn [day] [(.toLocaleDateString (first day))
+                         (-> day days/time-slept util/hours)])]
+    (->> @days/days (filter days/valid?) (map pairs) reverse)))
 
 (defn time-slept-data-table []
   (doto (google.visualization.DataTable.)

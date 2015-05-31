@@ -1,40 +1,25 @@
 (ns bed-time.day-list
-  (:require [ajax.core :as ajax]
-            [bed-time.days :as days]))
-
-(defn delete-handler [[bed-time _]]
-  (fn [response]
-    (swap! days/days #(dissoc % bed-time))))
-
-(defn delete-day [day]
-  (ajax/POST "/delete-day" {:params {:day day}
-                       :handler (delete-handler day)
-                       :format :edn
-                       :response-format :edn}))
+  (:require [bed-time.days :as days]
+            [bed-time.util :as util]))
 
 (defn delete-day-button [day]
   [:input.btn.btn-sm.btn-danger
-   {:type "button"
-    :value "Delete!"
-    :on-click #(delete-day day)}])
+   {:type     "button"
+    :value    "Delete!"
+    :on-click #(days/delete-day day)}])
 
 (defn edit-day-button [day]
   [:input.btn.btn-sm.btn-warning
-   {:type "button"
-    :value "Edit!"
+   {:type     "button"
+    :value    "Edit!"
     :on-click #(println "Editing: " day)}])
-
-(defn time-slept [[bed-time wake-up-time]]
-  (str (.toFixed (/ (- (.getTime wake-up-time)
-                       (.getTime bed-time))
-                    3600000.0) 2)))
 
 (defn show-day [[bed-time wake-up-time :as day]]
   ^{:key (.getTime bed-time)}
   [:tr
    [:td (.toLocaleString bed-time)]
-   [:td (some-> wake-up-time .toLocaleString)]
-   [:td (if (and wake-up-time bed-time) (time-slept day))]
+   [:td (if (days/valid? day) (.toLocaleString wake-up-time))]
+   [:td (if (days/valid? day) (util/hours-str (days/time-slept day) 2))]
    [:td (edit-day-button day)]
    [:td (delete-day-button day)]])
 
@@ -45,4 +30,3 @@
    [:tbody
     (for [day @days/days]
       (show-day day))]])
-
