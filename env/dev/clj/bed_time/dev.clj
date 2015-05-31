@@ -1,6 +1,12 @@
 (ns bed-time.dev
   (:require [figwheel-sidecar.auto-builder :as fig-auto]
-            [figwheel-sidecar.core :as fig]))
+            [figwheel-sidecar.core :as fig]
+            [weasel.repl.websocket :as weasel]
+            [cemerick.piggieback :as piggieback]))
+
+(defn browser-repl []
+  (let [repl-env (weasel/repl-env :ip "0.0.0.0" :port 9001)]
+    (piggieback/cljs-repl :repl-env repl-env)))
 
 (defn start-figwheel []
   (let [server (fig/start-server { :css-dirs ["resources/public/css"] })
@@ -13,4 +19,5 @@
                              :preamble ["react/react.min.js"]}}]
                 :figwheel-server server}]
     (fig-auto/autobuild* config)))
+
 

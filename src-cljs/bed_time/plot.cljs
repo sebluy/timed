@@ -9,7 +9,7 @@
 
 (defn init []
   (.load js/google "visualization" "1.0"
-         (clj->js {:packages [:corechart :bar]}))
+         (clj->js {:packages [:corechart]}))
   (.setOnLoadCallback js/google #(close! loading-chan)))
 
 (defn time-slept []
@@ -33,7 +33,7 @@
                  :height 450
                  :vAxis {:title "Time Slept (hours)"
                          :viewWindow {:min 0}}}]
-    (doto (google.visualization.ColumnChart. (dom/getElement "plot-div"))
+    (doto (google.visualization.LineChart. (dom/getElement "plot-div"))
       (.draw data
              (clj->js options)))))
 
