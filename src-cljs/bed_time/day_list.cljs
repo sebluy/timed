@@ -1,6 +1,7 @@
 (ns bed-time.day-list
   (:require [bed-time.days :as days]
-            [bed-time.util :as util]))
+            [bed-time.util :as util]
+            [bed-time.form :as form]))
 
 (defn delete-day-button [day]
   [:input.btn.btn-sm.btn-danger
@@ -12,7 +13,7 @@
   [:input.btn.btn-sm.btn-warning
    {:type     "button"
     :value    "Edit!"
-    :on-click #(println "Editing: " day)}])
+    :on-click #(form/inject-day day)}])
 
 (defn show-day [[bed-time wake-up-time :as day]]
   ^{:key (.getTime bed-time)}

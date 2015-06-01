@@ -3,9 +3,10 @@
             [bed-time.day-list :refer [day-list]]
             [bed-time.form :refer [update-form]]
             [bed-time.header :refer [header]]
-            [bed-time.plot :refer [plot]]))
+            [bed-time.plot :refer [plot]]
+            [bed-time.state :as state]))
 
-(defn page-header [element]
+(defn section [element]
   [:div.page-header
    [element]])
 
@@ -13,9 +14,10 @@
   (get-days)
   (fn []
     [:div.col-md-6.col-md-offset-3
-     [page-header header]
-     [page-header update-form]
-     [day-list]
-     [plot]]))
+     [section header]
+     (if (@state/state :update-form)
+       [section update-form])
+     [section day-list]
+     [section plot]]))
 
 

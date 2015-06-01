@@ -1,7 +1,28 @@
 (ns bed-time.form
   (:require [bed-time.days :as days]
-            [reagent.core :refer [atom]]
-            [ajax.core :refer [POST]]))
+            [bed-time.state :as state]
+            [reagent.core :as reagent]))
+
+(defonce fields {:bed-time (reagent/atom {}) :wake-up-time (reagent/atom {})})
+
+(defn enable []
+  (swap! state/state #(assoc % :update-form true)))
+
+
+(defn disable []
+  (swap! state/state #(assoc % :update-form false)))
+
+(defn new-day []
+  (reset! (fields :bed-time) (reagent/atom {}))
+  (reset! (fields :wake-up-time) (reagent/atom {}))
+  (enable))
+
+(defn inject-day [[bed-time wake-up-time]]
+  (reset! (fields :bed-time)
+          {:value bed-time :text (.toLocaleString bed-time)})
+  (reset! (fields :wake-up-time)
+          {:value wake-up-time :text (.toLocaleString wake-up-time)})
+  (enable))
 
 (defn parse-datetime-str [datetime-str]
   (->> datetime-str (.parse js/Date) js/Date.))
@@ -34,9 +55,9 @@
         label (label-fn text value error)]
     [:div.form-group
      [:label pre-label (error-label error label)]
-     [:input {:type "text"
-              :class "form-control"
-              :value text
+     [:input {:type      "text"
+              :class     "form-control"
+              :value     text
               :on-change #(update-fn field %)}]]))
 
 (def datetime-input
@@ -47,25 +68,27 @@
 (defn day-form-valid? [day]
   (every? #(and (not (get % :error)) (get % :value)) (vals day)))
 
-(defn update-day [day-form]
-  (let [current-day-form
-        (into {} (map #(update-in % [1] deref) day-form))]
-    (if (day-form-valid? current-day-form)
-      (let [{:keys [wake-up-time bed-time] :as current-day}
-            (into {} (map #(update-in % [1] :value) current-day-form))]
+(defn update-day []
+  (let [current-fields
+        (into {} (map #(update-in % [1] deref) fields))]
+    (if (day-form-valid? current-fields)
+      (let [{:keys [bed-time] :as current-day}
+            (into {} (map #(update-in % [1] :value) current-fields))]
         (if (get @days/days bed-time)
           (days/update-day current-day)
-          (days/update-day (merge {:new true} current-day)))))))
+          (days/update-day (merge {:new true} current-day)))
+        (disable)))))
 
 (defn update-form []
-  (let [{:keys [bed-time wake-up-time] :as day}
-        (into {} (for [field [:bed-time :wake-up-time]]
-                   [field (atom {})]))]
-    [:form
-     [datetime-input bed-time "Bed Time: "]
-     [datetime-input wake-up-time "Wake Up Time: "]
-     [:input.btn.btn-primary
-      {:type "button"
-       :value "Update"
-       :on-click #(update-day day)}]]))
+  [:form
+   [datetime-input (fields :bed-time) "Bed Time: "]
+   [datetime-input (fields :wake-up-time) "Wake Up Time: "]
+   [:input.btn.btn-primary
+    {:type     "button"
+     :value    "Update"
+     :on-click #(update-day)}]
+   [:input.btn.btn-danger
+    {:type     "button"
+     :value    "Cancel"
+     :on-click #(disable)}]])
 
