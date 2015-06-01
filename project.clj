@@ -92,7 +92,7 @@
           {:app
            {:source-paths ["env/dev/cljs"] :compiler {:source-map true}}}} 
 
-         :repl-options {:init-ns bed-time.core}
+         :repl-options {:init-ns bed-time.dev}
 
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]

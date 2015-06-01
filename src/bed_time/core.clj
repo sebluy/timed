@@ -1,6 +1,5 @@
 (ns bed-time.core
   (:require [bed-time.handler :refer [app init destroy]]
-            [bed-time.dev :refer [start-figwheel]]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.reload :as reload]
             [environ.core :refer [env]])
@@ -28,7 +27,6 @@
 (defn -main [& [port]]
   (let [port (parse-port port)]
     (.addShutdownHook (Runtime/getRuntime) (Thread. stop-server))
-    (if (env :dev) (start-figwheel))
     (start-server port)))
 
 
