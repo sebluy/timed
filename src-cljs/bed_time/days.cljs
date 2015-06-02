@@ -32,6 +32,7 @@
                               :response-format :edn})))
 
 (defn get-days []
+  (println "Getting days...")
   (let [handler (fn [{incoming-days :days}]
                   (swap! days #(into % incoming-days))
                   (close! loading-chan))]
