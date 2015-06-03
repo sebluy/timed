@@ -1,7 +1,9 @@
 (ns bed-time.day-list
   (:require [bed-time.days :as days]
             [bed-time.util :as util]
-            [bed-time.form :as form]))
+            [bed-time.form :as form]
+            [bed-time.page :as page]
+            [bed-time.state :as state]))
 
 (defn delete-day-button [day]
   [:input.btn.btn-sm.btn-danger
@@ -31,3 +33,10 @@
    [:tbody
     (for [day @days/days]
       (show-day day))]])
+
+(defn page []
+  (page/page
+    [:div
+     (if (@state/state :update-form)
+       [form/update-form])
+     [day-list]]))

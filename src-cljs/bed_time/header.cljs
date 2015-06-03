@@ -23,8 +23,8 @@
 
 (defn new-day-button []
   [:input.btn.btn-large.btn-primary
-   {:type "button"
-    :value "New Day!"
+   {:type     "button"
+    :value    "New Day!"
     :on-click form/new-day}])
 
 (defn tonights-bed-time []
@@ -37,9 +37,10 @@
           (.toLocaleTimeString new-bed-time))))))
 
 (defn header []
-  [:h2 "Tonight: " (tonights-bed-time)
-   [:div.pull-right.btn-group
-    (new-day-button)
-    (wake-up-button)
-    (go-to-bed-button)]])
+  [:div.page-header
+   [:h2 "Tonight: " (tonights-bed-time)
+    [:div.pull-right.btn-group
+     (new-day-button)
+     (wake-up-button)
+     (go-to-bed-button)]]])
 

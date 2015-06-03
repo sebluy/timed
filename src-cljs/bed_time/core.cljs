@@ -1,37 +1,29 @@
 (ns bed-time.core
-  (:require [bed-time.bed-time :as bed-time]
-            [reagent.core :as reagent]
-            [bed-time.plot :as plot]
+  (:require [bed-time.plot :as plot]
             [bed-time.state :as state]
+            [bed-time.days :as days]
+            [bed-time.navbar :as navbar]
+            [bed-time.day-list :as day-list]
+            [reagent.core :as reagent]
             [goog.events :as events]
+            [goog.dom :as dom]
             [goog.history.EventType :as EventType])
   (:import goog.History))
 
-(defn my-page []
-  [:h1 "It's working... It's working..."])
-
+; Replace ghetto-rig with bidi when neccessary
 (def pages
-  {"plot" #'my-page
-   "list" #'bed-time/bed-time-page})
+  {"plot" plot/page
+   "list" day-list/page})
 
 (defn set-page! [page]
   (swap! state/state assoc :page (pages page)))
 
-(defn navbar []
-  [:div.navbar.navbar-inverse.navbar-fixed-top
-   [:div.container
-    [:div.navbar-header
-     [:a.navbar-brand {:href "/#"} "Bed Time!"]]
-    [:div.navbar-collapse.collapse
-     [:ul.nav.navbar-nav
-      [:li [:a {:href "/#my-page"} "My Page"]]]]]])
-
-(defn page []
+(defn current-page []
   [(@state/state :page)])
 
 (defn mount-components []
-  (reagent/render-component [#'navbar] (.getElementById js/document "navbar"))
-  (reagent/render-component [#'page] (.getElementById js/document "app")))
+  (reagent/render-component [navbar/navbar] (dom/getElement "navbar"))
+  (reagent/render-component [current-page] (dom/getElement "app")))
 
 (defn hook-browser-navigation! []
   (doto (History.)
@@ -42,8 +34,14 @@
     (.setEnabled true)))
 
 (defn init! []
-  (let [history (hook-browser-navigation!)]
-    (set-page! (.getToken history)))
+  (let [history (hook-browser-navigation!)
+        token (.getToken history)]
+    (if (= token "")
+      (do
+        (.replaceToken history "list")
+        (set-page! "list"))
+      (set-page! token)))
   (mount-components)
+  (days/get-days)
   (plot/init))
 

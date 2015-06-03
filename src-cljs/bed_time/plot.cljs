@@ -3,7 +3,8 @@
             [reagent.core :as reagent]
             [goog.dom :as dom]
             [bed-time.days :as days]
-            [bed-time.util :as util])
+            [bed-time.util :as util]
+            [bed-time.page :as page])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defonce loading-chan (chan))
@@ -23,14 +24,14 @@
     (.addColumn "string" "Date")
     (.addColumn "number" "Time Slept")
     (.addRows (clj->js (time-slept)))))
-                             
+
 (defn draw-plot []
   (let [data (time-slept-data-table)
-        options {:title "Daily Amount of Time Slept"
+        options {:title  "Daily Amount of Time Slept"
                  :legend {:position "none"}
                  :height 450
-                 :vAxis {:title "Time Slept (hours)"
-                         :viewWindow {:min 0}}}]
+                 :vAxis  {:title      "Time Slept (hours)"
+                          :viewWindow {:min 0}}}]
     (doto (google.visualization.LineChart. (dom/getElement "plot-div"))
       (.draw data
              (clj->js options)))))
@@ -46,6 +47,10 @@
 
 (defn plot []
   (reagent/create-class
-    {:reagent-render plot-div
-     :component-did-mount load-plot}))
+    {:reagent-render      plot-div
+     :component-did-mount load-plot
+     :component-will-unmount #(remove-watch days/days :plot)}))
+
+(defn page []
+  (page/page [plot]))
 
