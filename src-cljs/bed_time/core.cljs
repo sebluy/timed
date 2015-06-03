@@ -1,5 +1,5 @@
 (ns bed-time.core
-  (:require [bed-time.bed-time :refer [bed-time-page]]
+  (:require [bed-time.bed-time :as bed-time]
             [reagent.core :as reagent]
             [bed-time.plot :as plot]
             [bed-time.state :as state]
@@ -11,8 +11,8 @@
   [:h1 "It's working... It's working..."])
 
 (def pages
-  {"my-page" my-page
-   ""        bed-time-page})
+  {"plot" #'my-page
+   "list" #'bed-time/bed-time-page})
 
 (defn set-page! [page]
   (swap! state/state assoc :page (pages page)))
@@ -26,13 +26,12 @@
      [:ul.nav.navbar-nav
       [:li [:a {:href "/#my-page"} "My Page"]]]]]])
 
-
 (defn page []
-  [@state/state :page])
+  [(@state/state :page)])
 
 (defn mount-components []
-  (reagent/render-component [navbar] (.getElementById js/document "navbar"))
-  (reagent/render-component [page] (.getElementById js/document "app")))
+  (reagent/render-component [#'navbar] (.getElementById js/document "navbar"))
+  (reagent/render-component [#'page] (.getElementById js/document "app")))
 
 (defn hook-browser-navigation! []
   (doto (History.)

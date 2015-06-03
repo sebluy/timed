@@ -13,7 +13,7 @@
 (defn bed-time-page []
   (get-days)
   (fn []
-    [:div.col-md-6.col-md-offset-3
+    [:div.col-md-8.col-md-offset-2
      [section header]
      (if (@state/state :update-form)
        [section update-form])
