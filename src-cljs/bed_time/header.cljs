@@ -1,28 +1,11 @@
 (ns bed-time.header
   (:require [bed-time.days :as days]
-            [bed-time.form :as form]))
-
-(defn go-to-bed []
-  (days/update-day {:bed-time (js/Date.) :new true}))
-
-(defn go-to-bed-button []
-  [:input.btn.btn-large.btn-success
-   {:type     "button"
-    :value    "Go to bed!"
-    :on-click #(go-to-bed)}])
-
-(defn wake-up []
-  (days/update-day {:bed-time     (first (first @days/days))
-                    :wake-up-time (js/Date.)}))
-
-(defn wake-up-button []
-  [:input.btn.btn-large.btn-info
-   {:type     "button"
-    :value    "Wake Up!"
-    :on-click #(wake-up)}])
+            [bed-time.form :as form]
+            [bed-time.state :as state]
+            [bed-time.util :as util]))
 
 (defn new-day-button []
-  [:input.btn.btn-large.btn-primary
+  [:input.btn.btn-large.btn-primary.pull-right
    {:type     "button"
     :value    "New Day!"
     :on-click form/new-day}])
@@ -36,11 +19,21 @@
                                         fifteen-minutes))]
           (.toLocaleTimeString new-bed-time))))))
 
+(defn avg-weekly-time-slept []
+  (let [current-days (take 7 @days/days)]
+    (util/hours-str (/ (reduce + (map days/time-slept current-days))
+                       (count (filter days/valid? current-days))) 2)))
+
+(defn days-info []
+  [:div.col-md-6
+   [:p "Tonights Bed Time: " (tonights-bed-time)]
+   [:p "Average Weekly Time Slept: " (avg-weekly-time-slept) " Hours"]])
+
 (defn header []
   [:div.page-header
-   [:h2 "Tonight: " (tonights-bed-time)
-    [:div.pull-right.btn-group
-     (new-day-button)
-     (wake-up-button)
-     (go-to-bed-button)]]])
+   [:div.row
+    [days-info]
+    [:div.col-md-6 [new-day-button]]]
+   (if (@state/state :update-form)
+     [form/update-form])])
 

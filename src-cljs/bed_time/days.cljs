@@ -13,9 +13,11 @@
 (defn valid? [day]
   (not (nil? (second day))))
 
-(defn time-slept [[bed-time wake-up-time]]
-  (- (.getTime wake-up-time)
-     (.getTime bed-time)))
+(defn time-slept [[bed-time wake-up-time :as day]]
+  (if (valid? day)
+    (- (.getTime wake-up-time)
+       (.getTime bed-time))
+    0))
 
 (defn delete-day [[bed-time _ :as day]]
   (let [handler (fn [_] (swap! days #(dissoc % bed-time)))]

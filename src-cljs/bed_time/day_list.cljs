@@ -37,6 +37,4 @@
 (defn page []
   (page/page
     [:div
-     (if (@state/state :update-form)
-       [form/update-form])
      [day-list]]))
