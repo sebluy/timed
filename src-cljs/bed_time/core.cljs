@@ -1,5 +1,8 @@
 (ns bed-time.core
-  (:require [bed-time.plot :as plot]
+  (:require [bed-time.plot.time-slept :as time-slept-plot]
+            [bed-time.plot.bed-time :as bed-time-plot]
+            [bed-time.plot.wake-up-time :as wake-up-time-plot]
+            [bed-time.plot.plot :as plot]
             [bed-time.state :as state]
             [bed-time.days :as days]
             [bed-time.navbar :as navbar]
@@ -12,7 +15,9 @@
 
 ; Replace ghetto-rig with bidi when neccessary
 (def pages
-  {"plot" plot/page
+  {"time-slept-plot" time-slept-plot/page
+   "bed-time-plot" bed-time-plot/page
+   "wake-up-time-plot" wake-up-time-plot/page
    "list" day-list/page})
 
 (defn set-page! [page]
