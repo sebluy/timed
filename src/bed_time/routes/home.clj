@@ -15,19 +15,19 @@
 
 (defn get-days []
   (response
-    {:days (into {} (map #(into {} (list [(% :bed_time) (% :wake_up_time)]))
-                         (db/get-days)))}))
+    {:days (into {} (map #(into {} (list [(% :start) (% :finish)]))
+                         (db/get-sessions {:activity "Sleeping"})))}))
 
 (defn update-day [{:keys [bed-time wake-up-time new]}]
-  (let [db-day {:bed_time (sql-datetime bed-time)
-                :wake_up_time (sql-datetime wake-up-time)}]
+  (let [db-day {:start (sql-datetime bed-time)
+                :finish (sql-datetime wake-up-time)}]
     (if new
-      (db/add-day! db-day)
-      (db/update-day! db-day))
+      (db/add-session! (merge {:activity "Sleeping"} db-day))
+      (db/update-session! db-day))
     (response {})))
 
 (defn delete-day [[bed-time _]]
-  (db/delete-day! {:bed_time (sql-datetime bed-time)})
+  (db/delete-session! {:start (sql-datetime bed-time)})
   (response {}))
 
 (defroutes home-routes

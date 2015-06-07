@@ -20,10 +20,13 @@
     :value    "Wake Up!"
     :on-click #(wake-up)}])
 
+(println (days/valid? nil))
+
 (defn wake-or-sleep-button []
-  (if (days/valid? (first @days/days))
-    (go-to-bed-button)
-    (wake-up-button)))
+  (let [current-days @days/days]
+    (if (or (empty? current-days) (days/valid? (first current-days)))
+      (go-to-bed-button)
+      (wake-up-button))))
 
 (defn navbar []
   [:div.navbar.navbar-inverse.navbar-fixed-top

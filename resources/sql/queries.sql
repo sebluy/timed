@@ -1,28 +1,38 @@
--- name: get-days
-SELECT bed_time, wake_up_time
-FROM days
-ORDER BY bed_time DESC
+-- name: get-activities
+SELECT activity
+FROM sessions
 
---name: add-day!
+--name: delete-activity!
+DELETE
+FROM sessions
+WHERE activity = :activity
+
+-- name: get-sessions
+SELECT start, finish
+FROM sessions
+WHERE activity = :activity
+ORDER BY start DESC
+
+--name: add-session!
 INSERT
-INTO days
+INTO sessions
 VALUES
-(:bed_time, :wake_up_time)
+(:activity, :start, :finish)
 
---name: update-day!
+--name: update-session!
 UPDATE
-days
+sessions
 SET
-bed_time = :bed_time,
-wake_up_time = :wake_up_time
-WHERE bed_time = :bed_time
+start = :start,
+finish = :finish
+WHERE start = :start
 
---name: clear-days!
+--name: clear-sessions!
 DELETE
-FROM days
+FROM sessions
 
---name: delete-day!
+--name: delete-session!
 DELETE
-FROM days
-WHERE bed_time = :bed_time
+FROM sessions
+WHERE start = :start
 
