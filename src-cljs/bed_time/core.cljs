@@ -6,6 +6,7 @@
             [bed-time.state :as state]
             [bed-time.days :as days]
             [bed-time.navbar :as navbar]
+            [bed-time.activites :as activities]
             [bed-time.day-list :as day-list]
             [reagent.core :as reagent]
             [goog.events :as events]
@@ -15,7 +16,8 @@
 
 ; Replace ghetto-rig with bidi when neccessary
 (def pages
-  {"time-slept-plot" time-slept-plot/page
+  {"activities" activities/page
+   "time-slept-plot" time-slept-plot/page
    "bed-time-plot" bed-time-plot/page
    "wake-up-time-plot" wake-up-time-plot/page
    "list" day-list/page})
@@ -47,6 +49,7 @@
         (set-page! "list"))
       (set-page! token)))
   (mount-components)
+  (activities/get-activities)
   (days/get-days)
   (plot/init))
 

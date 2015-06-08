@@ -20,8 +20,6 @@
     :value    "Wake Up!"
     :on-click #(wake-up)}])
 
-(println (days/valid? nil))
-
 (defn wake-or-sleep-button []
   (let [current-days @days/days]
     (if (or (empty? current-days) (days/valid? (first current-days)))
@@ -34,6 +32,7 @@
     [:div.navbar-header
      [:a.navbar-brand {:href "/#list"} "Bed Time!"]]
     [:ul.nav.navbar-nav
+     [:li [:a {:href "/#activities"} "Activities"]]
      [:li [:a {:href "/#list"} "List"]]
      [:li [:a {:href "/#time-slept-plot"} "Time Slept Plot"]]
      [:li [:a {:href "/#bed-time-plot"} "Bed Time Plot"]]

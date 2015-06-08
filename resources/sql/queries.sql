@@ -1,5 +1,5 @@
 -- name: get-activities
-SELECT activity
+SELECT DISTINCT activity
 FROM sessions
 
 --name: delete-activity!
