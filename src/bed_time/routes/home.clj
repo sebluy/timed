@@ -13,13 +13,30 @@
 (defn home-page []
   (layout/render "home.html"))
 
+; form => {:activity {:start :finish}}
 (defn get-activities []
   (response
-    (into #{} (map :activity (db/get-activities)))))
+    (reduce (fn [activities session]
+              (assoc activities (session :activity)
+                                {(session :start) (session :finish)}))
+            {} (db/get-activities))))
+
+(db/add-session! {:activity "Skating"
+                  :start (sql-datetime (java.util.Date.))
+                  :finish (sql-datetime (java.util.Date.))})
 
 (defn delete-activity [activity]
   (db/delete-activity! {:activity activity})
   (response nil))
+
+(defn update-session [{:keys [activity start finish new]}]
+  (let [db-session {:activity activity
+                    :start (sql-datetime start)
+                    :finish (sql-datetime finish)}]
+    (if new
+      (db/add-session! db-session)
+      (db/update-session! db-session))
+    (response nil)))
 
 (defn get-days []
   (response
@@ -39,6 +56,7 @@
   (response nil))
 
 (defroutes home-routes
+           (POST "/update-session" [session] (update-session session))
            (POST "/delete-activity" [activity] (delete-activity activity))
            (GET "/activities" [] (get-activities))
            (GET "/" [] (home-page))

@@ -32,10 +32,10 @@
     [:div.navbar-header
      [:a.navbar-brand {:href "/#list"} "Bed Time!"]]
     [:ul.nav.navbar-nav
-     [:li [:a {:href "/#activities"} "Activities"]]
-     [:li [:a {:href "/#list"} "List"]]
-     [:li [:a {:href "/#time-slept-plot"} "Time Slept Plot"]]
-     [:li [:a {:href "/#bed-time-plot"} "Bed Time Plot"]]
-     [:li [:a {:href "/#wake-up-time-plot"} "Wake Up Time Plot"]]]
-    [:ul.nav.navbar-nav.navbar-right
-     [:li [wake-or-sleep-button]]]]])
+     [:li [:a {:href "/#activities"} "Activities"]]]]])
+;     [:li [:a {:href "/#list"} "List"]]]]])
+;     [:li [:a {:href "/#time-slept-plot"} "Time Slept Plot"]]
+;     [:li [:a {:href "/#bed-time-plot"} "Bed Time Plot"]]
+;     [:li [:a {:href "/#wake-up-time-plot"} "Wake Up Time Plot"]]]
+;    [:ul.nav.navbar-nav.navbar-right
+;     [:li [wake-or-sleep-button]]]]])

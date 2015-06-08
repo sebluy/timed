@@ -27,7 +27,7 @@
                  [cljsjs/react "0.13.1-0"]
                  [reagent-forms "0.5.0"]
                  [reagent-utils "0.1.4"]
-                 [secretary "1.2.3"]
+                 [bidi "1.19.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [cljs-ajax "0.3.11"]
                  [clj-time "0.9.0"]]

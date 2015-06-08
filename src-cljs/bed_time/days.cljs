@@ -15,7 +15,7 @@
 
 (defn time-slept [[bed-time wake-up-time :as day]]
   (if (valid? day)
-    (- (.getTime wake-up-time)
+    (- (.antigetTime wake-up-time)
        (.getTime bed-time))
     0))
 
