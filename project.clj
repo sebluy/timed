@@ -80,8 +80,6 @@
    :dev {:dependencies [[ring-mock "0.1.5"]
                         [ring/ring-devel "1.3.2"]
                         [pjstadig/humane-test-output "0.7.0"]
-                        [com.cemerick/piggieback "0.1.5"]
-                        [weasel "0.6.0"]
                         [figwheel "0.3.3"]
                         [figwheel-sidecar "0.3.3"]]
 

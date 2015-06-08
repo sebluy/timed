@@ -1,24 +1,11 @@
 (ns bed-time.dev
   (:require [figwheel-sidecar.auto-builder :as fig-auto]
-            [figwheel-sidecar.repl-api :as fig-repl]
             [figwheel-sidecar.core :as fig]
             [clojurescript-build.auto :as auto]
-            [weasel.repl.websocket :as weasel]
-            [cemerick.piggieback :as piggieback]
             [bed-time.core :as core]))
-
-; Run application
 
 (defn run []
   (core/-main))
-
-; Launch various repls
-
-(defn browser-repl []
-  (let [repl-env (weasel/repl-env :ip "0.0.0.0" :port 9001)]
-    (piggieback/cljs-repl :repl-env repl-env)))
-
-; Launch figwheel server
 
 (def figwheel-state (atom {}))
 
