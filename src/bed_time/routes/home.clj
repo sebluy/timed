@@ -22,8 +22,8 @@
             {} (db/get-activities))))
 
 (db/add-session! {:activity "Skating"
-                  :start (sql-datetime (java.util.Date.))
-                  :finish (sql-datetime (java.util.Date.))})
+                  :start    (sql-datetime (java.util.Date.))
+                  :finish   (sql-datetime (java.util.Date.))})
 
 (defn delete-activity [activity]
   (db/delete-activity! {:activity activity})
@@ -31,8 +31,8 @@
 
 (defn update-session [{:keys [activity start finish new]}]
   (let [db-session {:activity activity
-                    :start (sql-datetime start)
-                    :finish (sql-datetime finish)}]
+                    :start    (sql-datetime start)
+                    :finish   (sql-datetime finish)}]
     (if new
       (db/add-session! db-session)
       (db/update-session! db-session))
@@ -51,8 +51,8 @@
       (db/update-session! db-day))
     (response nil)))
 
-(defn delete-day [[bed-time _]]
-  (db/delete-session! {:start (sql-datetime bed-time)})
+(defn delete-session [[start _]]
+  (db/delete-session! {:start (sql-datetime start)})
   (response nil))
 
 (defroutes home-routes
@@ -62,5 +62,5 @@
            (GET "/" [] (home-page))
            (GET "/days" [] (get-days))
            (POST "/update-day" [day] (update-day day))
-           (POST "/delete-day" [day] (delete-day day)))
+           (POST "/delete-session" [session] (delete-session session)))
 

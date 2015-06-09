@@ -32,25 +32,26 @@
   [(@state/state :page)])
 
 (defn hook-browser-navigation! []
-  (doto (History.)
-    (events/listen
-      EventType/NAVIGATE
-      (fn [event]
-        (set-page! (.-token event))))
-    (.setEnabled true)))
+  (let [history (History.)
+        token (.getToken history)]
+    (if (= token "")
+      (do
+        (.replaceToken history "activities")
+        (set-page! "activities"))
+      (set-page! token))
+    (doto history
+      (events/listen
+        EventType/NAVIGATE
+        (fn [event]
+          (set-page! (.-token event))))
+      (.setEnabled true))))
 
 (defn mount-components []
   (reagent/render-component [navbar/navbar] (dom/getElement "navbar"))
   (reagent/render-component [current-page] (dom/getElement "app")))
 
 (defn init! []
-  (let [history (hook-browser-navigation!)
-        token (.getToken history)]
-    (if (= token "")
-      (do
-        (.replaceToken history "activities")
-        (set-page! "activities"))
-      (set-page! token)))
+  (hook-browser-navigation!)
   (mount-components)
   (activities/get-activities))
 
