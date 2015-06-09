@@ -1,6 +1,7 @@
 (ns bed-time.activities.form
   (:require [reagent.core :as reagent]
-            [bed-time.activities.core :as core]))
+            [clojure.string :as string]
+            [bed-time.activities.session :as session]))
 
 (defonce activity (reagent/atom nil))
 
@@ -19,13 +20,16 @@
             :on-change update-activity}]])
 
 (defn form []
-  [:form
-   [input]
-   [:input.btn.btn-primary
-    {:type     "button"
-     :value    "Start New Session"
-     :on-click #(core/update-session {:activity @activity
-                                      :start (js/Date.)
-                                      :finish nil
-                                      :new true})}]])
+  (let [click-handler (fn []
+                        (if (not (string/blank? @activity))
+                          (session/update-session {:activity @activity
+                                                   :start    (js/Date.)
+                                                   :finish   nil
+                                                   :new      true})))]
+    [:form
+     [input]
+     [:input.btn.btn-primary
+      {:type     "button"
+       :value    "Start New Session"
+       :on-click click-handler}]]))
 

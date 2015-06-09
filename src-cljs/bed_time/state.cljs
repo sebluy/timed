@@ -3,3 +3,7 @@
 
 (defonce state (reagent/atom {:update-form false}))
 
+(defonce activities (reagent/atom nil))
+
+(defonce current-session (reagent/atom nil))
+

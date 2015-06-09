@@ -8,7 +8,6 @@
 (defn enable []
   (swap! state/state #(assoc % :update-form true)))
 
-
 (defn disable []
   (swap! state/state #(assoc % :update-form false)))
 

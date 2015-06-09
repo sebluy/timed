@@ -13,17 +13,13 @@
 (defn home-page []
   (layout/render "home.html"))
 
-; form => {:activity {:start :finish}}
+; form => {activity {start finish}}
 (defn get-activities []
   (response
     (reduce (fn [activities session]
               (assoc activities (session :activity)
                                 {(session :start) (session :finish)}))
             {} (db/get-activities))))
-
-(db/add-session! {:activity "Skating"
-                  :start    (sql-datetime (java.util.Date.))
-                  :finish   (sql-datetime (java.util.Date.))})
 
 (defn delete-activity [activity]
   (db/delete-activity! {:activity activity})

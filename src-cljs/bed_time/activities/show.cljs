@@ -1,7 +1,7 @@
 (ns bed-time.activities.show
-  (:require [bed-time.activities.core :as core]
-            [bed-time.activities.session :as session]
-            [bed-time.util :as util]))
+  (:require [bed-time.activities.session :as session]
+            [bed-time.util :as util]
+            [bed-time.state :as state]))
 
 (defn delete-button [activity session]
   [:input.btn.btn-sm.btn-danger
@@ -30,4 +30,4 @@
 (defn page [params]
   (fn []
     [:div.col-md-8.col-md-offset-2
-     [session-list (params :activity) (@core/activities (params :activity))]]))
+     [session-list (params :activity) (@state/activities (params :activity))]]))

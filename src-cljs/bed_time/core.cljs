@@ -1,7 +1,7 @@
 (ns bed-time.core
   (:require [bed-time.state :as state]
             [bed-time.navbar :as navbar]
-            [bed-time.activities.core :as activities]
+            [bed-time.activities.activities :as activities]
             [bed-time.activities.list :as activities-list]
             [bed-time.activities.show :as activities-show]
             [reagent.core :as reagent]
