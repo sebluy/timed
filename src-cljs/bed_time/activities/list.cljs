@@ -10,13 +10,7 @@
     :value    "Delete!"
     :on-click #(core/delete activity)}])
 
-(defn end-session-button []
-  [:input.btn.btn-sm.btn-danger
-   {:type     "button"
-    :value    (str "End "
-                   (get-in @state/activities [:pending :activity])
-                   " Session")
-    :on-click #(session/end-current)}])
+
 
 (defn show-day [activity]
   ^{:key activity}
@@ -35,8 +29,8 @@
 (defn page []
   [:div.col-md-8.col-md-offset-2
    [:div.page-header
-    (if @state/current-session
-      [end-session-button]
-      [form/form])]
+    [:h1 "Activities"]]
+   (if (nil? @state/current-session)
+     [form/form])
    [activities-list]])
 

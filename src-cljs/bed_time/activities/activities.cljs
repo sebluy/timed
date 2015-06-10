@@ -1,7 +1,8 @@
 (ns bed-time.activities.activities
   (:require [ajax.core :as ajax]
             [bed-time.state :as state]
-            [bed-time.sessions.sessions :as sessions]))
+            [bed-time.sessions.current :as current-session]
+            [clojure.string :as string]))
 
 (defn delete [activity]
   (let [handler (fn [_] (swap! state/activities #(dissoc % activity)))]
@@ -12,10 +13,13 @@
 
 (defn get-activities []
   (let [handler (fn [incoming-activities]
-                  (println "getting activities")
                   (reset! state/activities incoming-activities)
-                  (sessions/extract-current))]
+                  (current-session/extract-current))]
     (ajax/GET "/activities" {:handler         handler
                              :response-format :edn})))
+
+
+(defn valid? [activity]
+  (not (string/blank? activity)))
 
 

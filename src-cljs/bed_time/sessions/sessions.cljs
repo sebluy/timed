@@ -2,22 +2,6 @@
   (:require [bed-time.state :as state]
             [ajax.core :as ajax]))
 
-(defn unfinished-activities []
-  (reduce (fn [unfinished [activity-name sessions]]
-            (let [new-unfinished
-                  (map (fn [[start finish]]
-                         {:activity activity-name :start start :finish finish})
-                       (filter (fn [[_ finish]] (nil? finish))
-                               sessions))]
-              (into unfinished new-unfinished)))
-          () @state/activities))
-
-(defn extract-current []
-  (let [unfinished (unfinished-activities)]
-    (if (> (count unfinished) 1)
-      (println "More than one unfinished session: " unfinished)
-      (reset! state/current-session (first unfinished)))))
-
 (defn update-session [{:keys [activity start finish] :as session}]
   (let [handler (fn [_]
                   (swap! state/activities
@@ -29,11 +13,6 @@
                                   :format :edn
                                   :response-format :edn})))
 
-(defn end-current []
-  (let [session (merge @state/current-session {:new false :finish (js/Date.)})]
-    (update-session session)
-    (reset! state/current-session nil)))
-
 (defn delete [activity [start _ :as session]]
   (let [swap-fn (fn [activities]
                   (merge activities
@@ -43,6 +22,10 @@
                                   :handler         handler
                                   :format          :edn
                                   :response-format :edn})))
+
+(defn new-session [activity]
+  (update-session
+    {:activity activity :start (js/Date.) :finish nil :new true}))
 
 (defn valid? [[_ finish]]
   (not (nil? finish)))

@@ -1,30 +1,14 @@
 (ns bed-time.navbar
-  (:require [bed-time.days :as days]))
+  (:require [bed-time.sessions.current :as current-session]
+            [bed-time.state :as state]))
 
-(defn go-to-bed []
-  (days/update-day {:bed-time (js/Date.) :new true}))
-
-(defn go-to-bed-button []
-  [:input.btn.btn-large.btn-success.navbar-btn
+(defn end-session-button []
+  [:input.btn.btn-sm.btn-danger.navbar-btn
    {:type     "button"
-    :value    "Go to bed!"
-    :on-click #(go-to-bed)}])
-
-(defn wake-up []
-  (days/update-day {:bed-time     (first (first @days/days))
-                    :wake-up-time (js/Date.)}))
-
-(defn wake-up-button []
-  [:input.btn.btn-large.btn-info.navbar-btn
-   {:type     "button"
-    :value    "Wake Up!"
-    :on-click #(wake-up)}])
-
-(defn wake-or-sleep-button []
-  (let [current-days @days/days]
-    (if (or (empty? current-days) (days/valid? (first current-days)))
-      (go-to-bed-button)
-      (wake-up-button))))
+    :value    (str "End "
+                   (@state/current-session :activity)
+                   " Session")
+    :on-click #(current-session/end-current)}])
 
 (defn navbar []
   [:div.navbar.navbar-inverse.navbar-fixed-top
@@ -32,10 +16,11 @@
     [:div.navbar-header
      [:a.navbar-brand {:href "/#activities"} "Bed Time!"]]
     [:ul.nav.navbar-nav
-     [:li [:a {:href "/#activities"} "Activities"]]]]])
+     [:li [:a {:href "/#activities"} "Activities"]]]
 ;     [:li [:a {:href "/#list"} "List"]]]]])
 ;     [:li [:a {:href "/#time-slept-plot"} "Time Slept Plot"]]
 ;     [:li [:a {:href "/#bed-time-plot"} "Bed Time Plot"]]
 ;     [:li [:a {:href "/#wake-up-time-plot"} "Wake Up Time Plot"]]]
-;    [:ul.nav.navbar-nav.navbar-right
-;     [:li [wake-or-sleep-button]]]]])
+    (if @state/current-session
+      [:ul.nav.navbar-nav.navbar-right
+       [:li [end-session-button]]])]])

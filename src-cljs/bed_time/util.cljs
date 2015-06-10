@@ -1,5 +1,14 @@
 (ns bed-time.util)
 
+(defn get-event-value [event]
+  (-> event .-target .-value))
+
+(defn parse-datetime-str [datetime-str]
+  (->> datetime-str (.parse js/Date) js/Date.))
+
+(defn datetime-invalid? [datetime]
+  (or (nil? datetime) (js/isNaN (.getTime datetime))))
+
 (defn hours [millis]
   (/ millis 3600000))
 

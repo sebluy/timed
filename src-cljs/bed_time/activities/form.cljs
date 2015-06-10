@@ -1,40 +1,32 @@
 (ns bed-time.activities.form
   (:require [reagent.core :as reagent]
-            [clojure.string :as string]
-            [bed-time.sessions.sessions :as sessions]))
+            [bed-time.sessions.sessions :as sessions]
+            [bed-time.util :as util]
+            [bed-time.activities.activities :as activities]))
 
 (defonce activity-field (reagent/atom nil))
 (defonce error-field (reagent/atom nil))
 
-(defn get-event-value [event]
-  (-> event .-target .-value))
-
-(defn update-activity-field [event]
-  (reset! activity-field (get-event-value event)))
-
-(defn new-session [activity]
-  {:activity activity :start (js/Date.) :finish nil :new true})
-
-(defn valid? [activity]
-  (not (string/blank? activity)))
-
 (defn set-error []
   (reset! error-field "Activity cannot be blank"))
+
+(defn reset-fields []
+  (reset! activity-field nil)
+  (reset! error-field nil))
 
 (defn submit [event]
   (.preventDefault event)
   (let [activity @activity-field]
-    (if (valid? activity)
-      (do (sessions/update-session (new-session @activity-field))
-          (reset! activity-field nil)
-          (reset! error-field nil))
+    (if (activities/valid? activity)
+      (do (sessions/new-session activity)
+          (reset-fields))
       (set-error))))
 
 (defn activity-input []
   [:input {:type      "text"
            :class     "form-control"
            :value     @activity-field
-           :on-change update-activity-field}])
+           :on-change #(reset! activity-field (util/get-event-value %))}])
 
 (defn error-alert []
   (if @error-field
