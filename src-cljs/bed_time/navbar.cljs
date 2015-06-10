@@ -30,7 +30,7 @@
   [:div.navbar.navbar-inverse.navbar-fixed-top
    [:div.container
     [:div.navbar-header
-     [:a.navbar-brand {:href "/#list"} "Bed Time!"]]
+     [:a.navbar-brand {:href "/#activities"} "Bed Time!"]]
     [:ul.nav.navbar-nav
      [:li [:a {:href "/#activities"} "Activities"]]]]])
 ;     [:li [:a {:href "/#list"} "List"]]]]])

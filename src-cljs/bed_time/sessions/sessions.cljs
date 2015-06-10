@@ -1,4 +1,4 @@
-(ns bed-time.activities.session
+(ns bed-time.sessions.sessions
   (:require [bed-time.state :as state]
             [ajax.core :as ajax]))
 

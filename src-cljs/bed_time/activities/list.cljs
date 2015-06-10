@@ -2,7 +2,7 @@
   (:require [bed-time.activities.activities :as core]
             [bed-time.state :as state]
             [bed-time.activities.form :as form]
-            [bed-time.activities.session :as session]))
+            [bed-time.sessions.sessions :as session]))
 
 (defn delete-button [activity]
   [:input.btn.btn-sm.btn-danger
@@ -34,8 +34,9 @@
 
 (defn page []
   [:div.col-md-8.col-md-offset-2
-   (if @state/current-session
-     [end-session-button]
-     [form/form])
+   [:div.page-header
+    (if @state/current-session
+      [end-session-button]
+      [form/form])]
    [activities-list]])
 

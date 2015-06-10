@@ -1,5 +1,5 @@
 (ns bed-time.activities.show
-  (:require [bed-time.activities.session :as session]
+  (:require [bed-time.sessions.sessions :as session]
             [bed-time.util :as util]
             [bed-time.state :as state]))
 
@@ -28,6 +28,8 @@
       (show-session activity session))]])
 
 (defn page [params]
-  (fn []
-    [:div.col-md-8.col-md-offset-2
-     [session-list (params :activity) (@state/activities (params :activity))]]))
+  (let [activity-name (params :activity)]
+    (fn []
+      [:div.col-md-8.col-md-offset-2
+       [:h1 activity-name]
+       [session-list activity-name (get @state/activities activity-name)]])))
