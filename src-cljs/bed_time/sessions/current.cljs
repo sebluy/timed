@@ -1,7 +1,12 @@
 (ns bed-time.sessions.current
   (:require [bed-time.state :as state]
-            [ajax.core :as ajax]
-            [bed-time.sessions.sessions :as sessions]))
+            [ajax.core :as ajax]))
+
+(defn update-current-session [{:keys [activity start finish] :as session}]
+  (cond (and finish (nil? (get-in @state/activities [activity start])))
+        (reset! state/current-session nil)
+        (nil? finish)
+        (reset! state/current-session session)))
 
 (defn unfinished-activities []
   (reduce (fn [unfinished [activity-name sessions]]
@@ -19,7 +24,3 @@
       (println "More than one unfinished session: " unfinished)
       (reset! state/current-session (first unfinished)))))
 
-(defn end-current []
-  (let [session (merge @state/current-session {:new false :finish (js/Date.)})]
-    (sessions/update-session session)
-    (reset! state/current-session nil)))

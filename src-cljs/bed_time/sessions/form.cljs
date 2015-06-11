@@ -22,7 +22,7 @@
   (reset! start-field
           {:value start :text (.toLocaleString start)})
   (reset! finish-field
-          {:value finish :text (.toLocaleString finish)})
+          {:value finish :text (some-> finish .toLocaleString)})
   (enable))
 
 (defn update-field [field event value-fn error-fn]
@@ -65,7 +65,7 @@
     (if (session-form-valid? current-fields)
       (let [{:keys [start] :as current-session}
             (into {} (map #(update-in % [1] :value) current-fields))]
-        (if (get-in @state/activities [activity start])
+        (if (contains? (@state/activities activity) start)
           (sessions/update-session (merge {:activity activity} current-session))
           (sessions/update-session (merge {:activity activity :new true}
                                           current-session)))

@@ -1,13 +1,16 @@
 (ns bed-time.sessions.sessions
   (:require [bed-time.state :as state]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [bed-time.util :as util]
+            [bed-time.sessions.current :as current]))
+
+(defn sessions-map [] (sorted-map-by util/date-comparator))
 
 (defn update-session [{:keys [activity start finish] :as session}]
   (let [handler (fn [_]
+                  (current/update-current-session session)
                   (swap! state/activities
-                         #(assoc-in % [activity start] finish))
-                  (if (nil? finish)
-                    (reset! state/current-session session)))]
+                         #(assoc-in % [activity start] finish)))]
     (ajax/POST "/update-session" {:params {:session session}
                                   :handler handler
                                   :format :edn
@@ -22,6 +25,10 @@
                                   :handler         handler
                                   :format          :edn
                                   :response-format :edn})))
+
+(defn end-current []
+  (let [session (merge @state/current-session {:new false :finish (js/Date.)})]
+    (update-session session)))
 
 (defn new-session [activity]
   (update-session

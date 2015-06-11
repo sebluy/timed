@@ -16,6 +16,12 @@
     :value    "Edit!"
     :on-click #(form/inject-session session)}])
 
+(defn new-session-button []
+  [:input.btn.btn-large.btn-primary.pull-right
+   {:type     "button"
+    :value    "New Day!"
+    :on-click form/new-session}])
+
 (defn show-session [activity [start finish :as session]]
   ^{:key (.getTime start)}
   [:tr
@@ -39,7 +45,7 @@
   (let [activity-name (params :activity)]
     (fn []
       [:div.col-md-8.col-md-offset-2
-       [:div.page-header [:h1 activity-name]]
+       [:div.page-header [:h1 activity-name (new-session-button)]]
        (if (@state/state :update-form)
          [form/update-form activity-name])
        [session-list activity-name (get @state/activities activity-name)]])))

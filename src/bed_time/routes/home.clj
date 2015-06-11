@@ -17,9 +17,10 @@
 (defn get-activities []
   (response
     (reduce (fn [activities session]
-              (assoc activities (session :activity)
-                                {(session :start) (session :finish)}))
-            {} (db/get-activities))))
+              (let [activity-name (session :activity)]
+                (update-in activities [activity-name]
+                           #(merge % {(session :start) (session :finish)}))))
+                {} (db/get-activities))))
 
 (defn delete-activity [activity]
   (db/delete-activity! {:activity activity})

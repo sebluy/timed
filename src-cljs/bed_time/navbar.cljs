@@ -1,5 +1,5 @@
 (ns bed-time.navbar
-  (:require [bed-time.sessions.current :as current-session]
+  (:require [bed-time.sessions.sessions :as sessions]
             [bed-time.state :as state]))
 
 (defn end-session-button []
@@ -8,7 +8,7 @@
     :value    (str "End "
                    (@state/current-session :activity)
                    " Session")
-    :on-click #(current-session/end-current)}])
+    :on-click #(sessions/end-current)}])
 
 (defn navbar []
   [:div.navbar.navbar-inverse.navbar-fixed-top

@@ -6,6 +6,9 @@
 (defn parse-datetime-str [datetime-str]
   (->> datetime-str (.parse js/Date) js/Date.))
 
+(defn date-comparator [day1 day2]
+  (> (.getTime day1) (.getTime day2)))
+
 (defn datetime-invalid? [datetime]
   (or (nil? datetime) (js/isNaN (.getTime datetime))))
 
