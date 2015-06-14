@@ -25,8 +25,8 @@
     (ajax/GET "/activities" {:handler         handler
                              :response-format :edn})))
 
-
-(defn valid? [activity]
-  (not (string/blank? activity)))
+(defn error [activity]
+  (if (string/blank? activity)
+    "Activity cannot be blank"))
 
 

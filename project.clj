@@ -40,6 +40,7 @@
 
   :plugins [[lein-environ "1.0.0"]
             [lein-ancient "0.6.5"]
+            [lein-figwheel "0.3.3"]
             [ragtime/ragtime.lein "0.3.8"]
             [lein-cljsbuild "1.0.5"]]
   
@@ -74,21 +75,25 @@
               {:app
                {:source-paths ["env/prod/cljs"]
                 :compiler {:optimizations :advanced
-                           :pretty-print false}}}} 
+                           :pretty-print false}}}}
              :aot :all}
 
    :dev {:dependencies [[ring-mock "0.1.5"]
                         [ring/ring-devel "1.3.2"]
                         [pjstadig/humane-test-output "0.7.0"]
-                        [figwheel "0.3.3"]
-                        [figwheel-sidecar "0.3.3"]]
+                        [lein-figwheel "0.3.3"]]
 
          :source-paths ["env/dev/clj"]
+         :figwheel {:http-server-root "public"
+                    :server-port 3449
+                    :nrepl-port 7888
+                    :css-dirs ["resources/public/css"]
+                    :ring-handler bed-time.handler/app}
 
          :cljsbuild
          {:builds
           {:app
-           {:source-paths ["env/dev/cljs"] :compiler {:source-map true}}}} 
+           {:source-paths ["env/dev/cljs"] :compiler {:source-map true}}}}
 
          :repl-options {:init-ns bed-time.dev}
 
