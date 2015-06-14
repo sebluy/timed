@@ -3,7 +3,8 @@
             [bed-time.state :as state]
             [bed-time.sessions.current :as current-session]
             [clojure.string :as string]
-            [bed-time.sessions.sessions :as sessions]))
+            [bed-time.sessions.sessions :as sessions]
+            [bed-time.util :as util]))
 
 (defn delete [activity]
   (let [handler (fn [_] (swap! state/activities #(dissoc % activity)))]
@@ -24,6 +25,11 @@
                   (current-session/extract-current))]
     (ajax/GET "/activities" {:handler         handler
                              :response-format :edn})))
+
+(defn weekly-time-spent [activity]
+  (let [sessions (@state/activities activity)
+        millis (reduce #(+ %1 (sessions/time-spent %2)) 0 sessions)]
+    (util/hours-str millis)))
 
 (defn error [activity]
   (if (string/blank? activity)

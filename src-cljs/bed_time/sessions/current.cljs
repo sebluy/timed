@@ -2,6 +2,9 @@
   (:require [bed-time.state :as state]
             [ajax.core :as ajax]))
 
+;; Look at using async channels to watch activity change events
+;; and update current accordingly
+
 (defn update-current-session [{:keys [activity start finish] :as session}]
   (cond (and finish (nil? (get-in @state/activities [activity start])))
         (reset! state/current-session nil)

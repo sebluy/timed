@@ -16,8 +16,8 @@
 (defn hours [millis]
   (/ millis 3600000))
 
-(defn hours-str [millis precision]
-  (.toFixed (hours millis) precision))
+(defn hours-str [millis]
+  (.toFixed (hours millis) 2))
 
 (defn time-of-day [datetime]
   [(.getHours datetime)

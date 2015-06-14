@@ -1,69 +1,46 @@
 (ns bed-time.activities.form
   (:require [reagent.core :as reagent]
-            [cljs.core.async :as async]
             [bed-time.sessions.sessions :as sessions]
             [bed-time.util :as util]
-            [bed-time.activities.activities :as activities])
-  (:require-macros [bed-time.macros :refer [go-forever]]
-                   [cljs.core.async.macros :refer [go]]))
+            [bed-time.activities.activities :as activities]))
 
-(defn go-activity-input [activity-field chans]
-  (go-forever
-    (async/<! (chans :request))
-    (let [activity @activity-field
-          error (activities/error activity)]
-      (if-not error
-        (do
-          (async/>! (chans :activity) {:status :valid :activity activity})
-          (async/>! (chans :error) false)
-          (reset! activity-field nil))
-        (do
-          (async/>! (chans :activity) {:status :invalid})
-          (async/>! (chans :error) error))))))
+(defonce activity-field (reagent/atom nil))
+(defonce error-field (reagent/atom nil))
 
-(defn go-error-field [error-field error-chan]
-  (go-forever
-    (reset! error-field (async/<! error-chan))))
+(defn set-error [error]
+  (reset! error-field error))
 
-(defn go-form [chans]
-  (go-forever
-    (async/<! (chans :submit))
-    (async/>! (chans :request) :request)
-    (let [activity-data (async/<! (chans :activity))]
-      (if (= (activity-data :status) :valid)
-        (sessions/new-session (activity-data :activity))))))
+(defn reset-fields []
+  (reset! activity-field nil)
+  (reset! error-field nil))
 
-(defn activity-input [chans]
-  (let [activity-field (reagent/atom nil)]
-    (go-activity-input activity-field chans)
-    (fn []
-      [:input {:type      "text"
-               :class     "form-control"
-               :value     @activity-field
-               :on-change #(reset! activity-field (util/get-event-value %))}])))
+(defn submit [event]
+  (.preventDefault event)
+  (let [activity @activity-field]
+    (if-let [error (activities/error activity)]
+      (set-error error)
+      (do (sessions/new-session activity)
+          (reset-fields)))))
 
-(defn error-alert [error-chan]
-  (let [error-field (reagent/atom nil)]
-    (fn []
-      (go-error-field error-field error-chan)
-      (if @error-field
-        [:div.alert.alert-danger @error-field]))))
+(defn activity-input []
+  [:input {:type        "text"
+           :class       "form-control"
+           :placeholder "Activity name"
+           :value       @activity-field
+           :on-change   #(reset! activity-field (util/get-event-value %))}])
+
+(defn error-alert []
+  (if @error-field
+    [:div.alert.alert-danger @error-field]))
 
 (defn submit-button []
   [:button.btn.btn-primary {:type "submit"} "Start New Session"])
 
 (defn form []
-  (let [chans {:submit (async/chan) :request (async/chan)
-               :activity (async/chan) :error (async/chan)}]
-    (fn []
-      (go-form (select-keys chans [:submit :request :activity]))
-      [:form.form-horizontal
-       {:on-submit #(do (.preventDefault %)
-                        (go (async/>! (chans :submit) :submit)))}
-       [:div.form-group
-        [:label.col-sm-2.control-label "New Activity"]
-        [:div.col-sm-7
-         [activity-input (select-keys chans [:request :activity :error])]]
-        [:div.col-sm-3 [submit-button]]]
-       [error-alert (chans :error)]])))
+  [:form.form-horizontal {:on-submit submit}
+   [:div.form-group
+    [:label.col-sm-4.control-label "New Activity"]
+    [:div.col-sm-4 [activity-input]]
+    [:div.col-sm-4 [submit-button]]]
+   [error-alert]])
 
