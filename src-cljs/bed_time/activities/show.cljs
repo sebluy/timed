@@ -2,7 +2,9 @@
   (:require [bed-time.sessions.sessions :as session]
             [bed-time.sessions.form :as form]
             [bed-time.util :as util]
-            [bed-time.state :as state]))
+            [bed-time.state :as state]
+            [re-frame.core :as re-frame])
+  (:require-macros [reagent.ratom :as reaction]))
 
 (defn delete-button [activity session]
   [:input.btn.btn-sm.btn-danger
@@ -29,7 +31,7 @@
    [:td (if (session/valid? session)
           (.toLocaleString finish))]
    [:td (if (session/valid? session)
-          (util/hours-str (session/time-spent session) 2))]
+          (util/hours-str (session/time-spent session)))]
    [:td (edit-session-button session)]
    [:td (delete-button activity session)]])
 
@@ -41,11 +43,17 @@
     (for [session sessions]
       (show-session activity session))]])
 
+(re-frame/register-sub
+  :activity
+  (fn [db [_ activity]]
+    (reaction/reaction (get-in @db [:activities activity]))))
+
 (defn page [params]
-  (let [activity-name (params :activity)]
+  (let [activity (params :activity)
+        sessions (re-frame/subscribe [:activity activity])]
     (fn []
       [:div.col-md-8.col-md-offset-2
-       [:div.page-header [:h1 activity-name (new-session-button)]]
-       (if (@state/state :update-form)
-         [form/update-form activity-name])
-       [session-list activity-name (get @state/activities activity-name)]])))
+       [:div.page-header [:h1 activity (new-session-button)]]
+;       (if (@state/state :update-form)
+;         [form/update-form activity])
+       [session-list activity @sessions]])))

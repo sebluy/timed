@@ -24,6 +24,7 @@
                  [org.clojure/clojurescript "0.0-3211" :scope "provided"]
                  [org.clojure/tools.reader "0.9.2"]
                  [reagent "0.5.0"]
+                 [re-frame "0.4.1"]
                  [cljsjs/react "0.13.1-0"]
                  [reagent-forms "0.5.0"]
                  [reagent-utils "0.1.4"]
@@ -75,6 +76,7 @@
               {:app
                {:source-paths ["env/prod/cljs"]
                 :compiler {:optimizations :advanced
+                           :elide-asserts :true
                            :pretty-print false}}}}
              :aot :all}
 

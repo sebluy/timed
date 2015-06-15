@@ -3,43 +3,53 @@
             [bed-time.state :as state]
             [bed-time.activities.form :as form]
             [bed-time.sessions.sessions :as sessions]
-            [bed-time.activities.activities :as activities]))
+            [bed-time.activities.activities :as activities]
+            [re-frame.core :as re-frame])
+  (:require-macros [reagent.ratom :as reaction]))
+
 
 (defn delete-button [activity]
   [:input.btn.btn-sm.btn-danger.pull-right
    {:type     "button"
     :value    "Delete!"
-    :on-click #(core/delete activity)}])
+    :on-click #(re-frame/dispatch [:post-delete-activity activity])}])
 
-(defn session-action-button [activity]
+#_(defn session-action-button [activity]
   (let [current-session @state/current-session]
     (cond (nil? current-session)
           (sessions/start-session-button activity)
           (= activity (current-session :activity))
           (sessions/end-session-button))))
 
+(re-frame/register-sub
+  :activities
+  (fn [db _]
+    (reaction/reaction (@db :activities))))
+
 (defn show-day [activity]
   ^{:key activity}
   [:tr
    [:td [:a {:href (str "/#activities/" activity)} activity]]
-   [:td (activities/weekly-time-spent activity)]
-   [:td (session-action-button activity)]
+;   [:td (activities/weekly-time-spent activity)]
+;   [:td (session-action-button activity)]
    [:td (delete-button activity)]])
 
 (defn activities-list []
-  [:table.table
-   [:thead
-    [:tr [:td "Activity"] [:td "Weekly Time Spent"]]]
-   [:tbody
-    (doall
-      (for [activity (keys @state/activities)]
-        (show-day activity)))]])
+  (let [activities (re-frame/subscribe [:activities])]
+    (fn []
+      [:table.table
+       [:thead
+        [:tr [:td "Activity"]]]; [:td "Weekly Time Spent"]]]
+       [:tbody
+        (doall
+          (for [activity (keys @activities)]
+            (show-day activity)))]])))
 
 (defn page []
   [:div.col-md-6.col-md-offset-3
    [:div.page-header
     [:h1 "Activities"]]
-   (if (nil? @state/current-session)
-     [form/form])
+;   (if (nil? @state/current-session)
+;     [form/form])
    [activities-list]])
 

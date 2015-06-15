@@ -8,7 +8,8 @@
             [bidi.bidi :as bidi]
             [goog.events :as events]
             [goog.dom :as dom]
-            [goog.history.EventType :as EventType])
+            [goog.history.EventType :as EventType]
+            [re-frame.core :as re-frame])
   (:import goog.History))
 
 (def routes ["/#" {"activities" {"" :activities
@@ -53,5 +54,5 @@
 (defn init! []
   (hook-browser-navigation!)
   (mount-components)
-  (activities/get-activities))
+  (re-frame/dispatch [:get-activities]))
 
