@@ -1,9 +1,10 @@
 (ns bed-time.core
-  (:require [bed-time.state :as state]
-            [bed-time.navbar :as navbar]
-            [bed-time.activities.activities :as activities]
-            [bed-time.activities.list :as activities-list]
-            [bed-time.activities.show :as activities-show]
+  (:require [bed-time.navbar :as navbar]
+            [bed-time.activities.subs :as activity-subs]
+            [bed-time.activities.handlers :as activity-handlers]
+            [bed-time.activities.list :as activity-list]
+            [bed-time.sessions.list :as session-list]
+            [bed-time.sessions.handlers :as session-handlers]
             [reagent.core :as reagent]
             [bidi.bidi :as bidi]
             [goog.events :as events]
@@ -16,8 +17,8 @@
 (def routes ["/#" {"activities" {"" :activities
                                  ["/" :activity] :activity}}])
 
-(def pages {:activities activities-list/page
-            :activity activities-show/page})
+(def pages {:activities activity-list/page
+            :activity session-list/page})
 
 (defn route->page [route]
   (bidi/match-route routes route))
@@ -40,7 +41,8 @@
 
 (defn current-page []
   (let [page (re-frame/subscribe [:page])]
-    (pages (:handler @page))))
+    (fn []
+      (pages (:handler @page)))))
 
 (defn hook-browser-navigation! []
   (let [history (History.)
@@ -57,12 +59,19 @@
           (set-page! (.-token event))))
       (.setEnabled true))))
 
+(defn screen []
+  [:div
+   [navbar/navbar]
+   [current-page]])
+
 (defn mount-components []
-  (reagent/render-component [navbar/navbar] (dom/getElement "navbar"))
-  (reagent/render-component [current-page] (dom/getElement "app")))
+  (reagent/render-component [screen] (dom/getElement "app")))
 
 (defn init! []
   (hook-browser-navigation!)
+  (session-handlers/register)
+  (activity-handlers/register)
+  (activity-subs/register)
   (mount-components)
   (re-frame/dispatch [:get-activities]))
 

@@ -1,30 +1,29 @@
-(ns bed-time.activities.show
+(ns bed-time.sessions.list
   (:require [bed-time.sessions.sessions :as session]
             [bed-time.sessions.form :as form]
             [bed-time.util :as util]
-            [bed-time.state :as state]
             [re-frame.core :as re-frame])
   (:require-macros [reagent.ratom :as reaction]))
 
-(defn delete-button [activity session]
+#_(defn delete-button [activity session]
   [:input.btn.btn-sm.btn-danger
    {:type     "button"
     :value    "Delete!"
     :on-click #(session/delete activity session)}])
 
-(defn edit-session-button [session]
+#_(defn edit-session-button [session]
   [:input.btn.btn-sm.btn-warning
    {:type     "button"
     :value    "Edit!"
     :on-click #(form/inject-session session)}])
 
-(defn new-session-button []
+#_(defn new-session-button []
   [:input.btn.btn-large.btn-primary.pull-right
    {:type     "button"
     :value    "New Day!"
     :on-click form/new-session}])
 
-(defn show-session [activity [start finish :as session]]
+#_(defn show-session [activity [start finish :as session]]
   ^{:key (.getTime start)}
   [:tr
    [:td (.toLocaleString start)]
@@ -35,7 +34,7 @@
    [:td (edit-session-button session)]
    [:td (delete-button activity session)]])
 
-(defn session-list [activity sessions]
+#_(defn session-list [activity sessions]
   [:table.table
    [:thead
     [:tr [:td "Start"] [:td "Finish"] [:td "Time Spent (Hours)"]]]
@@ -43,12 +42,11 @@
     (for [session sessions]
       (show-session activity session))]])
 
-(re-frame/register-sub
-  :activity
-  (fn [db [_ activity]]
-    (reaction/reaction (get-in @db [:activities activity]))))
 
-(defn page [params]
+
+(defn page [params])
+
+#_(defn page [params]
   (let [activity (params :activity)
         sessions (re-frame/subscribe [:activity activity])]
     (fn []

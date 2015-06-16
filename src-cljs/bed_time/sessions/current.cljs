@@ -1,6 +1,4 @@
-(ns bed-time.sessions.current
-  (:require [bed-time.state :as state]
-            [ajax.core :as ajax]))
+(ns bed-time.sessions.current)
 
 ;; Look at using async channels to watch activity change events
 ;; and update current accordingly
@@ -22,9 +20,7 @@
           () activities))
 
 (defn extract-current [activities]
-  (println activities)
   (let [unfinished (unfinished-activities activities)]
-    (if (> (count unfinished) 1)
-      (println "More than one unfinished session: " unfinished)
-      (reset! state/current-session (first unfinished)))))
+    (assert (not (> (count unfinished) 1)))
+    (first unfinished)))
 

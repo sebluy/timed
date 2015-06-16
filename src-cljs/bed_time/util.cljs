@@ -1,6 +1,5 @@
 (ns bed-time.util)
 
-
 (defn get-event-value [event]
   (-> event .-target .-value))
 
