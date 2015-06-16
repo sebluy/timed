@@ -38,7 +38,10 @@
 (re-frame/register-handler
   :recieve-activities
   (fn [db [_ incoming-activities]]
-    (merge db {:activities (coerce-activities-to-sorted incoming-activities)})))
+    (let [activities (coerce-activities-to-sorted incoming-activities)
+          current-session (current-session/extract-current activities)]
+      (merge db {:activities activities :current-session current-session}))))
+
 
 (re-frame/register-handler
   :get-activities
@@ -47,14 +50,6 @@
               {:handler         #(re-frame/dispatch [:recieve-activities %])
                :response-format :edn})
     db))
-
-#_(defn get-activities []
-  (let [handler (fn [incoming-activities]
-                  (reset! state/activities
-                          (coerce-activities-to-sorted incoming-activities))
-                  (current-session/extract-current))]
-    (ajax/GET "/activities" {:handler         handler
-                             :response-format :edn})))
 
 #_(defn weekly-time-spent [activity]
   (let [sessions (@state/activities activity)

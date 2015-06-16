@@ -11,6 +11,4 @@
 
 (defqueries "sql/queries.sql" {:connection db-spec})
 
-(get-sessions {:activity "Sleeping"})
-
 

@@ -10,6 +10,7 @@
             [goog.dom :as dom]
             [goog.history.EventType :as EventType]
             [re-frame.core :as re-frame])
+  (:require-macros [reagent.ratom :as reaction])
   (:import goog.History))
 
 (def routes ["/#" {"activities" {"" :activities
@@ -19,18 +20,27 @@
             :activity activities-show/page})
 
 (defn route->page [route]
-  (let [match (bidi/match-route routes route)
-        params (match :route-params)
-        page (pages (match :handler))]
-    (if params
-      (page params)
-      page)))
+  (bidi/match-route routes route))
 
-(defn set-page! [token]
-  (swap! state/state assoc :page (route->page (str "/#" token))))
+(re-frame/register-sub
+  :page
+  (fn [db _]
+    (reaction/reaction (@db :page))))
+
+(re-frame/register-handler
+  :set-page
+  (fn [db [_ page]]
+    (merge db
+           {:page page}
+           (if (= (page :handler) :activities)
+             {:activity-form {:error nil :field nil}}))))
+
+(defn set-page! [route]
+  (re-frame/dispatch [:set-page (route->page (str "/#" route))]))
 
 (defn current-page []
-  [(@state/state :page)])
+  (let [page (re-frame/subscribe [:page])]
+    (pages (:handler @page))))
 
 (defn hook-browser-navigation! []
   (let [history (History.)

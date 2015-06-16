@@ -4,7 +4,8 @@
             [bed-time.activities.form :as form]
             [bed-time.sessions.sessions :as sessions]
             [bed-time.activities.activities :as activities]
-            [re-frame.core :as re-frame])
+            [re-frame.core :as re-frame]
+            [bed-time.sessions.current :as current])
   (:require-macros [reagent.ratom :as reaction]))
 
 
@@ -26,6 +27,12 @@
   (fn [db _]
     (reaction/reaction (@db :activities))))
 
+(re-frame/register-sub
+  :current-session
+  (fn [db _]
+    (let [activities (reaction/reaction (@db :activities))]
+      (reaction/reaction (current/extract-current @activities)))))
+
 (defn show-day [activity]
   ^{:key activity}
   [:tr
@@ -46,10 +53,12 @@
             (show-day activity)))]])))
 
 (defn page []
-  [:div.col-md-6.col-md-offset-3
-   [:div.page-header
-    [:h1 "Activities"]]
-;   (if (nil? @state/current-session)
-;     [form/form])
-   [activities-list]])
+  (let [current-session (re-frame/subscribe [:current-session])]
+    (fn []
+      [:div.col-md-6.col-md-offset-3
+       [:div.page-header
+        [:h1 "Activities"]]
+       (if (nil? @current-session)
+         [form/form])
+       [activities-list]])))
 
