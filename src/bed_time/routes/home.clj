@@ -30,25 +30,13 @@
   (let [db-session {:activity activity
                     :start    (sql-datetime start)
                     :finish   (sql-datetime finish)}]
+    (println db-session)
     (if new
       (db/add-session! db-session)
       (db/update-session! db-session))
     (response nil)))
 
-(defn get-days []
-  (response
-    {:days (into {} (map #(into {} (list [(% :start) (% :finish)]))
-                         (db/get-sessions {:activity "Sleeping"})))}))
-
-(defn update-day [{:keys [bed-time wake-up-time new]}]
-  (let [db-day {:start  (sql-datetime bed-time)
-                :finish (sql-datetime wake-up-time)}]
-    (if new
-      (db/add-session! (merge {:activity "Sleeping"} db-day))
-      (db/update-session! db-day))
-    (response nil)))
-
-(defn delete-session [[start _]]
+(defn delete-session [{:keys [start]}]
   (db/delete-session! {:start (sql-datetime start)})
   (response nil))
 
@@ -57,7 +45,5 @@
            (POST "/delete-activity" [activity] (delete-activity activity))
            (GET "/activities" [] (get-activities))
            (GET "/" [] (home-page))
-           (GET "/days" [] (get-days))
-           (POST "/update-day" [day] (update-day day))
            (POST "/delete-session" [session] (delete-session session)))
 

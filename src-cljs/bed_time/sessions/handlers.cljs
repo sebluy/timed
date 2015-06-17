@@ -2,9 +2,12 @@
   (:require [ajax.core :refer [POST]]
             [re-frame.core :refer [register-handler dispatch]]))
 
+(defn- date-to-field [date]
+  {:value date :string (some-> date .toLocaleString) :error nil})
+
 (defn register []
   (register-handler
-    :recieve-update-session
+    :receive-update-session
     (fn [db [_ {:keys [activity start finish]}]]
       (assoc-in db [:activities activity start] finish)))
 
@@ -13,7 +16,7 @@
     (fn [db [_ session]]
       (POST "/update-session"
             {:params          {:session session}
-             :handler         #(dispatch [:update-session session])
+             :handler         #(dispatch [:receive-update-session session])
              :format          :edn
              :response-format :edn})
       db))
@@ -42,23 +45,34 @@
 
   (register-handler
     :delete-session
-    (fn [db [_ {:keys [activity start]}]]
-      (if (= (count (get-in db [:activities activity])) 1)
-        (update-in db [:activities] #(dissoc activity))
-        (update-in db [:activities activity] #(dissoc start)))))
+    (fn [db [_ session]]
+      (dispatch [:post-delete-session session])
+      db))
 
   (register-handler
     :receive-delete-session
-    (fn [db [_ session]]
-      (dispatch [:delete-session session])
-      db))
+    (fn [db [_ {:keys [activity start]}]]
+      (if (= (count (get-in db [:activities activity])) 1)
+        (update-in db [:activities] #(dissoc % activity))
+        (update-in db [:activities activity] #(dissoc % start)))))
 
   (register-handler
     :post-delete-session
     (fn [db [_ session]]
       (POST "/delete-session"
             {:params         {:session session}
-             :handler        #(dispatch [:recieve-delete-session session])
+             :handler        #(dispatch [:receive-delete-session session])
              :format         :edn
              :reponse-format :edn})
-      db)))
+      db))
+
+  (register-handler
+    :edit-session
+    (fn [db [_ {:keys [activity start finish new] :as session}]]
+      (assoc db :edit-session-form
+                (merge {:fields {:start  (date-to-field start)
+                                 :finish (date-to-field finish)}}
+                       (if new
+                         {:new true :activity activity}
+                         {:new false :old-session session}))))))
+

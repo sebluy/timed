@@ -5,6 +5,7 @@
             [bed-time.activities.list :as activity-list]
             [bed-time.sessions.list :as session-list]
             [bed-time.sessions.handlers :as session-handlers]
+            [bed-time.sessions.subs :as session-subs]
             [reagent.core :as reagent]
             [bidi.bidi :as bidi]
             [goog.events :as events]
@@ -14,11 +15,11 @@
   (:require-macros [reagent.ratom :as reaction])
   (:import goog.History))
 
-(def routes ["/#" {"activities" {"" :activities
+(def routes ["/#" {"activities" {""              :activities
                                  ["/" :activity] :activity}}])
 
 (def pages {:activities activity-list/page
-            :activity session-list/page})
+            :activity   session-list/page})
 
 (defn route->page [route]
   (bidi/match-route routes route))
@@ -42,7 +43,7 @@
 (defn current-page []
   (let [page (re-frame/subscribe [:page])]
     (fn []
-      (pages (:handler @page)))))
+      [(or (pages (:handler @page)) :div)])))
 
 (defn hook-browser-navigation! []
   (let [history (History.)
@@ -70,6 +71,7 @@
 (defn init! []
   (hook-browser-navigation!)
   (session-handlers/register)
+  (session-subs/register)
   (activity-handlers/register)
   (activity-subs/register)
   (mount-components)
