@@ -1,7 +1,9 @@
 (ns bed-time.sessions.handlers
   (:require [ajax.core :refer [POST]]
+            [cljs.core.async :refer [close! chan <!]]
             [re-frame.core :refer [register-handler dispatch]]
-            [bed-time.util :as util]))
+            [bed-time.util :as util])
+  (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn register []
   (register-handler
@@ -65,15 +67,35 @@
       db))
 
   (register-handler
+    :recieve-swap-session
+    (fn [db [_ new-session old-session]]
+      (update-in db [:activities (new-session :activity)]
+                 #(merge (dissoc % (old-session :start))
+                         {(new-session :start) (new-session :finish)}))))
+
+  (register-handler
+    :swap-session
+    (fn [db [_ new-session old-session]]
+      (POST "/swap-session"
+            {:params         {:old-session old-session
+                              :new-session new-session}
+             :handler        #(dispatch
+                               [:recieve-swap-session new-session old-session])
+             :format         :edn
+             :reponse-format :edn})
+      db))
+
+  (register-handler
     :edit-session
     (fn [db [_ {:keys [activity start finish new] :as session}]]
       (assoc db :edit-session-form
                 (merge {:activity activity
-                        :fields {:start  (util/date->str start)
-                                 :finish (util/date->str finish)}}
+                        :fields   {:start  (util/date->str start)
+                                   :finish (util/date->str finish)}}
                        (if new
                          {:new true}
                          {:new false :old-session session})))))
+
 
   (register-handler
     :change-session-form-field
@@ -83,15 +105,15 @@
   (register-handler
     :submit-session-form
     (fn [db _]
-      (let [{:keys [activity new old-session fields]} (db :edit-session-form)]
-        (if (not new)
-          (dispatch [:delete-session old-session]))
-        (dispatch [:update-session
-                   {:activity activity
-                    :start    (util/str->date (fields :start))
-                    :finish   (util/str->date (fields :finish))
-                    :new      true}]))
-      db))
+      (let [{:keys [activity new old-session fields]} (db :edit-session-form)
+            new-session {:activity activity
+                         :start    (util/str->date (fields :start))
+                         :finish   (util/str->date (fields :finish))
+                         :new      true}]
+        (if new
+          (dispatch [:update-session new-session])
+          (dispatch [:swap-session new-session old-session]))
+        db)))
 
   (register-handler
     :close-session-form

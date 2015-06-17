@@ -13,6 +13,11 @@
 (defn home-page []
   (layout/render "home.html"))
 
+(defn db-session [{:keys [activity start finish]}]
+  {:activity activity
+   :start (sql-datetime start)
+   :finish (sql-datetime finish)})
+
 ; form => {activity {start finish}}
 (defn get-activities []
   (response
@@ -26,14 +31,16 @@
   (db/delete-activity! {:activity activity})
   (response nil))
 
-(defn update-session [{:keys [activity start finish new]}]
-  (let [db-session {:activity activity
-                    :start    (sql-datetime start)
-                    :finish   (sql-datetime finish)}]
-    (println db-session)
-    (if new
-      (db/add-session! db-session)
-      (db/update-session! db-session))
+(defn swap-session [old-session new-session]
+  (db/delete-session! (db-session old-session))
+  (db/add-session! (db-session new-session))
+  (response nil))
+
+(defn update-session [session]
+  (let [db-sess (db-session session)]
+    (if (session :new)
+      (db/add-session! db-sess)
+      (db/update-session! db-sess))
     (response nil)))
 
 (defn delete-session [{:keys [start]}]
@@ -41,6 +48,8 @@
   (response nil))
 
 (defroutes home-routes
+           (POST "/swap-session" [old-session new-session]
+             (swap-session old-session new-session))
            (POST "/update-session" [session] (update-session session))
            (POST "/delete-activity" [activity] (delete-activity activity))
            (GET "/activities" [] (get-activities))

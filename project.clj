@@ -87,10 +87,8 @@
 
          :source-paths ["env/dev/clj"]
          :figwheel {:http-server-root "public"
-                    :server-port 3449
                     :nrepl-port 7888
-                    :css-dirs ["resources/public/css"]
-                    :ring-handler bed-time.handler/app}
+                    :css-dirs ["resources/public/css"]}
 
          :cljsbuild
          {:builds

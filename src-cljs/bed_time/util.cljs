@@ -4,7 +4,7 @@
   (-> event .-target .-value))
 
 (defn str->date [str]
-  (->> str js/Date.))
+  (some->> str js/Date.))
 
 (defn date->str [date]
   (some-> date .toLocaleString))
