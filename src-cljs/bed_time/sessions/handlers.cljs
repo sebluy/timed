@@ -1,9 +1,7 @@
 (ns bed-time.sessions.handlers
   (:require [ajax.core :refer [POST]]
-            [re-frame.core :refer [register-handler dispatch]]))
-
-(defn- date-to-field [date]
-  {:value date :string (some-> date .toLocaleString) :error nil})
+            [re-frame.core :refer [register-handler dispatch]]
+            [bed-time.util :as util]))
 
 (defn register []
   (register-handler
@@ -70,9 +68,35 @@
     :edit-session
     (fn [db [_ {:keys [activity start finish new] :as session}]]
       (assoc db :edit-session-form
-                (merge {:fields {:start  (date-to-field start)
-                                 :finish (date-to-field finish)}}
+                (merge {:activity activity
+                        :fields {:start  (util/date->str start)
+                                 :finish (util/date->str finish)}}
                        (if new
-                         {:new true :activity activity}
-                         {:new false :old-session session}))))))
+                         {:new true}
+                         {:new false :old-session session})))))
+
+  (register-handler
+    :change-session-form-field
+    (fn [db [_ key text]]
+      (assoc-in db [:edit-session-form :fields key] text)))
+
+  (register-handler
+    :submit-session-form
+    (fn [db _]
+      (let [{:keys [activity new old-session fields]} (db :edit-session-form)]
+        (if (not new)
+          (dispatch [:delete-session old-session]))
+        (dispatch [:update-session
+                   {:activity activity
+                    :start    (util/str->date (fields :start))
+                    :finish   (util/str->date (fields :finish))
+                    :new      true}]))
+      db))
+
+  (register-handler
+    :close-session-form
+    (fn [db _]
+      (dissoc db :edit-session-form))))
+
+
 

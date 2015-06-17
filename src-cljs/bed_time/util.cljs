@@ -3,8 +3,11 @@
 (defn get-event-value [event]
   (-> event .-target .-value))
 
-(defn parse-datetime-str [datetime-str]
-  (->> datetime-str (.parse js/Date) js/Date.))
+(defn str->date [str]
+  (->> str js/Date.))
+
+(defn date->str [date]
+  (some-> date .toLocaleString))
 
 (defn date-comparator [day1 day2]
   (> (.getTime day1) (.getTime day2)))
