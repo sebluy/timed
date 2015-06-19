@@ -1,7 +1,10 @@
 (ns bed-time.dev
-  (:require [bed-time.core :as core]))
+  (:require [bed-time.core :as core]
+            [figwheel-sidecar.repl-api :as repl]))
 
-(defn run []
-  (core/-main))
+(core/-main)
+
+(defn browser-repl []
+  (repl/cljs-repl))
 
 

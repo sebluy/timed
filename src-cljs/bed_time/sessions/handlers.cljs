@@ -1,124 +1,98 @@
 (ns bed-time.sessions.handlers
   (:require [ajax.core :refer [POST]]
-            [cljs.core.async :refer [close! chan <!]]
-            [re-frame.core :refer [register-handler dispatch]]
-            [bed-time.util :as util])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+            [re-frame.core :refer [register-handler dispatch path trim-v]]
+            [bed-time.sessions.form.handlers :as form-handlers]))
+
+
+(defn remove-db [handler]
+  (fn [db v]
+    (handler v)
+    db))
+
+(def static-db (comp trim-v remove-db))
 
 (defn register []
+  (form-handlers/register)
+
   (register-handler
     :receive-update-session
-    (fn [db [_ {:keys [activity start finish]}]]
-      (assoc-in db [:activities activity start] finish)))
+    (comp trim-v (path :activities))
+    (fn [activities [{:keys [activity start finish]}]]
+      (assoc-in activities [activity start] finish)))
 
   (register-handler
     :post-update-session
-    (fn [db [_ session]]
+    static-db
+    (fn [[session]]
       (POST "/update-session"
             {:params          {:session session}
              :handler         #(dispatch [:receive-update-session session])
              :format          :edn
-             :response-format :edn})
-      db))
+             :response-format :edn})))
 
   (register-handler
     :update-session
-    (fn [db [_ session]]
-      (dispatch [:post-update-session session])
-      db))
+    static-db
+    (fn [[session]]
+      (dispatch [:post-update-session session])))
 
   (register-handler
     :new-session
-    (fn [db [_ activity]]
+    static-db
+    (fn [[activity]]
       (dispatch
         [:update-session
-         {:activity activity :start (js/Date.) :finish nil :new true}])
-      db))
+         {:activity activity :start (js/Date.) :finish nil :new true}])))
 
   (register-handler
     :end-session
-    (fn [db [_ {:keys [activity start]}]]
+    static-db
+    (fn [[{:keys [activity start]}]]
       (dispatch
         [:update-session
-         {:activity activity :start start :finish (js/Date.) :new false}])
-      db))
+         {:activity activity :start start :finish (js/Date.) :new false}])))
 
   (register-handler
     :delete-session
-    (fn [db [_ session]]
-      (dispatch [:post-delete-session session])
-      db))
+    static-db
+    (fn [[session]]
+      (dispatch [:post-delete-session session])))
 
   (register-handler
     :receive-delete-session
-    (fn [db [_ {:keys [activity start]}]]
-      (if (= (count (get-in db [:activities activity])) 1)
-        (update-in db [:activities] #(dissoc % activity))
-        (update-in db [:activities activity] #(dissoc % start)))))
+    (comp trim-v (path :activities))
+    (fn [activities [{:keys [activity start]}]]
+      (if (= (count (activities activity)) 1)
+        (dissoc activities activity)
+        (update-in activities [activity] #(dissoc % start)))))
 
   (register-handler
     :post-delete-session
-    (fn [db [_ session]]
+    static-db
+    (fn [[session]]
       (POST "/delete-session"
             {:params         {:session session}
              :handler        #(dispatch [:receive-delete-session session])
              :format         :edn
-             :reponse-format :edn})
-      db))
+             :reponse-format :edn})))
 
   (register-handler
     :recieve-swap-session
-    (fn [db [_ new-session old-session]]
-      (update-in db [:activities (new-session :activity)]
+    (comp trim-v (path :activities))
+    (fn [activities [new-session old-session]]
+      (update-in activities [(new-session :activity)]
                  #(merge (dissoc % (old-session :start))
                          {(new-session :start) (new-session :finish)}))))
 
   (register-handler
     :swap-session
-    (fn [db [_ new-session old-session]]
+    static-db
+    (fn [[new-session old-session]]
       (POST "/swap-session"
             {:params         {:old-session old-session
                               :new-session new-session}
              :handler        #(dispatch
                                [:recieve-swap-session new-session old-session])
              :format         :edn
-             :reponse-format :edn})
-      db))
-
-  (register-handler
-    :edit-session
-    (fn [db [_ {:keys [activity start finish new] :as session}]]
-      (assoc db :edit-session-form
-                (merge {:activity activity
-                        :fields   {:start  (util/date->str start)
-                                   :finish (util/date->str finish)}}
-                       (if new
-                         {:new true}
-                         {:new false :old-session session})))))
-
-
-  (register-handler
-    :change-session-form-field
-    (fn [db [_ key text]]
-      (assoc-in db [:edit-session-form :fields key] text)))
-
-  (register-handler
-    :submit-session-form
-    (fn [db _]
-      (let [{:keys [activity new old-session fields]} (db :edit-session-form)
-            new-session {:activity activity
-                         :start    (util/str->date (fields :start))
-                         :finish   (util/str->date (fields :finish))
-                         :new      true}]
-        (if new
-          (dispatch [:update-session new-session])
-          (dispatch [:swap-session new-session old-session]))
-        db)))
-
-  (register-handler
-    :close-session-form
-    (fn [db _]
-      (dissoc db :edit-session-form))))
-
-
+             :reponse-format :edn}))))
 

@@ -4,8 +4,16 @@
 
 (defn sessions-map [] (sorted-map-by util/date-comparator))
 
-(defn valid? [[_ finish]]
-  (not (nil? finish)))
+(defn path->map [db activity start]
+  {:activity activity
+   :start    start
+   :finish   (get-in db [:activities activity start])})
+
+(defn map->vec [session-map]
+  [(session-map :start) (session-map :finish)])
+
+(defn valid? [[start finish]]
+  (not (or (util/datetime-invalid? start) (util/datetime-invalid? finish))))
 
 (defn time-spent [[start finish :as session]]
   (if (valid? session)

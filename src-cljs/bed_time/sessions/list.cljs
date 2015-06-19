@@ -1,6 +1,6 @@
 (ns bed-time.sessions.list
   (:require [bed-time.sessions.sessions :as session]
-            [bed-time.sessions.form :as form]
+            [bed-time.sessions.form.components :as form]
             [bed-time.util :as util]
             [re-frame.core :refer [dispatch subscribe]]))
 
@@ -14,14 +14,14 @@
   [:input.btn.btn-sm.btn-warning
    {:type     "button"
     :value    "Edit!"
-    :on-click #(dispatch [:edit-session session])}])
+    :on-click #(dispatch [:open-session-form session])}])
 
 (defn- new-session-button [activity]
   [:input.btn.btn-large.btn-primary.pull-right
    {:type     "button"
     :value    "New Day!"
     :on-click #(dispatch
-                [:edit-session
+                [:open-session-form
                  {:activity activity :new true}])}])
 
 (defn- show-session [activity [start finish :as session]]
@@ -48,12 +48,12 @@
 
 (defn page []
   (let [page (subscribe [:page])
-        edit-session-form (subscribe [:edit-session-form])]
+        session-form (subscribe [:session-form])]
     (fn []
       (let [activity (get-in @page [:route-params :activity])]
         [:div.col-md-8.col-md-offset-2
          [:div.page-header [:h1 activity (new-session-button activity)]]
-         (if @edit-session-form
-           [form/edit-form edit-session-form])
+         (if @session-form
+           [form/edit-form session-form])
          [session-list activity]]))))
 

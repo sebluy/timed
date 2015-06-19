@@ -1,4 +1,4 @@
-(ns bed-time.sessions.form
+(ns bed-time.sessions.form.components
   (:require [re-frame.core :refer [dispatch dispatch-sync]]
             [bed-time.util :as util])
   (:require-macros [reagent.ratom :refer [reaction]]))
