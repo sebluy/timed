@@ -1,6 +1,6 @@
 (ns bed-time.activities.form.components
   (:require [bed-time.util :as util]
-            [re-frame.core :refer [subscribe dispatch]]))
+            [re-frame.core :refer [subscribe dispatch-sync dispatch]]))
 
 (defn- activity-input []
   (let [activity-field (subscribe [:activity-form-field])]
@@ -8,7 +8,7 @@
              :class       "form-control"
              :placeholder "Activity name"
              :value       @activity-field
-             :on-change   #(dispatch
+             :on-change   #(dispatch-sync
                             [:update-activity-form
                              (util/get-event-value %)])}]))
 

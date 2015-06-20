@@ -15,11 +15,19 @@
 (defn datetime-invalid? [datetime]
   (or (nil? datetime) (js/isNaN (.getTime datetime))))
 
-(defn hours [millis]
-  (/ millis 3600000))
+(defn days [n]
+  (* n 24 60 60 1000))
 
-(defn hours-str [millis]
-  (.toFixed (hours millis) 2))
+(defn time-str [millis]
+  (if (>= millis (days 1))
+    (-> millis
+        (/ (days 1))
+        (.toFixed 2)
+        (str " days"))
+    (-> millis
+        (js/Date.)
+        (.toUTCString)
+        (subs 17 25))))
 
 (defn time-of-day [datetime]
   [(.getHours datetime)

@@ -32,7 +32,7 @@
      [:td (if (session/valid? session)
             (.toLocaleString finish))]
      [:td (if (session/valid? session)
-            (util/hours-str (session/time-spent session)))]
+            (util/time-str (session/time-spent session)))]
      [:td (edit-session-button session-map)]
      [:td (delete-button session-map)]]))
 
@@ -41,7 +41,7 @@
     (fn []
       [:table.table
        [:thead
-        [:tr [:td "Start"] [:td "Finish"] [:td "Time Spent (Hours)"]]]
+        [:tr [:td "Start"] [:td "Finish"] [:td "Time Spent"]]]
        [:tbody
         (for [session @sessions]
           (show-session activity session))]])))
