@@ -25,15 +25,8 @@
             (+ total (sessions/time-spent session)))
           0 sessions))
 
-(defn weekly-time-spent [sessions]
-  (total-time-spent (weekly-sessions sessions)))
-
-(defn daily-time-spent [sessions]
-  (total-time-spent (daily-sessions sessions)))
-
 (defn build-week [sessions]
   (reduce (fn [week [start _ :as session]]
-            (println week start session)
             (let [date (util/midnight start)
                   day (week date)
                   time-spent (sessions/time-spent session)]
@@ -55,13 +48,17 @@
                                :today  today}))))
           {:total {:weekly 0 :today 0}} activities))
 
+(defn add-week-total [aggregates]
+  (assoc-in aggregates [:total :week]
+            (reduce (fn [week-total [_ activity-aggregates]]
+                      (merge-with + (activity-aggregates :week) week-total))
+                    {} (dissoc aggregates :total))))
+
 (defn add-hours [date n]
   (js/Date. (+ (.getTime date) (* n 60 60 1000))))
 
 (defn hours-from-now [n]
   (add-hours (js/Date.) n))
-
-(build-aggregates {"Sleeping" {(js/Date.) (hours-from-now 2)}})
 
 (defn error [activity]
   (if (string/blank? activity)

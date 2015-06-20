@@ -30,43 +30,56 @@
   ^{:key name}
   [:tr
    [:td [:a {:href (str "/#activities/" name)} name]]
+   [:td [session-action-button name]]
    (for [day (week)]
-     [:td (util/time-str (get-in aggregates [:week day]))])
+     ^{:key day}
+     [:td (util/time-str (get-in aggregates [:week day]))])])
 ;   [:td (util/time-str (aggregates :weekly))]
 ;   [:td (util/time-str (aggregates :today))]
-   [:td [session-action-button name]]
-   [:td (delete-button name)]])
 
 (defn day-of-week-str [day-pos]
   (["Sunday" "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday"]
     day-pos))
 
-(defn- activities-list []
+(defn- table-head []
+  [:thead
+   [:tr
+    [:td "Activity"]
+    [:td] ; button column
+    (for [day (week)]
+      ^{:key day}
+      [:td (day-of-week-str (.getDay day))])
+;         [:td "Weekly Time Spent"]
+;         [:td "Time Spent Today"]
+    ]])
+
+(defn- table-foot [aggregates]
+  [:tfoot
+   [:tr
+    [:td "Unaccounted"]
+    [:td] ; button column
+    (for [day (week)]
+      ^{:key day}
+      [:td (util/time-str (- (* 24 60 60 1000)
+                             (get-in @aggregates [:total :week day])))])]])
+;    [:td (util/time-str (- (* 7 24 60 60 1000)
+;                           (get-in @aggregates [:total :weekly])))]
+;    [:td (util/time-str (- (* 24 60 60 1000)
+;                           (get-in @aggregates [:total :today])))]
+
+(defn- activities-table []
   (let [activities (subscribe [:activities])
-        aggregates (reaction (activities/build-aggregates @activities))]
+        aggregates (reaction (activities/add-week-total
+                               (activities/build-aggregates @activities)))]
     (fn []
       (println @aggregates)
       [:table.table
-       [:thead
-        [:tr
-         [:td "Activity"]
-         (for [day (week)]
-           [:td (day-of-week-str (.getDay day))])
-;         [:td "Weekly Time Spent"]
-;         [:td "Time Spent Today"]
-         [:td] [:td]]]
+       [table-head]
        [:tbody
         (doall
           (for [activity-name (keys @activities)]
             (show-day activity-name (@aggregates activity-name))))]
-       [:tfoot
-        [:tr
-         [:td "Unaccounted"]
-         [:td (util/time-str (- (* 7 24 60 60 1000)
-                                (get-in @aggregates [:total :weekly])))]
-         [:td (util/time-str (- (* 24 60 60 1000)
-                                (get-in @aggregates [:total :today])))]
-         [:td] [:td]]]])))
+       [table-foot aggregates]])))
 
 (defn page []
   (let [current-session (subscribe [:current-session])]
@@ -76,5 +89,5 @@
         [:h1 "Activities"]]
        (if (nil? @current-session)
          [form/form])
-       [activities-list]])))
+       [activities-table]])))
 
