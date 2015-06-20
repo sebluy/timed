@@ -15,13 +15,15 @@
 (defn datetime-invalid? [datetime]
   (or (nil? datetime) (js/isNaN (.getTime datetime))))
 
-(defn days [n]
-  (* n 24 60 60 1000))
+(defonce ms-per-day (* 24 60 60 1000))
+
+(defn days->ms [n]
+  (* n ms-per-day))
 
 (defn time-str [millis]
-  (if (>= millis (days 1))
+  (if (>= millis (days->ms 1))
     (-> millis
-        (/ (days 1))
+        (/ (days->ms 1))
         (.toFixed 2)
         (str " days"))
     (-> millis
@@ -36,8 +38,23 @@
    (.getMilliseconds datetime)])
 
 (defn midnight [datetime]
-  (doto (js/Date. (.getTime datetime)) ; copy because js dates arent immutable
+  (doto (js/Date. (.getTime datetime)) ; copy because js dates aren't immutable
     (.setHours 0)
     (.setMinutes 0)
     (.setSeconds 0)
     (.setMilliseconds 0)))
+
+(defn day-of-week-str [date]
+  (["Sunday" "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday"]
+    (.getDay date)))
+
+(defn today []
+  (midnight (js/Date.)))
+
+(defn n-days-ago [n]
+  (js/Date. (- (.getTime (today))
+               (days->ms n))))
+
+(defn last-weeks-days []
+  (for [n (reverse (range 7))]
+    (n-days-ago n)))

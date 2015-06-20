@@ -4,11 +4,23 @@
             [bed-time.util :as util]
             [re-frame.core :refer [dispatch subscribe]]))
 
-(defn- delete-button [session]
-  [:input.btn.btn-sm.btn-danger
+(defn- delete-activity-button [activity]
+  [:input.btn.btn-danger
    {:type     "button"
     :value    "Delete!"
-    :on-click #(dispatch [:delete-session session])}])
+    :on-click #(dispatch [:post-delete-activity activity])}])
+
+(defn- start-session-button [activity]
+  [:input.btn.btn-success
+   {:type     "button"
+    :value    "Start"
+    :on-click #(dispatch [:start-session activity])}])
+
+(defn- new-session-form-button [activity]
+  [:input.btn.btn-primary
+   {:type     "button"
+    :value    "New Session Form"
+    :on-click #(dispatch [:open-session-form {:activity activity :new true}])}])
 
 (defn- edit-session-button [session]
   [:input.btn.btn-sm.btn-warning
@@ -16,13 +28,11 @@
     :value    "Edit!"
     :on-click #(dispatch [:open-session-form session])}])
 
-(defn- new-session-button [activity]
-  [:input.btn.btn-large.btn-primary.pull-right
+(defn- delete-button [session]
+  [:input.btn.btn-sm.btn-danger
    {:type     "button"
-    :value    "New Day!"
-    :on-click #(dispatch
-                [:open-session-form
-                 {:activity activity :new true}])}])
+    :value    "Delete!"
+    :on-click #(dispatch [:delete-session session])}])
 
 (defn- show-session [activity [start finish :as session]]
   (let [session-map {:activity activity :start start :finish finish}]
@@ -46,13 +56,21 @@
         (for [session @sessions]
           (show-session activity session))]])))
 
+(defn- page-header [activity]
+  [:div.page-header
+   [:h1 activity
+    [:p.pull-right.btn-toolbar
+     [start-session-button activity]
+     [new-session-form-button activity]
+     [delete-activity-button activity]]]])
+
 (defn page []
   (let [page (subscribe [:page])
         session-form (subscribe [:session-form])]
     (fn []
       (let [activity (get-in @page [:route-params :activity])]
         [:div.col-md-8.col-md-offset-2
-         [:div.page-header [:h1 activity (new-session-button activity)]]
+         [page-header activity]
          (if @session-form
            [form/edit-form session-form])
          [session-list activity]]))))

@@ -37,7 +37,7 @@
       (dispatch [:post-update-session session])))
 
   (register-handler
-    :new-session
+    :start-session
     static-db
     (fn [[activity]]
       (dispatch
@@ -45,7 +45,7 @@
          {:activity activity :start (js/Date.) :finish nil :new true}])))
 
   (register-handler
-    :end-session
+    :finish-session
     static-db
     (fn [[{:keys [activity start]}]]
       (dispatch

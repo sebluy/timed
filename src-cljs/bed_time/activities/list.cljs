@@ -1,85 +1,85 @@
 (ns bed-time.activities.list
   (:require [bed-time.activities.form.components :as form]
             [re-frame.core :refer [subscribe dispatch]]
-            [bed-time.sessions.sessions :as sessions]
             [bed-time.activities.activities :as activities]
             [bed-time.util :as util])
   (:require-macros [reagent.ratom :refer [reaction]]))
 
-(defn- delete-button [activity]
-  [:input.btn.btn-sm.btn-danger.pull-right
+(defn end-session-button [session]
+  [:input.btn.btn-sm.btn-danger
    {:type     "button"
-    :value    "Delete!"
-    :on-click #(dispatch [:post-delete-activity activity])}])
+    :value    "Finish"
+    :on-click #(dispatch [:finish-session session])}])
+
+(defn start-session-button [activity]
+  [:input.btn.btn-sm.btn-success
+   {:type     "button"
+    :value    "Start"
+    :on-click #(dispatch [:start-session activity])}])
 
 (defn session-action-button [activity]
   (let [current-session (subscribe [:current-session])]
     (fn []
       (cond (nil? @current-session)
-            (sessions/start-session-button activity)
+            (start-session-button activity)
             (= activity (@current-session :activity))
-            (sessions/end-session-button @current-session)))))
+            (end-session-button @current-session)))))
 
-(defn week []
-  (let [today (util/midnight (js/Date.))
-        days-ago #(js/Date. (- (.getTime today) (util/days %)))]
-    (for [n (reverse (range 7))]
-      (days-ago n))))
-
-(defn- show-day [name aggregates]
+(defn- show-day [name aggregates last-weeks-days]
   ^{:key name}
   [:tr
    [:td [:a {:href (str "/#activities/" name)} name]]
    [:td [session-action-button name]]
-   (for [day (week)]
+   (for [day last-weeks-days]
      ^{:key day}
      [:td (util/time-str (get-in aggregates [:week day]))])])
-;   [:td (util/time-str (aggregates :weekly))]
-;   [:td (util/time-str (aggregates :today))]
 
-(defn day-of-week-str [day-pos]
-  (["Sunday" "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday"]
-    day-pos))
-
-(defn- table-head []
+(defn- table-head [last-weeks-days]
   [:thead
    [:tr
     [:td "Activity"]
-    [:td] ; button column
-    (for [day (week)]
+    [:td]
+    (for [day last-weeks-days]
       ^{:key day}
-      [:td (day-of-week-str (.getDay day))])
-;         [:td "Weekly Time Spent"]
-;         [:td "Time Spent Today"]
-    ]])
+      [:td (util/day-of-week-str day)])]])
 
-(defn- table-foot [aggregates]
-  [:tfoot
-   [:tr
-    [:td "Unaccounted"]
-    [:td] ; button column
-    (for [day (week)]
-      ^{:key day}
-      [:td (util/time-str (- (* 24 60 60 1000)
-                             (get-in @aggregates [:total :week day])))])]])
-;    [:td (util/time-str (- (* 7 24 60 60 1000)
-;                           (get-in @aggregates [:total :weekly])))]
-;    [:td (util/time-str (- (* 24 60 60 1000)
-;                           (get-in @aggregates [:total :today])))]
+(defn- totals-row [week-totals last-weeks-days]
+  [:tr
+   [:td "Total"]
+   [:td]
+   (doall
+     (for [day last-weeks-days]
+       ^{:key day}
+       [:td (util/time-str (week-totals day))]))])
+
+(defn- unaccounted-row [week-totals last-weeks-days]
+  [:tr
+   [:td "Unaccounted"]
+   [:td]
+   (doall
+     (for [day last-weeks-days]
+       ^{:key day}
+       [:td (util/time-str (- (util/days->ms 1) (week-totals day)))]))])
+
+(defn- table-foot [aggregates last-weeks-days]
+  (let [week-totals (get-in @aggregates [:total :week])]
+    [:tfoot
+     (totals-row week-totals last-weeks-days)
+     (unaccounted-row week-totals last-weeks-days)]))
 
 (defn- activities-table []
   (let [activities (subscribe [:activities])
+        last-weeks-days (util/last-weeks-days)
         aggregates (reaction (activities/add-week-total
                                (activities/build-aggregates @activities)))]
     (fn []
-      (println @aggregates)
       [:table.table
-       [table-head]
+       [table-head last-weeks-days]
        [:tbody
         (doall
           (for [activity-name (keys @activities)]
-            (show-day activity-name (@aggregates activity-name))))]
-       [table-foot aggregates]])))
+            (show-day activity-name (@aggregates activity-name) last-weeks-days)))]
+       [table-foot aggregates last-weeks-days]])))
 
 (defn page []
   (let [current-session (subscribe [:current-session])]

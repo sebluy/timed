@@ -36,9 +36,10 @@
       [:form {:on-submit submit}
        [form-group :start start-text "Start: "]
        [form-group :finish finish-text "Finish: "]
-       [:button.btn.btn-primary {:type "submit"} "Update"]
-       [:button.btn.btn-danger
-        {:type     "button"
-         :on-click #(dispatch [:close-session-form])}
-        "Cancel"]])))
+       [:div.btn-toolbar
+        [:button.btn.btn-primary {:type "submit"} "Update"]
+        [:button.btn.btn-danger
+         {:type     "button"
+          :on-click #(dispatch [:close-session-form])}
+         "Cancel"]]])))
 

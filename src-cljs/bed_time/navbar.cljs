@@ -1,13 +1,19 @@
 (ns bed-time.navbar
   (:require [bed-time.sessions.sessions :as sessions]
-            [re-frame.core :as re-frame]))
+            [re-frame.core :refer [dispatch subscribe]]))
+
+(defn finish-session-button [session]
+  [:input.btn.btn-sm.btn-danger.navbar-btn
+   {:type     "button"
+    :value    (str "Finish " (session :activity) " Session")
+    :on-click #(dispatch [:finish-session session])}])
 
 (defn current-session-nav []
-  (let [current-session (re-frame/subscribe [:current-session])]
+  (let [current-session (subscribe [:current-session])]
     (fn []
       (if @current-session
         [:ul.nav.navbar-nav.navbar-right
-         [:li (sessions/end-session-button @current-session "navbar-btn")]]))))
+         [:li (finish-session-button @current-session)]]))))
 
 (defn navbar []
   [:div.navbar.navbar-inverse.navbar-fixed-top
