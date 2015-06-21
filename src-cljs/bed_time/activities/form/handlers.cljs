@@ -1,19 +1,22 @@
 (ns bed-time.activities.form.handlers
-  (:require [re-frame.core :refer [register-handler dispatch]]
+  (:require [re-frame.core :refer [register-handler dispatch trim-v path]]
+            [bed-time.middleware :refer [remove-v]]
             [bed-time.activities.activities :as activities]))
 
 (defn register []
   (register-handler
     :update-activity-form
-    (fn [db [_ activity]]
-      (assoc-in db [:activity-form :field] activity)))
+    (comp trim-v (path :page :activity-form))
+    (fn [activity-form [activity]]
+      (assoc activity-form :field activity)))
 
   (register-handler
     :submit-activity-form
-    (fn [db _]
-      (let [activity (get-in db [:activity-form :field])]
+    (comp remove-v (path :page))
+    (fn [page]
+      (let [activity (get-in page [:activity-form :field])]
         (if-let [error (activities/error activity)]
-          (assoc-in db [:activity-form :error] error)
-          (do (dispatch [:new-session activity])
-              (assoc db :activity-form {:field nil :error nil})))))))
+          (assoc-in page [:activity-form :error] error)
+          (do (dispatch [:start-session activity])
+              (dissoc page :activity-form)))))))
 

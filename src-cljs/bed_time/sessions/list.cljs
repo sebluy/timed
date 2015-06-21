@@ -8,7 +8,8 @@
   [:input.btn.btn-danger
    {:type     "button"
     :value    "Delete!"
-    :on-click #(dispatch [:post-delete-activity activity])}])
+    :on-click (fn []
+                (dispatch [:delete-activity activity]))}])
 
 (defn- start-session-button [activity]
   [:input.btn.btn-success

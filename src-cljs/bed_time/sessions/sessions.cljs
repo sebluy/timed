@@ -21,14 +21,7 @@
        (.getTime start))
     0))
 
-(defn end-session-button
-  ([session] (end-session-button session nil))
-  ([session class]
-   [:input.btn.btn-sm.btn-danger
-    {:type     "button"
-     :class    class
-     :value    (str "End " (session :activity) " Session")
-     :on-click #(dispatch [:end-session session])}]))
+
 
 (defn start-session-button [activity]
   [:input.btn.btn-sm.btn-success

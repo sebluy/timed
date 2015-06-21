@@ -1,15 +1,8 @@
 (ns bed-time.sessions.handlers
   (:require [ajax.core :refer [POST]]
             [re-frame.core :refer [register-handler dispatch path trim-v]]
-            [bed-time.sessions.form.handlers :as form-handlers]))
-
-
-(defn remove-db [handler]
-  (fn [db v]
-    (handler v)
-    db))
-
-(def static-db (comp trim-v remove-db))
+            [bed-time.sessions.form.handlers :as form-handlers]
+            [bed-time.middleware :refer [static-db]]))
 
 (defn register []
   (form-handlers/register)

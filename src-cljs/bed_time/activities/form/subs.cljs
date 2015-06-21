@@ -6,11 +6,11 @@
   (register-sub
     :activity-form-error
     (fn [db _]
-      (reaction (get-in @db [:activity-form :error]))))
+      (reaction (get-in @db [:page :activity-form :error]))))
 
   (register-sub
     :activity-form-field
     (fn [db _]
-      (reaction (get-in @db [:activity-form :field])))))
+      (reaction (get-in @db [:page :activity-form :field])))))
 
 

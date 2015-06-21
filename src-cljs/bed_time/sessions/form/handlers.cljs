@@ -1,11 +1,8 @@
 (ns bed-time.sessions.form.handlers
   (:require [re-frame.core :refer [register-handler dispatch trim-v path]]
+            [bed-time.middleware :refer [remove-v]]
             [bed-time.util :as util]
             [bed-time.sessions.sessions :as sessions]))
-
-(defn remove-v [handler]
-  (fn [db _]
-    (handler db)))
 
 (defn register []
   (register-handler
