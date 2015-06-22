@@ -1,6 +1,6 @@
 (ns bed-time.core
   (:require [bed-time.pages :as pages]
-            [bed-time.handlers :as handlers]
+            [bed-time.handlers]
             [bed-time.subs :as subs]
             [bed-time.routing :as routing]
             [reagent.core :as reagent]
@@ -10,13 +10,9 @@
 (defn mount-components []
   (reagent/render-component [pages/view] (dom/getElement "app")))
 
-(defn register-handlers-and-subs []
-  (handlers/register)
-  (subs/register))
-
 (defn init! []
   (routing/hook-browser-navigation)
-  (register-handlers-and-subs)
+  (subs/register)
   (mount-components)
   (dispatch [:get-activities]))
 
