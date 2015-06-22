@@ -1,19 +1,10 @@
-# bed-time
 
-FIXME
+Todo:
+Allow handler registration to happen on file load (delete register fn bullshit)
 
-## Prerequisites
+Remove subscriptions, pass data down through components, subscriptions create
+a separate reaction on each call which causes redundant computation
 
-You will need [Leiningen][1] 2.0 or above installed.
+Highlight the session being edited in the session list
 
-[1]: https://github.com/technomancy/leiningen
-
-## Running
-
-To start a web server for the application, run:
-
-    lein ring server
-
-## License
-
-Copyright © 2015 FIXME
+Copyright © 2015 Sebastian Luy

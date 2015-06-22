@@ -1,6 +1,7 @@
 (ns bed-time.activities.list
   (:require [bed-time.activities.form.components :as form]
             [re-frame.core :refer [subscribe dispatch]]
+            [bed-time.routing :refer [page->href]]
             [bed-time.activities.activities :as activities]
             [bed-time.util :as util])
   (:require-macros [reagent.ratom :refer [reaction]]))
@@ -25,14 +26,15 @@
             (= activity (@current-session :activity))
             (end-session-button @current-session)))))
 
-(defn- show-day [name aggregates last-weeks-days]
-  ^{:key name}
-  [:tr
-   [:td [:a {:href (str "/#activities/" name)} name]]
-   [:td [session-action-button name]]
-   (for [day last-weeks-days]
-     ^{:key day}
-     [:td (util/time-str (get-in aggregates [:week day]))])])
+(defn- show-activity [name aggregates last-weeks-days]
+  (let [href (page->href {:handler :activity :route-params {:activity name}})]
+    ^{:key name}
+    [:tr
+     [:td [:a {:href href} name]]
+     [:td [session-action-button name]]
+     (for [day last-weeks-days]
+       ^{:key day}
+       [:td (util/time-str (get-in aggregates [:week day]))])]))
 
 (defn- table-head [last-weeks-days]
   [:thead
@@ -78,7 +80,8 @@
        [:tbody
         (doall
           (for [activity-name (keys @activities)]
-            (show-day activity-name (@aggregates activity-name) last-weeks-days)))]
+            (show-activity
+              activity-name (@aggregates activity-name) last-weeks-days)))]
        [table-foot aggregates last-weeks-days]])))
 
 (defn page []
