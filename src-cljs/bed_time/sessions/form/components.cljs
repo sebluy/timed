@@ -4,6 +4,7 @@
   (:require-macros [reagent.ratom :refer [reaction]]))
 
 (defn- label [pre-label text]
+  (println "Rerendering label")
   (let [value (util/str->date @text)
         error (if (util/datetime-invalid? value) "Invalid Time")
         date-str (util/date->str value)]
@@ -14,6 +15,7 @@
          [:span.label.label-success date-str]))]))
 
 (defn- input [key text]
+  (println "Rerendering input")
   [:input.form-control
    {:type      "text"
     :value     @text
@@ -21,6 +23,7 @@
                  [:change-session-form-field key (util/get-event-value %)])}])
 
 (defn- form-group [key text pre-label]
+  (println "Rerendering " key " form group")
   [:div.form-group
    [label pre-label text]
    [input key text]])
@@ -29,10 +32,13 @@
   (.preventDefault event)
   (dispatch [:submit-session-form]))
 
-(defn edit-form [form-data]
-  (let [start-text (reaction (get-in @form-data [:fields :start]))
-        finish-text (reaction (get-in @form-data [:fields :finish]))]
+(defn edit-form [form-reaction]
+  (let [start-text (reaction (println "Refreshing start-text")
+                             (get-in @form-reaction [:fields :start]))
+        finish-text (reaction (println "Refreshing finish-text")
+                              (get-in @form-reaction [:fields :finish]))]
     (fn []
+      (println "Rerendering edit form")
       [:form {:on-submit submit}
        [form-group :start start-text "Start: "]
        [form-group :finish finish-text "Finish: "]
@@ -42,4 +48,14 @@
          {:type     "button"
           :on-click #(dispatch [:close-session-form])}
          "Cancel"]]])))
+
+(let [test-ratom (reagent.ratom/atom {:hi {:my 4}})
+      test-reaction (reaction
+                      (println "refreshing reaction")
+                      (println ((get-in @test-ratom [:hi :my]))))]
+  @test-reaction
+  (swap! test-ratom #(assoc-in % [:hi :you] 5))
+  @test-reaction)
+
+(identical? 4 4)
 
