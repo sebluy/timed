@@ -42,12 +42,6 @@
        {:activity activity :start start :finish (js/Date.) :new false}])))
 
 (register-handler
-  :delete-session
-  static-db
-  (fn [[session]]
-    (dispatch [:post-delete-session session])))
-
-(register-handler
   :receive-delete-session
   (comp trim-v (path :activities))
   (fn [activities [{:keys [activity start]}]]
@@ -56,7 +50,7 @@
       (update-in activities [activity] #(dissoc % start)))))
 
 (register-handler
-  :post-delete-session
+  :delete-session
   static-db
   (fn [[session]]
     (POST "/delete-session"

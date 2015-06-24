@@ -21,8 +21,6 @@
        (.getTime start))
     0))
 
-
-
 (defn start-session-button [activity]
   [:input.btn.btn-sm.btn-success
    {:type     "button"

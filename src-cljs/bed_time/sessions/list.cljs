@@ -36,10 +36,12 @@
     :value    "Delete!"
     :on-click #(dispatch [:delete-session session])}])
 
-(defn- show-session [activity [start finish :as session]]
+(defn- show-session [activity [start finish :as session] session-under-edit]
   (let [session-map {:activity activity :start start :finish finish}]
     ^{:key (.getTime start)}
     [:tr
+     (if (= session-map @session-under-edit)
+       {:class "active"})
      [:td (.toLocaleString start)]
      [:td (if (session/valid? session)
             (.toLocaleString finish))]
@@ -48,41 +50,38 @@
      [:td (edit-session-button session-map)]
      [:td (delete-button session-map)]]))
 
-(defn- session-list [activity sessions-reaction]
+(defn- session-list [activity-reaction sessions-reaction session-under-edit]
   [:table.table
    [:thead
     [:tr [:td "Start"] [:td "Finish"] [:td "Time Spent"]]]
    [:tbody
     (doall
       (for [session @sessions-reaction]
-        (show-session activity session)))]])
+        (show-session @activity-reaction session session-under-edit)))]])
 
 (defn- page-header [activity]
-  [:div.page-header
-   [:h1 activity
-    [:p.pull-right.btn-toolbar
-     [start-session-button activity]
-     [new-session-form-button activity]
-     [delete-activity-button activity]]]])
+  (let [current-activity @activity]
+    [:div.page-header
+     [:h1 current-activity
+      [:p.pull-right.btn-toolbar
+       [start-session-button current-activity]
+       [new-session-form-button current-activity]
+       [delete-activity-button current-activity]]]]))
 
-(defn edit-form-slot [form-reaction]
-  (let [visible (reaction (println "Refreshing visible")
-                          (boolean @form-reaction))]
+(defn edit-form-slot [form]
+  (let [visible (reaction (boolean @form))]
     (fn []
-      (println "Rerendering edit form slot")
       (if @visible
-        [form/edit-form form-reaction]))))
+        [form/edit-form form]))))
 
 (defn page [{:keys [page activities]}]
-  (let [activity (get-in @page [:route-params :activity])
-        sessions-reaction (reaction
-                            (println "Refreshing sessions")
-                            (get @activities activity))
-        form-reaction (reaction (println "Refreshing session form")
-                                        (get @page :session-form))]
+  (let [activity (reaction (get-in @page [:route-params :activity]))
+        sessions (reaction (get @activities @activity))
+        form (reaction (get @page :session-form))
+        session-under-edit (reaction (get @form :old-session))]
     (fn []
       [:div.col-md-8.col-md-offset-2
        [page-header activity]
-       [edit-form-slot form-reaction]
-       [session-list activity sessions-reaction]])))
+       [edit-form-slot form]
+       [session-list activity sessions session-under-edit]])))
 

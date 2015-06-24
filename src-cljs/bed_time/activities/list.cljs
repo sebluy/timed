@@ -18,20 +18,19 @@
     :value    "Start"
     :on-click #(dispatch [:start-session activity])}])
 
-(defn session-action-button [activity]
-  (let [current-session (subscribe [:current-session])]
-    (fn []
-      (cond (nil? @current-session)
-            (start-session-button activity)
-            (= activity (@current-session :activity))
-            (end-session-button @current-session)))))
+(defn session-action-button [activity current-session]
+  (let [session @current-session]
+    (cond (nil? session)
+          (start-session-button activity)
+          (= activity (session :activity))
+          (end-session-button session))))
 
-(defn- show-activity [name aggregates last-weeks-days]
+(defn- show-activity [name aggregates last-weeks-days current-session]
   (let [href (page->href {:handler :activity :route-params {:activity name}})]
     ^{:key name}
     [:tr
      [:td [:a {:href href} name]]
-     [:td [session-action-button name]]
+     [:td [session-action-button name current-session]]
      (for [day last-weeks-days]
        ^{:key day}
        [:td (util/time-str (get-in aggregates [:week day]))])]))
@@ -63,34 +62,42 @@
        ^{:key day}
        [:td (util/time-str (- (util/days->ms 1) (week-totals day)))]))])
 
+(defn- table-body [activities aggregates last-weeks-days current-session]
+  [:tbody
+   (doall
+     (for [activity-name (keys @activities)]
+       (show-activity activity-name
+                      (@aggregates activity-name)
+                      last-weeks-days
+                      current-session)))])
+
 (defn- table-foot [aggregates last-weeks-days]
   (let [week-totals (get-in @aggregates [:total :week])]
     [:tfoot
      (totals-row week-totals last-weeks-days)
      (unaccounted-row week-totals last-weeks-days)]))
 
-(defn- activities-table []
-  (let [activities (subscribe [:activities])
-        last-weeks-days (util/last-weeks-days)
-        aggregates (reaction (activities/add-week-total
-                               (activities/build-aggregates @activities)))]
+(defn- activities-table [activities current-session]
+  (let [last-weeks-days (util/last-weeks-days)
+        aggregates (reaction (println "Refreshing aggregates")
+                             (time (activities/add-week-total
+                                     (activities/build-aggregates @activities))))]
     (fn []
       [:table.table
        [table-head last-weeks-days]
-       [:tbody
-        (doall
-          (for [activity-name (keys @activities)]
-            (show-activity
-              activity-name (@aggregates activity-name) last-weeks-days)))]
+       [table-body activities aggregates last-weeks-days current-session]
        [table-foot aggregates last-weeks-days]])))
 
-(defn page []
-  (let [current-session (subscribe [:current-session])]
+(defn- form-slot [page current-session]
+  (let [visible (reaction (nil? @current-session))]
     (fn []
-      [:div
-       [:div.page-header
-        [:h1 "Activities"]]
-       (if (nil? @current-session)
-         [form/form])
-       [activities-table]])))
+      (if @visible
+        [form/form page]))))
+
+(defn page [{:keys [page activities current-session]}]
+  [:div
+   [:div.page-header
+    [:h1 "Activities"]]
+   [form-slot page current-session]
+   [activities-table activities current-session]])
 

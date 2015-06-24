@@ -61,7 +61,7 @@
   (add-hours (js/Date.) n))
 
 (defn error [activity]
-  (if (string/blank? activity)
-    "Activity cannot be blank"))
-
+  (when-not (re-find #"^\w+$" (or activity ""))
+    "Activity must be not-blank and only
+    contain alpha-numeric characters and _."))
 

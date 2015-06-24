@@ -1,35 +1,39 @@
 (ns bed-time.activities.form.components
   (:require [bed-time.util :as util]
-            [re-frame.core :refer [subscribe dispatch-sync dispatch]]))
+            [re-frame.core :refer [subscribe dispatch-sync dispatch]]
+            [bed-time.activities.activities :as activities])
+  (:require-macros [reagent.ratom :refer [reaction]]))
 
-(defn- activity-input []
-  (let [activity-field (subscribe [:activity-form-field])]
-    [:input {:type        "text"
-             :class       "form-control"
-             :placeholder "Activity name"
-             :value       @activity-field
-             :on-change   #(dispatch-sync
-                            [:update-activity-form
-                             (util/get-event-value %)])}]))
+(defn- activity-input [field]
+  [:input {:type        "text"
+           :class       "form-control"
+           :placeholder "Activity name"
+           :value       @field
+           :on-change   #(dispatch-sync
+                          [:update-activity-form
+                           (util/get-event-value %)])}])
 
-(defn- error-alert []
-  (let [error (subscribe [:activity-form-error])]
-    (fn []
-      (if @error
-        [:div.alert.alert-danger @error]))))
+(defn- error-alert [field error]
+  (let [current-error @error]
+    (if (and (not (nil? @field)) current-error)
+      [:div.alert.alert-danger current-error])))
 
 (defn- submit-button []
   [:button.btn.btn-primary {:type "submit"} "Start New Session"])
 
-(defn- submit [event]
+(defn- submit [event field error]
   (.preventDefault event)
-  (dispatch [:submit-activity-form]))
+  (when-not @error
+    (dispatch [:start-session @field])))
 
-(defn form []
-  [:form.form-horizontal {:on-submit submit}
-   [:div.form-group
-    [:label.col-sm-4.control-label "New Activity"]
-    [:div.col-sm-4 [activity-input]]
-    [:div.col-sm-4 [submit-button]]]
-   [error-alert]])
+(defn form [page]
+  (let [field (reaction (get-in @page [:activity-form :field]))
+        error (reaction (activities/error @field))]
+    (fn []
+      [:form.form-horizontal {:on-submit #(submit % field error)}
+       [:div.form-group
+        [:label.col-sm-4.control-label "New Activity"]
+        [:div.col-sm-4 [activity-input field]]
+        [:div.col-sm-4 [submit-button]]]
+       [error-alert field error]])))
 

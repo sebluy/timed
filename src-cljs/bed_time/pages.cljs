@@ -25,5 +25,5 @@
       [:div
        [navbar/navbar current-session]
        [current-page {:activities     activities
-                      :current-sesion current-session
+                      :current-session current-session
                       :page           page}]])))
