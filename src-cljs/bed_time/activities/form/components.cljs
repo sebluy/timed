@@ -1,6 +1,7 @@
 (ns bed-time.activities.form.components
   (:require [bed-time.util :as util]
-            [re-frame.core :refer [subscribe dispatch-sync dispatch]]
+            [re-frame.core :refer [dispatch-sync dispatch]]
+            [bed-time.subs :refer [subscribe]]
             [bed-time.activities.activities :as activities])
   (:require-macros [reagent.ratom :refer [reaction]]))
 
@@ -26,9 +27,9 @@
   (when-not @error
     (dispatch [:start-session @field])))
 
-(defn form [page]
-  (let [field (reaction (get-in @page [:activity-form :field]))
-        error (reaction (activities/error @field))]
+(defn form []
+  (let [field (subscribe [:page :activity-form :field])
+        error (subscribe [:page :activity-form :error])]
     (fn []
       [:form.form-horizontal {:on-submit #(submit % field error)}
        [:div.form-group

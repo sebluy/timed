@@ -43,3 +43,9 @@
           :response-format :edn})
     db))
 
+(register-handler
+  :update-aggregates
+  (fn [db _]
+    (assoc db :aggregates (activities/add-week-total
+                            (activities/build-aggregates (db :activities))))))
+
