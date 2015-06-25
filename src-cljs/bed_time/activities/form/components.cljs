@@ -1,8 +1,7 @@
 (ns bed-time.activities.form.components
   (:require [bed-time.util :as util]
             [re-frame.core :refer [dispatch-sync dispatch]]
-            [bed-time.subs :refer [subscribe]]
-            [bed-time.activities.activities :as activities])
+            [bed-time.framework.subscriptions :refer [subscribe]])
   (:require-macros [reagent.ratom :refer [reaction]]))
 
 (defn- activity-input [field]

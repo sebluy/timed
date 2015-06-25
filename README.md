@@ -1,14 +1,18 @@
 Todo:
 
+Add plots.
+
+Add time event and db spot to support a running timer on sessions.
+
 Add "loading" elements when a visible element is waiting on a asynchronous
 handler.
+
+Done:
 
 Re-add subscriptions, but only use simple reactions. Store complex reactionary
 computations in the database and compute them as an event using a handler.
 Eventually partition the database into a "seed" partition and a "reactionary"
 partition where the "reactionary" partition is a pure function of the "seed".
-
-Done:
 
 Highlight the session being edited in the session list
 

@@ -1,20 +1,21 @@
 (ns bed-time.subs
   (:require [re-frame.db :refer [app-db]]
+            [bed-time.framework.subscriptions :refer [register-virtual-sub]]
+            [bed-time.activities.form.subs]
+            [bed-time.sessions.subs]
             [bed-time.sessions.current :as current]
-            [bed-time.activities.activities :as activities])
-  (:require-macros [reagent.ratom :refer [reaction]]))
+            [bed-time.activities.activities :as activities]))
 
-(defn subscribe [path]
-  (reaction (get-in @app-db path)))
+(defn- current-session []
+  (current/extract-current (get-in @app-db [:activities])))
 
-(defn subscribe-current-session []
-  (reaction (current/extract-current (get-in @app-db [:activities]))))
-
-(defn subscribe-aggregates [path]
+(defn- aggregates [path]
   (-> (get-in @app-db [:activities])
       (activities/build-aggregates)
       (activities/add-week-total)
-      (get-in path)
-      (reaction)))
+      (get-in path)))
+
+(register-virtual-sub [:aggregates] aggregates)
+(register-virtual-sub [:current-session] current-session)
 
 
