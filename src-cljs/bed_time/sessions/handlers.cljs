@@ -7,6 +7,8 @@
   :receive-update-session
   (comp trim-v (path :activities))
   (fn [activities [{:keys [activity start finish]}]]
+    (if (nil? finish)
+      (dispatch [:sync-tick]))
     (assoc-in activities [activity start] finish)))
 
 (register-handler

@@ -37,6 +37,10 @@
    (.getSeconds datetime)
    (.getMilliseconds datetime)])
 
+(defn time-diff [start finish]
+  (- (.getTime finish)
+     (.getTime start)))
+
 (defn midnight [datetime]
   (doto (js/Date. (.getTime datetime)) ; copy because js dates aren't immutable
     (.setHours 0)
