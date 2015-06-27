@@ -1,6 +1,5 @@
 (ns bed-time.sessions.sessions
   (:require [bed-time.util :as util]
-            [re-frame.core :refer [dispatch]]
             [ajax.core :refer [POST]]))
 
 (defn sessions-map [] (sorted-map-by util/date-comparator))
@@ -49,8 +48,3 @@
     0
     (util/time-diff start finish)))
 
-(defn start-session-button [activity]
-  [:input.btn.btn-sm.btn-success
-   {:type     "button"
-    :value    "Start Session"
-    :on-click #(dispatch [:new-session activity])}])

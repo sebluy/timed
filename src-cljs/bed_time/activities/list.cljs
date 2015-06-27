@@ -1,22 +1,20 @@
 (ns bed-time.activities.list
   (:require [bed-time.activities.form.components :as form]
             [bed-time.framework.subscriptions :refer [subscribe]]
-            [re-frame.core :refer [dispatch]]
             [bed-time.routing :refer [page->href]]
-            [bed-time.util :as util])
-  (:require-macros [reagent.ratom :refer [reaction]]))
+            [bed-time.util :as util]))
 
 (defn end-session-button [session]
   [:input.btn.btn-sm.btn-danger
    {:type     "button"
     :value    "Finish"
-    :on-click #(dispatch [:finish-session session])}])
+    #_:on-click #_(dispatch [:finish-session session])}])
 
 (defn start-session-button [activity]
   [:input.btn.btn-sm.btn-success
    {:type     "button"
     :value    "Start"
-    :on-click #(dispatch [:start-session activity])}])
+    #_:on-click #_(dispatch [:start-session activity])}])
 
 (defn session-action-button [activity]
   (let [current-session (subscribe [:current-session])]

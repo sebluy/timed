@@ -1,8 +1,8 @@
-(ns bed-time.handlers
-  (:require [bed-time.activities.handlers]
-            [bed-time.activities.form.handlers]
-            [bed-time.sessions.handlers]
-            [bed-time.sessions.form.handlers]
+(ns bed-time.deprecated-handlers
+  (:require [bed-time.activities.deprecated-handlers]
+            [bed-time.activities.form.deprecated-handlers]
+            [bed-time.sessions.deprecated-handlers]
+            [bed-time.sessions.form.deprecacted-handlers]
             [re-frame.core :refer [dispatch register-handler]]))
 
 (register-handler

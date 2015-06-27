@@ -1,6 +1,5 @@
 (ns bed-time.activities.form.components
   (:require [bed-time.util :as util]
-            [re-frame.core :refer [dispatch-sync dispatch]]
             [bed-time.framework.subscriptions :refer [subscribe]])
   (:require-macros [reagent.ratom :refer [reaction]]))
 
@@ -9,7 +8,7 @@
            :class       "form-control"
            :placeholder "Activity name"
            :value       @field
-           :on-change   #(dispatch-sync
+           #_:on-change  #_(dispatch-sync
                           [:update-activity-form
                            (util/get-event-value %)])}])
 
@@ -27,7 +26,7 @@
 (defn- submit [event field error pending]
   (.preventDefault event)
   (when-not (or @error @pending)
-    (dispatch [:submit-activity-form @field])))
+    #_(dispatch [:submit-activity-form @field])))
 
 (defn form []
   (let [field (subscribe [:page :activity-form :field])

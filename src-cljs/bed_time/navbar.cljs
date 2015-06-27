@@ -1,6 +1,5 @@
 (ns bed-time.navbar
   (:require [bed-time.routing :refer [page->href]]
-            [re-frame.core :refer [dispatch]]
             [bed-time.framework.subscriptions :refer [subscribe]]
             [bed-time.util :as util]))
 
@@ -9,7 +8,7 @@
     (fn [current-session]
       [:button.btn.btn-danger.navbar-btn
        {:type     "button"
-        :on-click #(dispatch [:finish-session current-session])}
+        #_:on-click #_(dispatch [:finish-session current-session])}
        (str "Finish " (current-session :activity) " Session ")
        [:span.badge (util/time-str
                       (util/time-diff (current-session :start) @now))]])))

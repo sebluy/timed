@@ -1,4 +1,4 @@
-(ns bed-time.sessions.form.handlers
+(ns bed-time.sessions.form.deprecacted-handlers
   (:require [re-frame.core :refer [register-handler dispatch trim-v path]]
             [bed-time.middleware :refer [remove-v]]
             [bed-time.util :as util]

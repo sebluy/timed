@@ -1,6 +1,5 @@
 (ns bed-time.sessions.form.components
-  (:require [re-frame.core :refer [dispatch dispatch-sync]]
-            [bed-time.framework.subscriptions :refer [subscribe]]
+  (:require [bed-time.framework.subscriptions :refer [subscribe]]
             [bed-time.util :as util]))
 
 (defn- label [pre-label text]
@@ -17,7 +16,7 @@
   [:input.form-control
    {:type      "text"
     :value     @text
-    :on-change #(dispatch-sync
+    #_:on-change #_(dispatch-sync
                  [:change-session-form-field
                   key (util/get-event-value %)])}])
 
@@ -29,7 +28,7 @@
 
 (defn- submit [event]
   (.preventDefault event)
-  (dispatch [:submit-session-form]))
+  #_(dispatch [:submit-session-form]))
 
 (defn edit-form []
   [:form {:on-submit submit}
@@ -39,7 +38,7 @@
     [:button.btn.btn-primary {:type "submit"} "Update"]
     [:button.btn.btn-danger
      {:type     "button"
-      :on-click #(dispatch [:close-session-form])}
+      #_:on-click #_(dispatch [:close-session-form])}
      "Cancel"]]])
 
 

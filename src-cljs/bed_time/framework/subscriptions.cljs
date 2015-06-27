@@ -1,5 +1,5 @@
 (ns bed-time.framework.subscriptions
-  (:require [re-frame.db :refer [app-db]])
+  (:require [bed-time.framework.db :refer [db]])
   (:require-macros [reagent.ratom :refer [reaction]]))
 
 (defonce virtual-subs (atom {}))
@@ -16,7 +16,7 @@
 
 (defn subscribe [path]
   (reaction
-    (let [db-value (get-in @app-db path)]
+    (let [db-value (get-in @db path)]
       (cond (not (nil? db-value))
             db-value
             :else

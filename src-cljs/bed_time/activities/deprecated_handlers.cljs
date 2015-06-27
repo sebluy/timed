@@ -1,4 +1,4 @@
-(ns bed-time.activities.handlers
+(ns bed-time.activities.deprecated-handlers
   (:require [re-frame.core :refer [register-handler dispatch trim-v]]
             [bed-time.middleware :refer [static-db]]
             [bed-time.routing :as routing]

@@ -1,4 +1,4 @@
-(ns bed-time.sessions.handlers
+(ns bed-time.sessions.deprecated-handlers
   (:require [ajax.core :refer [POST]]
             [re-frame.core :refer [register-handler dispatch path trim-v]]
             [bed-time.middleware :refer [static-db]]
