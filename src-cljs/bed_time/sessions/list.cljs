@@ -38,18 +38,18 @@
 
 (defn- show-session []
   (let [session-under-edit (subscribe [:page :session-form :old-session])]
-    (fn [activity [start finish :as session]]
-      (let [session-map {:activity activity :start start :finish finish}]
-        [:tr
-         (if (= session-map @session-under-edit)
-           {:class "active"})
-         [:td (.toLocaleString start)]
-         [:td (if (session/valid? session)
-                (.toLocaleString finish))]
-         [:td (if (session/valid? session)
-                (util/time-str (session/time-spent session)))]
-         [:td (edit-session-button session-map)]
-         [:td (delete-button session-map)]]))))
+    (fn [{:keys [start finish] :as session}]
+      [:tr
+       (if (= session @session-under-edit)
+         {:class "active"})
+       [:td (.toLocaleString start)]
+       [:td (if-not (session/current? session)
+              (.toLocaleString finish)
+              "Unfinished")]
+       [:td (if-not (session/current? session)
+              (util/time-str (session/time-spent session)))]
+       [:td (edit-session-button session)]
+       [:td (delete-button session)]])))
 
 (defn- session-list [activity]
   (let [sessions (subscribe [:activities activity])]
@@ -59,9 +59,9 @@
         [:tr [:td "Start"] [:td "Finish"] [:td "Time Spent"]]]
        [:tbody
         (doall
-          (for [session @sessions]
-            ^{:key (first session)}
-            [show-session activity session]))]])))
+          (for [[start session] @sessions]
+            ^{:key start}
+            [show-session session]))]])))
 
 (defn- page-header [activity]
   [:div.page-header

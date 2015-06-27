@@ -1,9 +1,15 @@
 Todo:
 
-Add plots.
+Break re-frame dependency.
+
+Add event processing machine.
 
 Add "loading" elements when a visible element is waiting on a asynchronous
 handler.
+
+Add plots.
+
+Push to heroku and migrate db.
 
 Done:
 

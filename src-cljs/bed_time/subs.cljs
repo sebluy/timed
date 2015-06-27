@@ -3,11 +3,11 @@
             [bed-time.framework.subscriptions :refer [register-virtual-sub]]
             [bed-time.activities.form.subs]
             [bed-time.sessions.subs]
-            [bed-time.sessions.current :as current]
-            [bed-time.activities.activities :as activities]))
+            [bed-time.activities.activities :as activities]
+            [bed-time.sessions.sessions :as sessions]))
 
 (defn- current-session []
-  (current/extract-current (get-in @app-db [:activities])))
+  (sessions/current (get-in @app-db [:activities])))
 
 (defn- aggregates [path]
   (-> (get-in @app-db [:activities])

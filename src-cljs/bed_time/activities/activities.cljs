@@ -1,6 +1,5 @@
 (ns bed-time.activities.activities
-  (:require [clojure.string :as string]
-            [bed-time.sessions.sessions :as sessions]
+  (:require [bed-time.sessions.sessions :as sessions]
             [bed-time.util :as util]))
 
 (defn coerce-activities-to-sorted [new-activities]
@@ -14,19 +13,8 @@
                      (* 24 60 60 n 1000)))
               sessions))
 
-(defn weekly-sessions [sessions]
-  (sessions-from-last-n-days sessions 7))
-
-(defn daily-sessions [sessions]
-  (sessions-from-last-n-days sessions 1))
-
-(defn total-time-spent [sessions]
-  (reduce (fn [total session]
-            (+ total (sessions/time-spent session)))
-          0 sessions))
-
 (defn build-week [sessions]
-  (reduce (fn [week [start _ :as session]]
+  (reduce (fn [week [start session]]
             (let [date (util/midnight start)
                   day (week date)
                   time-spent (sessions/time-spent session)]
@@ -53,12 +41,6 @@
             (reduce (fn [week-total [_ activity-aggregates]]
                       (merge-with + (activity-aggregates :week) week-total))
                     {} (dissoc aggregates :total))))
-
-(defn add-hours [date n]
-  (js/Date. (+ (.getTime date) (* n 60 60 1000))))
-
-(defn hours-from-now [n]
-  (add-hours (js/Date.) n))
 
 (defn error [activity]
   (when-not (re-find #"^\w+$" (or activity ""))

@@ -18,22 +18,26 @@
     (if (and (not (nil? @field)) current-error)
       [:div.alert.alert-danger current-error])))
 
-(defn- submit-button []
-  [:button.btn.btn-primary {:type "submit"} "Start New Session"])
+(defn- submit-button [pending]
+  [:button.btn.btn-primary {:type "submit"}
+   (if @pending
+     "Pending"
+     "Start New Session")])
 
-(defn- submit [event field error]
+(defn- submit [event field error pending]
   (.preventDefault event)
-  (when-not @error
-    (dispatch [:start-session @field])))
+  (when-not (or @error @pending)
+    (dispatch [:submit-activity-form @field])))
 
 (defn form []
   (let [field (subscribe [:page :activity-form :field])
-        error (subscribe [:page :activity-form :error])]
+        error (subscribe [:page :activity-form :error])
+        pending (subscribe [:page :activity-form :pending])]
     (fn []
-      [:form.form-horizontal {:on-submit #(submit % field error)}
+      [:form.form-horizontal {:on-submit #(submit % field error pending)}
        [:div.form-group
         [:label.col-sm-4.control-label "New Activity"]
         [:div.col-sm-4 [activity-input field]]
-        [:div.col-sm-4 [submit-button]]]
+        [:div.col-sm-4 [submit-button pending]]]
        [error-alert field error]])))
 

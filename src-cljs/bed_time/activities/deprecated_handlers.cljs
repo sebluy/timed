@@ -4,7 +4,7 @@
             [bed-time.routing :as routing]
             [ajax.core :refer [POST GET]]
             [bed-time.activities.activities :as activities]
-            [bed-time.sessions.current :as current])
+            [bed-time.sessions.sessions :as sessions])
   (:import goog.History))
 
 (defn- reset-activity-page-if-deleted [db activity]
@@ -34,7 +34,7 @@
   :recieve-activities
   (fn [db [_ incoming-activities]]
     (let [activities (activities/coerce-activities-to-sorted incoming-activities)]
-      (if (current/extract-current activities)
+      (if (sessions/current activities)
         (dispatch [:start-tick]))
       (merge db {:activities activities}))))
 

@@ -18,13 +18,12 @@
    :start (sql-datetime start)
    :finish (sql-datetime finish)})
 
-; form => {activity {start finish}}
 (defn get-activities []
   (response
     (reduce (fn [activities session]
               (let [activity-name (session :activity)]
                 (update-in activities [activity-name]
-                           #(merge % {(session :start) (session :finish)}))))
+                           #(assoc % (session :start) session))))
                 {} (db/get-activities))))
 
 (defn delete-activity [activity]
@@ -37,6 +36,7 @@
   (response nil))
 
 (defn update-session [session]
+  (Thread/sleep 1000)
   (let [db-sess (db-session session)]
     (if (session :new)
       (db/add-session! db-sess)

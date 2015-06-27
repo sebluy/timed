@@ -2,7 +2,6 @@
   (:require [bidi.bidi :as bidi]
             [goog.events :as events]
             [goog.history.EventType :as EventType]
-            [re-frame.core :refer [subscribe dispatch]]
             [clojure.string :as string])
   (:import goog.History))
 
@@ -30,8 +29,8 @@
   (.setToken history (page->route page))
   (assoc db :page page))
 
-(defn dispatch-route [route]
-  (dispatch [:set-page (route->page route)]))
+(defn dispatch-route [route])
+  ;(dispatch [:set-page (route->page route)]))
 
 (defn- initialize-route [history]
   (let [token (.getToken history)]

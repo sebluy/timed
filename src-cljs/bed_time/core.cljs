@@ -1,6 +1,5 @@
 (ns bed-time.core
   (:require [bed-time.pages :as pages]
-            [bed-time.handlers]
             [bed-time.subs]
             [bed-time.routing :as routing]
             [reagent.core :as reagent]
@@ -12,7 +11,7 @@
 
 (defn init! []
   (routing/hook-browser-navigation)
-  (mount-components)
-  (dispatch [:start-tick])
-  (dispatch [:get-activities]))
+  (mount-components))
+;  (dispatch [:start-tick])
+;  (dispatch [:get-activities]))
 
