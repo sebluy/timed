@@ -10,14 +10,14 @@
 
 (defonce update-handlers (atom {}))
 
-(defn- apply-update [[key & args]]
-  (swap! db #(apply (@update-handlers key) % args)))
+(defn- apply-update [[key args]]
+  (swap! db #((@update-handlers key) % args)))
 
 (defn register-update-handler [key fn]
   (swap! update-handlers #(assoc % key fn)))
 
-(defn update-state [& args]
-  (put! update-chan args))
+(defn update-state [key args]
+  (put! update-chan [key args]))
 
 (defn run-update-render-machine []
   (go-forever

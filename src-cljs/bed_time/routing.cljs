@@ -1,5 +1,6 @@
 (ns bed-time.routing
-  (:require [bidi.bidi :as bidi]
+  (:require [bed-time.framework.events :refer [dispatch]]
+            [bidi.bidi :as bidi]
             [goog.events :as events]
             [goog.history.EventType :as EventType]
             [clojure.string :as string])
@@ -15,7 +16,7 @@
 
 (defn- page->route [page]
   (bidi/unmatch-pair routes {:handler (page :handler)
-                             :params (page :route-params)}))
+                             :params  (page :route-params)}))
 
 (defn- route->href [route]
   (str "/#" route))
@@ -29,23 +30,22 @@
   (.setToken history (page->route page))
   (assoc db :page page))
 
-(defn dispatch-route [route])
-  ;(dispatch [:set-page (route->page route)]))
-
 (defn- initialize-route [history]
-  (let [token (.getToken history)]
-    (if (string/blank? token)
-      (do
-        (.replaceToken history "activities")
-        (dispatch-route "activities"))
-      (dispatch-route token))))
+  (let [history-token (.getToken history)]
+    (if (string/blank? history-token)
+      (let [token (page->route {:handler :activities})]
+        (.replaceToken history token)
+        (dispatch {:handler :navigate-route :route token}))
+      (dispatch {:handler :navigate-route :route history-token}))))
 
 (defn hook-browser-navigation []
   (doto history
-    (initialize-route)
     (events/listen
       EventType/NAVIGATE
       (fn [event]
-        (dispatch-route (.-token event))))
-    (.setEnabled true)))
+        (if (.-isNavigation event)
+          (dispatch {:handler :navigate-route :route (.-token event)}))
+        (.preventDefault event)))
+    (.setEnabled true)
+    (initialize-route)))
 

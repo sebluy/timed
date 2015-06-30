@@ -1,6 +1,7 @@
 (ns bed-time.core
   (:require [bed-time.pages :as pages]
             [bed-time.framework.db :as db]
+            [bed-time.machine :as machine]
             [bed-time.subs]
             [bed-time.routing :as routing]
             [reagent.core :as reagent]
@@ -12,12 +13,12 @@
 (db/register-update-handler
   :set-page
   (fn [db page]
-    (assoc-in db [:page :handler] page)))
+    (assoc db :page page)))
 
 (defn init! []
   (db/run-update-render-machine)
+  (machine/run)
   (routing/hook-browser-navigation)
-  (db/update-state :set-page :activities)
   (mount-components))
 ;  (dispatch [:start-tick])
 ;  (dispatch [:get-activities]))
