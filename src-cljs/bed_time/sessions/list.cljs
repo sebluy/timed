@@ -1,6 +1,8 @@
 (ns bed-time.sessions.list
   (:require [bed-time.sessions.sessions :as session]
             [bed-time.sessions.form.components :as form]
+            [bed-time.activities.handlers :as activity-handlers]
+            [bed-time.sessions.handlers :as session-handlers]
             [bed-time.util :as util]
             [bed-time.framework.subscriptions :refer [subscribe]])
   (:require-macros [reagent.ratom :refer [reaction]]))
@@ -9,13 +11,13 @@
   [:input.btn.btn-danger
    {:type     "button"
     :value    "Delete!"
-    #_:on-click #_(dispatch [:delete-activity activity])}])
+    :on-click #(activity-handlers/delete-activity activity)}])
 
 (defn- start-session-button [activity]
   [:input.btn.btn-success
    {:type     "button"
     :value    "Start"
-    #_:on-click #_(dispatch [:start-session activity])}])
+    :on-click #(session-handlers/start-session activity)}])
 
 (defn- new-session-form-button [activity]
   [:input.btn.btn-primary
@@ -33,7 +35,7 @@
   [:input.btn.btn-sm.btn-danger
    {:type     "button"
     :value    "Delete!"
-    #_:on-click #_(dispatch [:delete-session session])}])
+    :on-click #(session-handlers/delete-session session)}])
 
 (defn- show-session []
   (let [session-under-edit (subscribe [:page :session-form :old-session])]
@@ -45,8 +47,7 @@
        [:td (if-not (session/current? session)
               (.toLocaleString finish)
               "Unfinished")]
-       [:td (if-not (session/current? session)
-              (util/time-str (session/time-spent session)))]
+       [:td (util/time-str (session/time-spent session))]
        [:td (edit-session-button session)]
        [:td (delete-button session)]])))
 

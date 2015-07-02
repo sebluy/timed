@@ -1,17 +1,17 @@
 (ns bed-time.navbar
   (:require [bed-time.routing :refer [page->href]]
             [bed-time.framework.subscriptions :refer [subscribe]]
-            [bed-time.util :as util]))
+            [bed-time.util :as util]
+            [bed-time.sessions.handlers :as session-handlers]))
 
 (defn finish-session-button []
-  (let [now (subscribe [:tick :now])]
-    (fn [current-session]
-      [:button.btn.btn-danger.navbar-btn
-       {:type     "button"
-        #_:on-click #_(dispatch [:finish-session current-session])}
-       (str "Finish " (current-session :activity) " Session ")
-       [:span.badge (util/time-str
-                      (util/time-diff (current-session :start) @now))]])))
+  (fn [current-session]
+    [:button.btn.btn-danger.navbar-btn
+     {:type     "button"
+      :on-click #(session-handlers/finish-session current-session)}
+     (str "Finish " (current-session :activity) " Session ")
+     #_[:span.badge (util/time-str
+                      (util/time-diff (current-session :start) @now))]]))
 
 (defn current-session-nav []
   (let [current-session (subscribe [:current-session])]

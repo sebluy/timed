@@ -1,6 +1,9 @@
 (ns bed-time.activities.form.components
   (:require [bed-time.util :as util]
-            [bed-time.framework.subscriptions :refer [subscribe]])
+            [bed-time.activities.form.transitions :as transitions]
+            [bed-time.framework.subscriptions :refer [subscribe]]
+            [bed-time.framework.db :as db]
+            [bed-time.sessions.handlers :as session-handlers])
   (:require-macros [reagent.ratom :refer [reaction]]))
 
 (defn- activity-input [field]
@@ -8,35 +11,31 @@
            :class       "form-control"
            :placeholder "Activity name"
            :value       @field
-           #_:on-change  #_(dispatch-sync
-                          [:update-activity-form
-                           (util/get-event-value %)])}])
+           :on-change   #(db/transition (transitions/update-field
+                                          (util/get-event-value %)))}])
 
 (defn- error-alert [field error]
   (let [current-error @error]
     (if (and (not (nil? @field)) current-error)
       [:div.alert.alert-danger current-error])))
 
-(defn- submit-button [pending]
+(defn- submit-button []
   [:button.btn.btn-primary {:type "submit"}
-   (if @pending
-     "Pending"
-     "Start New Session")])
+     "Start New Session"])
 
-(defn- submit [event field error pending]
+(defn- submit [event field error]
   (.preventDefault event)
-  (when-not (or @error @pending)
-    #_(dispatch [:submit-activity-form @field])))
+  (when-not @error
+    (session-handlers/start-session @field)))
 
 (defn form []
   (let [field (subscribe [:page :activity-form :field])
-        error (subscribe [:page :activity-form :error])
-        pending (subscribe [:page :activity-form :pending])]
+        error (subscribe [:page :activity-form :error])]
     (fn []
-      [:form.form-horizontal {:on-submit #(submit % field error pending)}
+      [:form.form-horizontal {:on-submit #(submit % field error)}
        [:div.form-group
         [:label.col-sm-4.control-label "New Activity"]
         [:div.col-sm-4 [activity-input field]]
-        [:div.col-sm-4 [submit-button pending]]]
+        [:div.col-sm-4 [submit-button]]]
        [error-alert field error]])))
 

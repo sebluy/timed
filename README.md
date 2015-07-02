@@ -1,5 +1,7 @@
 Todo:
 
+Update dependencies without breaking everything.
+
 Break re-frame dependency.
 
 Add event processing machine.

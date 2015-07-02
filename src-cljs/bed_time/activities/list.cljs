@@ -2,19 +2,20 @@
   (:require [bed-time.activities.form.components :as form]
             [bed-time.framework.subscriptions :refer [subscribe]]
             [bed-time.routing :refer [page->href]]
-            [bed-time.util :as util]))
+            [bed-time.util :as util]
+            [bed-time.sessions.handlers :as session-handlers]))
 
-(defn end-session-button [session]
+(defn finish-session-button [session]
   [:input.btn.btn-sm.btn-danger
    {:type     "button"
     :value    "Finish"
-    #_:on-click #_(dispatch [:finish-session session])}])
+    :on-click #(session-handlers/finish-session session)}])
 
 (defn start-session-button [activity]
   [:input.btn.btn-sm.btn-success
    {:type     "button"
     :value    "Start"
-    #_:on-click #_(dispatch [:start-session activity])}])
+    :on-click #(session-handlers/start-session activity)}])
 
 (defn session-action-button [activity]
   (let [current-session (subscribe [:current-session])]
@@ -22,7 +23,7 @@
       (cond (nil? @current-session)
             (start-session-button activity)
             (= activity (@current-session :activity))
-            (end-session-button @current-session)))))
+            (finish-session-button @current-session)))))
 
 (defn- show-activity [name]
   (let [daily-total (subscribe [:aggregates name :week])

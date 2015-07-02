@@ -4,11 +4,6 @@
 
 (defn sessions-map [] (sorted-map-by util/date-comparator))
 
-(defn path->session [db activity start]
-  {:activity activity
-   :start    start
-   :finish   (get-in db [:activities activity start])})
-
 (defn map->vec [session-map]
   [(session-map :start) (session-map :finish)])
 
@@ -21,30 +16,22 @@
   (nil? finish))
 
 (defn- find-current-in-sessions [sessions]
-  (loop [[_ session] (first sessions) sessions' (rest sessions)]
-    (cond (current? session) session
-          (empty sessions') nil
-          :else (recur (first sessions') (rest sessions')))))
+  (loop [sessions' sessions]
+    (let [session (second (first sessions'))]
+      (cond (empty? sessions') nil
+            (current? session) session
+            :else (recur (rest sessions'))))))
 
-(defn- current [activities]
-  (loop [[_ sessions] (first activities) activities' (rest activities)]
-    (let [current (find-current-in-sessions sessions)]
-      (cond current current
-            (empty activities') nil
-            :else (recur (first activities') (rest activities'))))))
-
-(defn new-session [activity]
-  {:activity activity :start (js/Date.) :finish nil :new true})
-
-(defn post-update-session [session handler]
-  (POST "/update-session"
-        {:params          {:session session}
-         :handler         #(handler % session)
-         :format          :edn
-         :response-format :edn}))
+(defn current [activities]
+  (loop [activities' activities]
+    (let [sessions (second (first activities'))
+          current (find-current-in-sessions sessions)]
+      (cond (empty? activities') nil
+            current current
+            :else (recur (rest activities'))))))
 
 (defn time-spent [{:keys [start finish] :as session}]
   (if (current? session)
-    0
+    (util/time-diff start (js/Date.))
     (util/time-diff start finish)))
 
