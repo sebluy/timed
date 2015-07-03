@@ -3,8 +3,9 @@
             [bed-time.sessions.form.components :as form]
             [bed-time.activities.handlers :as activity-handlers]
             [bed-time.sessions.handlers :as session-handlers]
+            [bed-time.sessions.form.transitions :as form-transitions]
             [bed-time.util :as util]
-            [bed-time.framework.subscriptions :refer [subscribe]])
+            [bed-time.framework.db :as db])
   (:require-macros [reagent.ratom :refer [reaction]]))
 
 (defn- delete-activity-button [activity]
@@ -23,13 +24,15 @@
   [:input.btn.btn-primary
    {:type     "button"
     :value    "New Session Form"
-    #_:on-click #_(dispatch [:open-session-form {:activity activity :new true}])}])
+    :on-click #(db/transition
+                (form-transitions/open {:activity activity :new true}))}])
 
 (defn- edit-session-button [session]
   [:input.btn.btn-sm.btn-warning
    {:type     "button"
     :value    "Edit!"
-    #_:on-click #_(dispatch [:open-session-form session])}])
+    :on-click #(db/transition
+                (form-transitions/open session))}])
 
 (defn- delete-button [session]
   [:input.btn.btn-sm.btn-danger
@@ -38,7 +41,7 @@
     :on-click #(session-handlers/delete-session session)}])
 
 (defn- show-session []
-  (let [session-under-edit (subscribe [:page :session-form :old-session])]
+  (let [session-under-edit (db/subscribe [:page :session-form :old-session])]
     (fn [{:keys [start finish] :as session}]
       [:tr
        (if (= session @session-under-edit)
@@ -52,7 +55,7 @@
        [:td (delete-button session)]])))
 
 (defn- session-list [activity]
-  (let [sessions (subscribe [:activities activity])]
+  (let [sessions (db/subscribe [:activities activity])]
     (fn []
       [:table.table
        [:thead
@@ -72,13 +75,13 @@
      [delete-activity-button activity]]]])
 
 (defn edit-form-slot []
-  (let [edit-form (subscribe [:page :session-form])]
+  (let [edit-form (db/subscribe [:page :session-form])]
     (fn []
       (if @edit-form
         [form/edit-form]))))
 
 (defn page []
-  (let [activity (subscribe [:page :route-params :activity])]
+  (let [activity (db/subscribe [:page :route-params :activity])]
     (fn []
       [:div.col-md-8.col-md-offset-2
        [page-header @activity]

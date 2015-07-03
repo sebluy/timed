@@ -1,7 +1,6 @@
 (ns bed-time.activities.form.components
   (:require [bed-time.util :as util]
             [bed-time.activities.form.transitions :as transitions]
-            [bed-time.framework.subscriptions :refer [subscribe]]
             [bed-time.framework.db :as db]
             [bed-time.sessions.handlers :as session-handlers])
   (:require-macros [reagent.ratom :refer [reaction]]))
@@ -29,8 +28,8 @@
     (session-handlers/start-session @field)))
 
 (defn form []
-  (let [field (subscribe [:page :activity-form :field])
-        error (subscribe [:page :activity-form :error])]
+  (let [field (db/subscribe [:page :activity-form :field])
+        error (db/subscribe [:page :activity-form :error])]
     (fn []
       [:form.form-horizontal {:on-submit #(submit % field error)}
        [:div.form-group

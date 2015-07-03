@@ -1,9 +1,8 @@
 (ns bed-time.sessions.subs
-  (:require [bed-time.framework.subscriptions :refer [register-virtual-sub]]
-            [bed-time.framework.db :refer [db]]))
+  (:require [bed-time.framework.db :as db]))
 
 (defn- sessions []
-  (let [activity (get-in @db [:page :route-params :activity])]
-    (get-in @db [:activities activity])))
+  (let [activity (db/query [:page :route-params :activity])]
+    (db/query [:activities activity])))
 
-(register-virtual-sub [:page :sessions] sessions)
+(db/register-virtual-sub [:page :sessions] sessions)

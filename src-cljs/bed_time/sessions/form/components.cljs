@@ -1,6 +1,8 @@
 (ns bed-time.sessions.form.components
-  (:require [bed-time.framework.subscriptions :refer [subscribe]]
-            [bed-time.util :as util]))
+  (:require [bed-time.sessions.form.transitions :as transitions]
+            [bed-time.sessions.form.handlers :as handlers]
+            [bed-time.util :as util]
+            [bed-time.framework.db :as db]))
 
 (defn- label [pre-label text]
   (let [value (util/str->date @text)
@@ -16,19 +18,18 @@
   [:input.form-control
    {:type      "text"
     :value     @text
-    #_:on-change #_(dispatch-sync
-                 [:change-session-form-field
-                  key (util/get-event-value %)])}])
+    :on-change #(db/transition
+                 (transitions/update-field key (util/get-event-value %)))}])
 
 (defn- form-group [key pre-label]
-  (let [text (subscribe [:page :session-form :fields key])]
+  (let [text (db/subscribe [:page :session-form :fields key])]
     [:div.form-group
      [label pre-label text]
      [input key text]]))
 
 (defn- submit [event]
   (.preventDefault event)
-  #_(dispatch [:submit-session-form]))
+  (handlers/submit))
 
 (defn edit-form []
   [:form {:on-submit submit}
@@ -38,7 +39,7 @@
     [:button.btn.btn-primary {:type "submit"} "Update"]
     [:button.btn.btn-danger
      {:type     "button"
-      #_:on-click #_(dispatch [:close-session-form])}
+      :on-click #(db/transition transitions/close)}
      "Cancel"]]])
 
 

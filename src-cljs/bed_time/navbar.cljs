@@ -1,8 +1,8 @@
 (ns bed-time.navbar
   (:require [bed-time.routing :refer [page->href]]
-            [bed-time.framework.subscriptions :refer [subscribe]]
             [bed-time.util :as util]
-            [bed-time.sessions.handlers :as session-handlers]))
+            [bed-time.sessions.handlers :as session-handlers]
+            [bed-time.framework.db :as db]))
 
 (defn finish-session-button []
   (fn [current-session]
@@ -14,7 +14,7 @@
                       (util/time-diff (current-session :start) @now))]]))
 
 (defn current-session-nav []
-  (let [current-session (subscribe [:current-session])]
+  (let [current-session (db/subscribe [:current-session])]
     (fn []
       (if @current-session
         [:ul.nav.navbar-nav.navbar-right

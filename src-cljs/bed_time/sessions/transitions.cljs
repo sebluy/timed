@@ -8,11 +8,10 @@
   (fn [db]
     (update-in db [:activities activity] #(dissoc % start))))
 
-(defn swap-session [{:keys [old-start]}
-                    {:keys [activity new-start] :as new-session}]
+(defn swap-session [old-session new-session]
   (fn [db]
-    (update-in db [:activities activity]
+    (update-in db [:activities (new-session :activity)]
                (fn [activity-sessions]
                  (-> activity-sessions
-                     (dissoc old-start)
-                     (assoc new-start new-session))))))
+                     (dissoc (old-session :start))
+                     (assoc (new-session :start) new-session))))))
