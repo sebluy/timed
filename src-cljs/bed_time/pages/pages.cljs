@@ -1,11 +1,11 @@
 (ns bed-time.pages
-  (:require [bed-time.activities.list :as activity-list]
-            [bed-time.sessions.list :as session-list]
+  (:require [bed-time.pages.activity :as activity]
+            [bed-time.pages.activities :as activities]
             [bed-time.navbar :as navbar]
             [bed-time.framework.db :as db]))
 
-(defonce pages {:activities activity-list/page
-                :activity   session-list/page})
+(defonce pages {:activities activities/page
+                :activity   activity/page})
 
 (defn- current-page []
   (let [handler (db/subscribe [:page :handler])]

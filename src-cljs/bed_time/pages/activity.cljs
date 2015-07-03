@@ -1,9 +1,7 @@
-(ns bed-time.sessions.list
+(ns bed-time.pages.activity
   (:require [bed-time.sessions.components :as components]
             [bed-time.sessions.form.components :as form]
-            [bed-time.util :as util]
-            [bed-time.framework.db :as db])
-  (:require-macros [reagent.ratom :refer [reaction]]))
+            [bed-time.framework.db :as db]))
 
 (defn- page-header [activity]
   [:div.page-header

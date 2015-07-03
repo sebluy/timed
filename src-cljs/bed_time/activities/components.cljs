@@ -1,10 +1,8 @@
-(ns bed-time.activities.list
-  (:require [bed-time.activities.form.components :as form]
-            [bed-time.sessions.components :as session-components]
+(ns bed-time.activities.components
+  (:require [bed-time.sessions.components :as session-components]
             [bed-time.framework.db :as db]
             [bed-time.routing :refer [page->href]]
-            [bed-time.util :as util]
-            [bed-time.sessions.handlers :as session-handlers]))
+            [bed-time.util :as util]))
 
 (defn- show-activity [name]
   (let [daily-total (db/subscribe [:aggregates name :week])
@@ -61,22 +59,9 @@
        [totals-row week-totals]
        [unaccounted-row week-totals]])))
 
-(defn- activities-table []
+(defn activities-table []
   [:table.table
    [table-head]
    [table-body]
    [table-foot]])
-
-(defn- form-slot []
-  (let [current-session (db/subscribe [:current-session])]
-    (fn []
-      (if (not @current-session)
-        [form/form]))))
-
-(defn page []
-  [:div
-   [:div.page-header
-    [:h1 "Activities"]]
-   [form-slot]
-   [activities-table]])
 

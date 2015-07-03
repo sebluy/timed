@@ -12,9 +12,9 @@
   (fn [db]
     (assoc db :activities activities)))
 
-(defn add-pending [key]
+(defn add-pending [key value]
   (fn [db]
-    (assoc-in db [:pending key] true)))
+    (assoc-in db [:pending key] value)))
 
 (defn remove-pending [key]
   (fn [db]

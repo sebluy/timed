@@ -29,7 +29,7 @@
     (db/transition (async/<! (update-session-transition-chan session)))))
 
 (defn start-session [activity]
-  (db/transition (transitions/add-pending :start-session))
+  (db/transition (transitions/add-pending :start-session activity))
   (async/go
     (let [new-session {:activity activity
                        :start (js/Date.)
@@ -40,7 +40,12 @@
         (comp (transitions/remove-pending :start-session) transition)))))
 
 (defn finish-session [session]
-  (update-session (assoc session :finish (js/Date.) :new false)))
+  (db/transition (transitions/add-pending :finish-session session))
+  (async/go
+    (let [finished (assoc session :finish (js/Date.) :new false)
+          transition (async/<!(update-session-transition-chan finished))]
+      (db/transition
+        (comp (transitions/remove-pending :finish-session) transition)))))
 
 (defn delete-session [session]
   (let [response-chan (async/chan)]

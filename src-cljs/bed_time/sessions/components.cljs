@@ -7,46 +7,51 @@
             [bed-time.util :as util]
             [bed-time.framework.db :as db]))
 
-(defn- delete-activity-button [activity]
+(defn delete-activity-button [activity]
   [:input.btn.btn-danger
    {:type     "button"
     :value    "Delete!"
     :on-click #(activity-handlers/delete-activity activity)}])
 
-(defn- start-session-button
-  ([activity] (start-session-button activity nil))
-  ([activity class]
+(defn- pending-button [class]
+  [:input.btn
+   {:type "button"
+    :class (str class " btn-warning")
+    :value "Pending"}])
+
+(defn- start-session-button [activity class]
    (let [pending (db/subscribe [:pending :start-session])]
      (fn []
-       [:input.btn
-        (merge {:type "button"}
-               (if @pending
-                 {:class (str class " btn-warning")
-                  :value "Pending"}
-                 {:class    (str class " btn-success")
-                  :value    "Start"
-                  :on-click #(session-handlers/start-session activity)}))]))))
+       (condp = @pending
+         nil [:input.btn
+              {:type     "button"
+               :class    (str class " btn-success")
+               :value    "Start"
+               :on-click #(session-handlers/start-session activity)}]
+         activity [pending-button class]
+         nil))))
 
-(defn finish-session-button
-  ([session] (finish-session-button session nil))
-  ([session class]
-   [:input.btn.btn-danger
-    {:type     "button"
-     :class    class
-     :value    "Finish"
-     :on-click #(session-handlers/finish-session session)}]))
+(defn- finish-session-button [session class]
+   (let [pending (db/subscribe [:pending :finish-session])]
+     (fn []
+       (condp = (:activity @pending)
+         nil [:input.btn
+              {:type     "button"
+               :class    (str class " btn-danger")
+               :value    "Finish"
+               :on-click #(session-handlers/finish-session session)}]
+         (session :activity) [pending-button class]
+         nil))))
 
-(defn session-action-button
-  ([activity] (session-action-button activity nil))
-  ([activity class]
+(defn session-action-button [activity class]
    (let [current-session (db/subscribe [:current-session])]
      (fn []
        (cond (nil? @current-session)
-             (start-session-button activity class)
+             [start-session-button activity class]
              (= activity (@current-session :activity))
-             (finish-session-button @current-session class))))))
+             [finish-session-button @current-session class]))))
 
-(defn- new-session-form-button [activity]
+(defn new-session-form-button [activity]
   [:input.btn.btn-primary
    {:type     "button"
     :value    "New Session Form"
