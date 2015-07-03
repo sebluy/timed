@@ -36,7 +36,7 @@
   (response nil))
 
 (defn update-session [session]
-  (Thread/sleep 1000)
+  (Thread/sleep 5000)
   (let [db-sess (db-session session)]
     (if (session :new)
       (db/add-session! db-sess)

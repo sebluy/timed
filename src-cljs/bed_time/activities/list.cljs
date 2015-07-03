@@ -1,29 +1,10 @@
 (ns bed-time.activities.list
   (:require [bed-time.activities.form.components :as form]
+            [bed-time.sessions.components :as session-components]
             [bed-time.framework.db :as db]
             [bed-time.routing :refer [page->href]]
             [bed-time.util :as util]
             [bed-time.sessions.handlers :as session-handlers]))
-
-(defn finish-session-button [session]
-  [:input.btn.btn-sm.btn-danger
-   {:type     "button"
-    :value    "Finish"
-    :on-click #(session-handlers/finish-session session)}])
-
-(defn start-session-button [activity]
-  [:input.btn.btn-sm.btn-success
-   {:type     "button"
-    :value    "Start"
-    :on-click #(session-handlers/start-session activity)}])
-
-(defn session-action-button [activity]
-  (let [current-session (db/subscribe [:current-session])]
-    (fn []
-      (cond (nil? @current-session)
-            (start-session-button activity)
-            (= activity (@current-session :activity))
-            (finish-session-button @current-session)))))
 
 (defn- show-activity [name]
   (let [daily-total (db/subscribe [:aggregates name :week])
@@ -31,7 +12,7 @@
     (fn []
       [:tr
        [:td [:a {:href href} name]]
-       [:td [session-action-button name]]
+       [:td [session-components/session-action-button name "btn-sm"]]
        (doall
          (for [day (util/last-weeks-days)]
            ^{:key day}

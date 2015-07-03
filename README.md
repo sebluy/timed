@@ -1,10 +1,8 @@
 Todo:
 
+Refactor namespaces.
+
 Update dependencies without breaking everything.
-
-Break re-frame dependency.
-
-Add event processing machine.
 
 Add "loading" elements when a visible element is waiting on a asynchronous
 handler.
@@ -14,6 +12,8 @@ Add plots.
 Push to heroku and migrate db.
 
 Done:
+
+Break re-frame dependency.
 
 Add time event and db spot to support a running timer on sessions.
 

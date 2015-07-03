@@ -12,3 +12,13 @@
   (fn [db]
     (assoc db :activities activities)))
 
+(defn add-pending [key]
+  (fn [db]
+    (assoc-in db [:pending key] true)))
+
+(defn remove-pending [key]
+  (fn [db]
+    (update-in db [:pending] #(dissoc % key))))
+
+
+
