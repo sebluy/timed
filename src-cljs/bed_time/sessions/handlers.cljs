@@ -48,6 +48,7 @@
         (comp (transitions/remove-pending :finish-session) transition)))))
 
 (defn delete-session [session]
+  (db/transition (transitions/add-pending :delete-session session))
   (let [response-chan (async/chan)]
     (ajax/POST "/delete-session"
                {:params         {:session session}
@@ -56,7 +57,9 @@
                 :reponse-format :edn})
     (async/go
       (async/<! response-chan)
-      (db/transition (session-transitions/delete-session session)))))
+      (db/transition
+        (comp (transitions/remove-pending :delete-session)
+              (session-transitions/delete-session session))))))
 
 (defn swap-session-transition-chan [old-session new-session]
   (let [response-chan (async/chan)

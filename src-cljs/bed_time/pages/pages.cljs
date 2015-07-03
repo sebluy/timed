@@ -1,4 +1,4 @@
-(ns bed-time.pages
+(ns bed-time.pages.pages
   (:require [bed-time.pages.activity :as activity]
             [bed-time.pages.activities :as activities]
             [bed-time.navbar :as navbar]

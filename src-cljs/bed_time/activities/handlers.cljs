@@ -1,11 +1,13 @@
 (ns bed-time.activities.handlers
   (:require [ajax.core :as ajax]
             [cljs.core.async :as async]
-            [bed-time.activities.transitions :as transitions]
-            [bed-time.framework.db :as db])
+            [bed-time.activities.transitions :as activities-transitions]
+            [bed-time.framework.db :as db]
+            [bed-time.transitions :as transitions])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn delete-activity [activity]
+  (db/transition (transitions/add-pending :delete-activity true))
   (let [response-chan (async/chan)]
     (ajax/POST
       "/delete-activity"
@@ -15,5 +17,9 @@
        :response-format :edn})
     (go
       (async/<! response-chan)
-      (db/transition (transitions/delete-activity activity)))))
+      (db/transition
+        (comp
+          (transitions/redirect {:handler :activities})
+          (transitions/remove-pending :delete-activity)
+          (activities-transitions/delete-activity activity))))))
 

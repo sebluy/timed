@@ -1,8 +1,8 @@
 (ns bed-time.core
-  (:require [bed-time.pages :as pages]
+  (:require [bed-time.pages.pages :as pages]
             [bed-time.subs]
             [bed-time.handlers :as handlers]
-            [bed-time.history :as history]
+            [bed-time.navigation :as navigation]
             [reagent.core :as reagent]
             [goog.dom :as dom]))
 
@@ -10,7 +10,7 @@
   (reagent/render-component [pages/view] (dom/getElement "app")))
 
 (defn init! []
-  (history/hook-browser)
+  (navigation/hook-browser)
   (mount-components)
   (handlers/get-activities))
 

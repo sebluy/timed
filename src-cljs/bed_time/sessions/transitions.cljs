@@ -1,8 +1,12 @@
-(ns bed-time.sessions.transitions)
+(ns bed-time.sessions.transitions
+  (:require [bed-time.sessions.sessions :as sessions]))
 
 (defn update-session [{:keys [activity start] :as session}]
   (fn [db]
-    (assoc-in db [:activities activity start] session)))
+    (if (nil? (get-in db [:activities activity]))
+      (assoc-in db [:activities activity]
+                (assoc (sessions/sessions-map) start session))
+      (assoc-in db [:activities activity start] session))))
 
 (defn delete-session [{:keys [activity start]}]
   (fn [db]

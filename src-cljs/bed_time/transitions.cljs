@@ -1,4 +1,5 @@
-(ns bed-time.transitions)
+(ns bed-time.transitions
+  (:require [bed-time.history :as history]))
 
 (defn set-page [page]
   (fn [db]
@@ -20,5 +21,7 @@
   (fn [db]
     (update-in db [:pending] #(dissoc % key))))
 
-
+(defn redirect [page]
+  (history/replace-token page)
+  (set-page page))
 
