@@ -2,17 +2,40 @@
   (:require [bed-time.sessions.form.transitions :as transitions]
             [bed-time.sessions.form.handlers :as handlers]
             [bed-time.util :as util]
-            [bed-time.framework.db :as db]))
+            [bed-time.framework.db :as db]
+            [bed-time.sessions.components :as session-components]
+            [clojure.string :as string]))
 
-(defn- label [pre-label text]
+(defn start-label [text]
   (let [value (util/str->date @text)
-        error (if (util/datetime-invalid? value) "Invalid Time")
-        date-str (util/date->str value)]
+        error (cond
+                (nil? value) "Start cannot be blank"
+                (util/datetime-invalid? value) "Invalid Date")]
+    [:label "Start: "
+     (if error
+       [:span.label.label-danger error]
+       [:span.label.label-success (util/date->str value)])]))
+
+(defn finish-label [text]
+  (let [value (util/str->date @text)
+        msg (cond
+              (nil? value) "Unfinished"
+              :else (util/date->str value))
+        error (if (and value (util/datetime-invalid? value))
+                "Invalid Date")]
+    [:label "Finish: "
+     (if error
+       [:span.label.label-danger error]
+       [:span.label.label-success msg])]))
+
+(defn- label [pre-label text valid-fn error-fn]
+  (let [value (util/str->date @text)
+        error (error-fn value)
+        valid (valid-fn value)]
     [:label pre-label
-     (if value
-       (if error
-         [:span.label.label-danger error]
-         [:span.label.label-success date-str]))]))
+     (if error
+       [:span.label.label-danger error]
+       [:span.label.label-success valid])]))
 
 (defn- input [key text]
   [:input.form-control
@@ -21,22 +44,28 @@
     :on-change #(db/transition
                  (transitions/update-field key (util/get-event-value %)))}])
 
-(defn- form-group [key pre-label]
+(defn- form-group [key label]
   (let [text (db/subscribe [:page :session-form :fields key])]
     [:div.form-group
-     [label pre-label text]
+     [label text]
      [input key text]]))
 
 (defn- submit [event]
   (.preventDefault event)
   (handlers/submit))
 
+(defn- submit-button []
+  (let [pending (db/subscribe [:pending :session-form])]
+    (if @pending
+      [session-components/pending-button]
+      [:button.btn.btn-primary {:type "submit"} "Update"])))
+
 (defn edit-form []
   [:form {:on-submit submit}
-   [form-group :start "Start: "]
-   [form-group :finish "Finish: "]
+   [form-group :start start-label]
+   [form-group :finish finish-label]
    [:div.btn-toolbar
-    [:button.btn.btn-primary {:type "submit"} "Update"]
+    [submit-button]
     [:button.btn.btn-danger
      {:type     "button"
       :on-click #(db/transition transitions/close)}

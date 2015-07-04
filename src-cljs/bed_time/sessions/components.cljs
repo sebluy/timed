@@ -19,7 +19,7 @@
         [pending-button]
         [:input.btn.btn-danger
          {:type     "button"
-          :value    "Delete!"
+          :value    "Delete"
           :on-click #(activity-handlers/delete-activity activity)}]))))
 
 (defn- start-session-button [activity class]

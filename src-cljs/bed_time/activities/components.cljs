@@ -60,12 +60,14 @@
        [unaccounted-row week-totals]])))
 
 (defn activities-table []
-  (let [pending (db/subscribe [:pending :get-activities])]
+  (let [pending (db/subscribe [:pending :get-activities])
+        activities (db/subscribe [:activities])]
     (fn []
-      (if @pending
-        [:div.jumbotron [:h1.text-center "Pending"]]
-        [:table.table
-         [table-head]
-         [table-body]
-         [table-foot]]))))
+      (cond
+        @pending [:div.jumbotron [:h1.text-center "Pending"]]
+        (seq @activities) [:table.table
+                           [table-head]
+                           [table-body]
+                           [table-foot]]
+        :else [:div.jumbotron [:h1.text-center "No Activities"]]))))
 

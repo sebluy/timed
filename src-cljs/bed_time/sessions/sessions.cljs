@@ -5,7 +5,7 @@
 
 (defn valid? [{:keys [start finish activity]}]
   (not (or (util/datetime-invalid? start)
-           (util/datetime-invalid? finish)
+           (and finish (util/datetime-invalid? finish))
            (nil? activity))))
 
 (defn current? [{finish :finish}]

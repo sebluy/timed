@@ -1,10 +1,13 @@
-(ns bed-time.util)
+(ns bed-time.util
+  (:require [clojure.string :as string]))
 
 (defn get-event-value [event]
   (-> event .-target .-value))
 
 (defn str->date [str]
-  (some->> str js/Date.))
+  (if (string/blank? str)
+    nil
+    (some-> str js/Date.)))
 
 (defn date->str [date]
   (some-> date .toLocaleString))
