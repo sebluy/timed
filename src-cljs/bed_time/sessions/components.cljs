@@ -34,15 +34,15 @@
         activity [pending-button class]
         nil))))
 
-(defn- finish-session-button [session class]
+(defn- finish-session-button [session inner class]
   (let [pending (db/subscribe [:pending :finish-session])]
     (fn []
       (condp = (:activity @pending)
-        nil [:input.btn
+        nil [:button.btn
              {:type     "button"
               :class    (str class " btn-danger")
-              :value    "Finish"
-              :on-click #(session-handlers/finish-session session)}]
+              :on-click #(session-handlers/finish-session session)}
+             inner]
         (session :activity) [pending-button class]
         nil))))
 
@@ -52,7 +52,7 @@
       (cond (nil? @current-session)
             [start-session-button activity class]
             (= activity (@current-session :activity))
-            [finish-session-button @current-session class]))))
+            [finish-session-button @current-session "Finish" class]))))
 
 (defn new-session-form-button [activity]
   [:input.btn.btn-primary

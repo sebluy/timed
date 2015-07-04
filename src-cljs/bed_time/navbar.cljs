@@ -1,24 +1,23 @@
 (ns bed-time.navbar
   (:require [bed-time.routing :refer [page->href]]
-            [bed-time.util :as util]
-            [bed-time.sessions.handlers :as session-handlers]
-            [bed-time.framework.db :as db]))
+            [bed-time.activities.form.components :as activity-form-components]
+            [bed-time.framework.db :as db]
+            [bed-time.sessions.components :as session-components]))
 
-(defn finish-session-button []
-  (fn [current-session]
-    [:button.btn.btn-danger.navbar-btn
-     {:type     "button"
-      :on-click #(session-handlers/finish-session current-session)}
-     (str "Finish " (current-session :activity) " Session ")
+(defn navbar-finish-session-button [current-session]
+  [session-components/finish-session-button
+    current-session
+    (str "Finish " (current-session :activity) " Session ")
+    "navbar-btn"])
      #_[:span.badge (util/time-str
-                      (util/time-diff (current-session :start) @now))]]))
+                      (util/time-diff (current-session :start) @now))]
 
 (defn current-session-nav []
   (let [current-session (db/subscribe [:current-session])]
     (fn []
       (if @current-session
-        [:ul.nav.navbar-nav.navbar-right
-         [:li [finish-session-button @current-session]]]))))
+        [:div.navbar-right (navbar-finish-session-button @current-session)]
+        [activity-form-components/form]))))
 
 (defn navbar []
   (let [activities-href (page->href {:handler :activities})]

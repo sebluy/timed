@@ -13,6 +13,6 @@
   [:div
    [:div.page-header
     [:h1 "Activities"]]
-   [form-slot]
+   #_[form-slot]
    [components/activities-table]])
 

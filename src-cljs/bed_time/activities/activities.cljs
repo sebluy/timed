@@ -1,6 +1,7 @@
 (ns bed-time.activities.activities
   (:require [bed-time.sessions.sessions :as sessions]
-            [bed-time.util :as util]))
+            [bed-time.util :as util]
+            [clojure.string :as string]))
 
 (defn coerce-activities-to-sorted [new-activities]
   (into {} (map (fn [[activity sessions]]
@@ -43,7 +44,9 @@
                     {} (dissoc aggregates :total))))
 
 (defn error [activity]
-  (when-not (re-find #"^\w+$" (or activity ""))
-    "Activity must be not-blank and only
-    contain alpha-numeric characters and _."))
+  (if (string/blank? activity)
+    "Invalid: Blank"
+    (let [invalid-chars (into #{} (re-seq #"\W" activity))]
+      (if (seq invalid-chars)
+        (str "Invalid: " invalid-chars)))))
 

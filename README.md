@@ -1,17 +1,25 @@
 Todo:
 
-Refactor namespaces.
+Add autocomplete to activity fields.
+
+Do not allow session collision.
+
+Add change activity option to session form.
+
+Add rename activity button.
 
 Update dependencies without breaking everything.
 
-Add "loading" elements when a visible element is waiting on a asynchronous
-handler.
+Add ticks back in.
 
 Add plots.
 
 Push to heroku and migrate db.
 
 Done:
+
+Add "loading" elements when a visible element is waiting on a asynchronous
+handler.
 
 Break re-frame dependency.
 
