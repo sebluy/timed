@@ -16,8 +16,11 @@
 (defn register-virtual-sub [path fn]
   (swap! virtual-subs #(assoc-in % path fn)))
 
+(defn query-core [path]
+  (get-in @db path))
+
 (defn query [path]
-  (let [db-value (get-in @db path)]
+  (let [db-value (query-core path)]
       (cond (not (nil? db-value))
             db-value
             :else

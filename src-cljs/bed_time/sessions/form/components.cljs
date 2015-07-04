@@ -3,52 +3,30 @@
             [bed-time.sessions.form.handlers :as handlers]
             [bed-time.util :as util]
             [bed-time.framework.db :as db]
-            [bed-time.sessions.components :as session-components]
-            [clojure.string :as string]))
+            [bed-time.sessions.components :as session-components]))
 
-(defn start-label [text]
-  (let [value (util/str->date @text)
-        error (cond
-                (nil? value) "Start cannot be blank"
-                (util/datetime-invalid? value) "Invalid Date")]
-    [:label "Start: "
-     (if error
-       [:span.label.label-danger error]
-       [:span.label.label-success (util/date->str value)])]))
+(defn label [key]
+  (let [message (db/subscribe [:page :session-form :fields key :message])
+        error (db/subscribe [:page :session-form :fields key :error])]
+    [:label ({:start "Start: " :finish "Finish: "} key)
+     (if @error
+       [:span.label.label-danger @error]
+       [:span.label.label-success @message])]))
 
-(defn finish-label [text]
-  (let [value (util/str->date @text)
-        msg (cond
-              (nil? value) "Unfinished"
-              :else (util/date->str value))
-        error (if (and value (util/datetime-invalid? value))
-                "Invalid Date")]
-    [:label "Finish: "
-     (if error
-       [:span.label.label-danger error]
-       [:span.label.label-success msg])]))
+(defn- input [key]
+  (let [text (db/subscribe [:page :session-form :fields key :text])]
+    (fn []
+      [:input.form-control
+       {:type      "text"
+        :value     @text
+        :on-change #(db/transition
+                     (transitions/update-field key
+                                               (util/get-event-value %)))}])))
 
-(defn- label [pre-label text valid-fn error-fn]
-  (let [value (util/str->date @text)
-        error (error-fn value)
-        valid (valid-fn value)]
-    [:label pre-label
-     (if error
-       [:span.label.label-danger error]
-       [:span.label.label-success valid])]))
-
-(defn- input [key text]
-  [:input.form-control
-   {:type      "text"
-    :value     @text
-    :on-change #(db/transition
-                 (transitions/update-field key (util/get-event-value %)))}])
-
-(defn- form-group [key label]
-  (let [text (db/subscribe [:page :session-form :fields key])]
-    [:div.form-group
-     [label text]
-     [input key text]]))
+(defn- form-group [key]
+  [:div.form-group
+   [label key]
+   [input key]])
 
 (defn- submit [event]
   (.preventDefault event)
@@ -62,8 +40,8 @@
 
 (defn edit-form []
   [:form {:on-submit submit}
-   [form-group :start start-label]
-   [form-group :finish finish-label]
+   [form-group :start]
+   [form-group :finish]
    [:div.btn-toolbar
     [submit-button]
     [:button.btn.btn-danger

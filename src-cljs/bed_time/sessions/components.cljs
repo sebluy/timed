@@ -1,5 +1,5 @@
 (ns bed-time.sessions.components
-  (:require [bed-time.sessions.sessions :as session]
+  (:require [bed-time.sessions.sessions :as sessions]
             [bed-time.sessions.handlers :as session-handlers]
             [bed-time.sessions.form.transitions :as form-transitions]
             [bed-time.util :as util]
@@ -84,13 +84,13 @@
       [:tr
        (if (= session @session-under-edit)
          {:class "active"})
-       [:td (.toLocaleString start)]
-       [:td (if-not (session/current? session)
-              (.toLocaleString finish)
-              "Unfinished")]
-       [:td (util/time-str (session/time-spent session))]
-       [:td (edit-session-button session)]
-       [:td [delete-session-button session]]])))
+       [:td (sessions/string :start start)]
+       [:td (sessions/string :finish finish)]
+       [:td (util/time-str (sessions/time-spent session))]
+       [:td
+        [:p.btn-toolbar
+         (edit-session-button session)
+         [delete-session-button session]]]])))
 
 (defn session-list [activity]
   (let [sessions (db/subscribe [:activities activity])]

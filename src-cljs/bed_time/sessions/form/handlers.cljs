@@ -14,8 +14,8 @@
         (db/query [:page :session-form])
         new-session
         {:activity activity
-         :start    (util/str->date (fields :start))
-         :finish   (util/str->date (fields :finish))}]
+         :start    (util/str->date (get-in fields [:start :text]))
+         :finish   (util/str->date (get-in fields [:finish :text]))}]
     (when (sessions/valid? new-session)
       (db/transition (transitions/add-pending :session-form true))
       (async/go

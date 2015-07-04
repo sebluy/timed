@@ -22,3 +22,22 @@
     (util/time-diff start (js/Date.))
     (util/time-diff start finish)))
 
+(defmulti string (fn [key _] key))
+
+(defmethod string :start [_ value]
+  (util/date->str value))
+
+(defmethod string :finish [_ value]
+  (if (nil? value)
+    "Unfinished"
+    (util/date->str value)))
+
+(defmulti error (fn [key _] key))
+
+(defmethod error :start [_ value]
+  (cond (nil? value) "Start cannot be blank"
+        (util/datetime-invalid? value) "Invalid Date"))
+
+(defmethod error :finish [_ value]
+  (if (and value (util/datetime-invalid? value))
+    "Invalid Date"))

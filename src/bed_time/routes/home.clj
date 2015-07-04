@@ -19,6 +19,7 @@
    :finish (sql-datetime finish)})
 
 (defn get-activities []
+  (Thread/sleep 1000)
   (response
     (reduce (fn [activities session]
               (let [activity-name (session :activity)]
@@ -27,16 +28,18 @@
                 {} (db/get-activities))))
 
 (defn delete-activity [activity]
+  (Thread/sleep 1000)
   (db/delete-activity! {:activity activity})
   (response nil))
 
 (defn swap-session [old-session new-session]
+  (Thread/sleep 1000)
   (db/delete-session! (db-session old-session))
   (db/add-session! (db-session new-session))
   (response nil))
 
 (defn update-session [session]
-  (Thread/sleep 5000)
+  (Thread/sleep 1000)
   (let [db-sess (db-session session)]
     (if (session :new)
       (db/add-session! db-sess)
@@ -44,6 +47,7 @@
     (response nil)))
 
 (defn delete-session [{:keys [start]}]
+  (Thread/sleep 1000)
   (db/delete-session! {:start (sql-datetime start)})
   (response nil))
 
