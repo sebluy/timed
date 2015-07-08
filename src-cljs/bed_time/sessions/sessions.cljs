@@ -8,19 +8,36 @@
            (and finish (util/datetime-invalid? finish))
            (nil? activity))))
 
-(defn current? [{finish :finish}]
-  (nil? finish))
+(defn current? [{:keys [finish pending]}]
+  (and (nil? finish) (not= (:action pending) :start)))
 
 (defn- find-current-in-sessions [sessions]
   (first (filter #(current? %) (vals sessions))))
 
 (defn current [activities]
-  (some #(find-current-in-sessions  %) (vals activities)))
+  (condp = activities
+    :pending :activities-pending
+    nil nil
+    (some #(find-current-in-sessions %) (vals activities))))
 
-(defn time-spent [{:keys [start finish] :as session}]
-  (if (current? session)
-    (util/time-diff start (js/Date.))
-    (util/time-diff start finish)))
+(defn pending? [{pending :pending}]
+  (some? pending))
+
+(defn- find-pending-in-sessions [sessions]
+  (first (filter #(pending? %) (vals sessions))))
+
+(defn pending [activities]
+  (condp = activities
+    :pending :activities-pending
+    nil nil
+    (some #(find-pending-in-sessions %) (vals activities))))
+
+(defn time-spent
+  ([session] (time-spent session (js/Date.)))
+  ([{:keys [start finish]} now]
+   (if (nil? finish)
+     (util/time-diff start now)
+     (util/time-diff start finish))))
 
 (defmulti string (fn [key _] key))
 

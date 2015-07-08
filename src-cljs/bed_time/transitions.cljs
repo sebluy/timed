@@ -1,15 +1,23 @@
 (ns bed-time.transitions
-  (:require [bed-time.history :as history]))
+  (:require [bed-time.history :as history]
+            [bed-time.framework.db :as db]))
 
 (defn set-page [page]
   (fn [db]
     (assoc db :page page)))
 
-(defn tick [now]
-  (fn [db]
-    (assoc db :tick now)))
+#_(defn tick [db]
+  (assoc-in db [:tick :now] (js/Date.)))
 
-(defn reload-activities [activities]
+#_(defn start-tick [db]
+  (assoc db :tick {:now      (js/Date.)
+                   :interval (js/setInterval #(db/transition tick) 1000)}))
+
+#_(defn stop-tick [db]
+  (js/clearInterval (get-in db [:tick :interval]))
+  (dissoc db :tick))
+
+(defn update-activities [activities]
   (fn [db]
     (assoc db :activities activities)))
 

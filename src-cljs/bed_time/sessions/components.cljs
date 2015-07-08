@@ -1,78 +1,66 @@
 (ns bed-time.sessions.components
-  (:require [bed-time.sessions.sessions :as sessions]
+  (:require [bed-time.components :as components]
+            [bed-time.sessions.sessions :as sessions]
             [bed-time.sessions.handlers :as session-handlers]
+            [bed-time.sessions.form.handlers :as form-handlers]
             [bed-time.sessions.form.transitions :as form-transitions]
             [bed-time.util :as util]
-            [bed-time.framework.db :as db]
-            [bed-time.activities.handlers :as activity-handlers]))
+            [bed-time.framework.db :as db]))
 
-(defn- pending-button [class]
-  [:input.btn
-   {:type  "button"
-    :class (str class " btn-warning")
-    :value "Pending"}])
-
-(defn delete-activity-button [activity]
-  (let [pending (db/subscribe [:pending :delete-activity])]
+(defn- start-button [activity class source]
+  (let [pending (db/subscribe [:pending-session])]
     (fn []
-      (if @pending
-        [pending-button]
-        [:input.btn.btn-danger
+      (cond
+        (= @pending nil)
+        [:input.btn
          {:type     "button"
-          :value    "Delete"
-          :on-click #(activity-handlers/delete-activity activity)}]))))
+          :class    (str class " btn-success")
+          :value    "Start"
+          :on-click #(session-handlers/start-session activity source identity)}]
+        (and (= (:activity @pending) activity)
+             (= (get-in @pending [:pending :source]) source))
+        [components/pending-button class]))))
 
-(defn- start-session-button [activity class]
-  (let [pending (db/subscribe [:pending :start-session])]
-    (fn []
-      (condp = @pending
-        nil [:input.btn
-             {:type     "button"
-              :class    (str class " btn-success")
-              :value    "Start"
-              :on-click #(session-handlers/start-session activity)}]
-        activity [pending-button class]
-        nil))))
+(defn- finish-button [source inner class]
+  (let [pending (db/subscribe [:pending-session])]
+    (fn [session]
+      (cond
+        (= @pending nil)
+        [:button.btn
+         {:type     "button"
+          :class    (str class " btn-danger")
+          :on-click #(session-handlers/finish-session session source)}
+         inner]
+        (and (= (:activity @pending) (:activity session))
+             (= (get-in @pending [:pending :source]) source))
+        [components/pending-button class]))))
 
-(defn- finish-session-button [session inner class]
-  (let [pending (db/subscribe [:pending :finish-session])]
-    (fn []
-      (condp = (:activity @pending)
-        nil [:button.btn
-             {:type     "button"
-              :class    (str class " btn-danger")
-              :on-click #(session-handlers/finish-session session)}
-             inner]
-        (session :activity) [pending-button class]
-        nil))))
-
-(defn session-action-button [activity class]
+(defn action-button [activity class source]
   (let [current-session (db/subscribe [:current-session])]
     (fn []
       (cond (nil? @current-session)
-            [start-session-button activity class]
+            [start-button activity class source]
             (= activity (@current-session :activity))
-            [finish-session-button @current-session "Finish" class]))))
+            [(finish-button source "Finish" class) @current-session]))))
 
-(defn new-session-form-button [activity]
+(defn new-button [activity]
   [:input.btn.btn-primary
    {:type     "button"
-    :value    "New Session Form"
-    :on-click #(db/transition
-                (form-transitions/open {:activity activity :new true}))}])
+    :value    "New"
+    :on-click #(form-handlers/open {:activity activity :new true})}])
 
-(defn- edit-session-button [session]
+(defn- edit-button [session]
   [:input.btn.btn-sm.btn-warning
    {:type     "button"
-    :value    "Edit!"
-    :on-click #(db/transition
-                (form-transitions/open session))}])
+    :value    "Edit"
+    :on-click #(form-handlers/open session)}])
 
-(defn- delete-session-button [session]
-  (let [pending (db/subscribe [:pending :delete-session])]
+(defn- delete-button [session]
+  (let [pending (db/subscribe [:pending-session])]
     (fn []
-      (if (= (:start @pending) (session :start))
-        [pending-button "btn-sm"]
+      (if (and (= (get-in @pending [:pending :action]) :delete)
+               (= (@pending :start) (session :start)))
+        [components/pending-button "btn-sm"]
         [:input.btn.btn-sm.btn-danger
          {:type     "button"
           :value    "Delete"
@@ -89,8 +77,8 @@
        [:td (util/time-str (sessions/time-spent session))]
        [:td
         [:p.btn-toolbar
-         (edit-session-button session)
-         [delete-session-button session]]]])))
+         (edit-button session)
+         [delete-button session]]]])))
 
 (defn session-list [activity]
   (let [sessions (db/subscribe [:activities activity])]

@@ -2,13 +2,13 @@
   (:require [bed-time.layout :as layout]
             [bed-time.db.core :as db]
             [compojure.core :refer [defroutes GET POST]]
-            [clojure.java.io :as io]
-            [ring.util.response :refer [response]]))
+            [ring.util.response :refer [response]])
+  (:import (java.sql Timestamp)))
 
 (defn sql-datetime [datetime]
   (some-> datetime
           .getTime
-          java.sql.Timestamp.))
+          Timestamp.))
 
 (defn home-page []
   (layout/render "home.html"))
@@ -32,19 +32,16 @@
   (db/delete-activity! {:activity activity})
   (response nil))
 
-(defn swap-session [old-session new-session]
+(defn update-session [old-session new-session]
   (Thread/sleep 1000)
   (db/delete-session! (db-session old-session))
   (db/add-session! (db-session new-session))
   (response nil))
 
-(defn update-session [session]
+(defn add-session [session]
   (Thread/sleep 1000)
-  (let [db-sess (db-session session)]
-    (if (session :new)
-      (db/add-session! db-sess)
-      (db/update-session! db-sess))
-    (response nil)))
+  (db/add-session! (db-session session))
+  (response nil))
 
 (defn delete-session [{:keys [start]}]
   (Thread/sleep 1000)
@@ -52,11 +49,11 @@
   (response nil))
 
 (defroutes home-routes
-           (POST "/swap-session" [old-session new-session]
-             (swap-session old-session new-session))
-           (POST "/update-session" [session] (update-session session))
+           (POST "/add-session" [session] (add-session session))
+           (POST "/update-session" [old-session new-session]
+             (update-session old-session new-session))
+           (POST "/delete-session" [session] (delete-session session))
            (POST "/delete-activity" [activity] (delete-activity activity))
            (GET "/activities" [] (get-activities))
-           (GET "/" [] (home-page))
-           (POST "/delete-session" [session] (delete-session session)))
+           (GET "/" [] (home-page)))
 

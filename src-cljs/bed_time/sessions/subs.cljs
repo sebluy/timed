@@ -5,4 +5,4 @@
   (let [activity (db/query [:page :route-params :activity])]
     (db/query [:activities activity])))
 
-(db/register-virtual-sub [:page :sessions] sessions)
+(db/register-derived-query [:page :sessions] sessions)

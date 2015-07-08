@@ -9,7 +9,10 @@
             [bed-time.transitions :as transitions])
   (:require-macros [cljs.core.async.macros :as async]))
 
-(defn submit []
+(defn open [session]
+  (db/transition (form-transitions/open session)))
+
+#_(defn submit []
   (let [{:keys [activity new old-session fields]}
         (db/query [:page :session-form])
         new-session

@@ -5,10 +5,11 @@
             [bed-time.sessions.transitions :as session-transitions]
             [bed-time.sessions.sessions :as sessions]
             [bed-time.handlers :as handlers]
+            [bed-time.remote-handlers :as remote-handlers]
             [bed-time.transitions :as transitions])
   (:require-macros [cljs.core.async.macros :as async]))
 
-(defn update-session-transition-chan [session]
+#_(defn update-session-transition-chan [session]
   (let [response-chan (async/chan)
         transition-chan (async/chan)]
     (ajax/POST
@@ -24,44 +25,47 @@
         (session-transitions/update-session (dissoc session :new))))
     transition-chan))
 
-(defn update-session [session]
+#_(defn update-session [session]
   (async/go
     (db/transition (async/<! (update-session-transition-chan session)))))
 
-(defn start-session [activity]
-  (db/transition (transitions/add-pending :start-session activity))
-  (async/go
-    (let [new-session {:activity activity
-                       :start (js/Date.)
-                       :finish nil
-                       :new true}
-          transition (async/<! (update-session-transition-chan new-session))]
-      (db/transition
-        (comp (transitions/remove-pending :start-session) transition)))))
+(defn start-session
+  ([activity source] (start-session activity source identity))
+  ([activity source pre-transition]
+   (let [session {:activity activity
+                  :start    (js/Date.)
+                  :finish   nil}]
+     (db/transition
+       (comp pre-transition
+             (session-transitions/add-session
+               (assoc session :pending {:source source :action :start}))))
+     (async/go
+       (async/<! (remote-handlers/add-session session))
+       (db/transition
+         (session-transitions/update-session session #(dissoc % :pending)))))))
 
-(defn finish-session [session]
-  (db/transition (transitions/add-pending :finish-session session))
+(defn finish-session [session source]
+  (db/transition
+    (session-transitions/update-session
+      session
+      #(assoc % :pending {:source source :action :finish})))
   (async/go
-    (let [finished (assoc session :finish (js/Date.) :new false)
-          transition (async/<!(update-session-transition-chan finished))]
+    (let [finished (assoc session :finish (js/Date.))]
+      (async/<! (remote-handlers/update-session session finished))
       (db/transition
-        (comp (transitions/remove-pending :finish-session) transition)))))
+        (session-transitions/update-session session #(identity finished))))))
 
 (defn delete-session [session]
-  (db/transition (transitions/add-pending :delete-session session))
-  (let [response-chan (async/chan)]
-    (ajax/POST "/delete-session"
-               {:params         {:session session}
-                :handler        #(async/close! response-chan)
-                :format         :edn
-                :reponse-format :edn})
-    (async/go
-      (async/<! response-chan)
-      (db/transition
-        (comp (transitions/remove-pending :delete-session)
-              (session-transitions/delete-session session))))))
+  (db/transition
+    (session-transitions/update-session
+      session
+      #(assoc % :pending {:action :delete})))
+  (async/go
+    (async/<! (remote-handlers/delete-session session))
+    (db/transition
+      (session-transitions/delete-session session))))
 
-(defn swap-session-transition-chan [old-session new-session]
+#_(defn swap-session-transition-chan [old-session new-session]
   (let [response-chan (async/chan)
         transition-chan (async/chan)]
     (ajax/POST "/swap-session"
@@ -77,7 +81,7 @@
         (session-transitions/swap-session old-session new-session)))
     transition-chan))
 
-(defn swap-session [old-session new-session]
+#_(defn swap-session [old-session new-session]
   (async/go
     (db/transition
       (async/<! (swap-session-transition-chan old-session new-session)))))

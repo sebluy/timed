@@ -1,8 +1,20 @@
 (ns bed-time.activities.components
   (:require [bed-time.sessions.components :as session-components]
+            [bed-time.components :as components]
             [bed-time.framework.db :as db]
             [bed-time.routing :refer [page->href]]
-            [bed-time.util :as util]))
+            [bed-time.util :as util]
+            [bed-time.activities.handlers :as activity-handlers]))
+
+(defn delete-button [activity]
+  (let [pending (db/subscribe [:pending :delete-activity])]
+    (fn []
+      (if @pending
+        [components/pending-button]
+        [:input.btn.btn-danger
+         {:type     "button"
+          :value    "Delete"
+          :on-click #(activity-handlers/delete-activity activity)}]))))
 
 (defn- show-activity [name]
   (let [daily-total (db/subscribe [:aggregates name :week])
@@ -10,7 +22,7 @@
     (fn []
       [:tr
        [:td [:a {:href href} name]]
-       [:td [session-components/session-action-button name "btn-sm"]]
+       [:td [session-components/action-button name "btn-sm" :activity-table]]
        (doall
          (for [day (util/last-weeks-days)]
            ^{:key day}
@@ -60,7 +72,7 @@
        [unaccounted-row week-totals]])))
 
 (defn activities-table []
-  (let [pending (db/subscribe [:pending :get-activities])
+  (let [pending (db/subscribe [:pending :activities])
         activities (db/subscribe [:activities])]
     (fn []
       (cond

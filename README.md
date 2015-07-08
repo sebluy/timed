@@ -1,5 +1,11 @@
 Todo:
 
+Rethink subscription tree semantics.
+
+Separate remote and local data.
+
+Add server side validation.
+
 Add autocomplete to activity fields.
 
 Do not allow session collision.
