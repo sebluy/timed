@@ -4,7 +4,8 @@
             [bed-time.framework.db :as db]
             [bed-time.sessions.components :as session-components]
             [bed-time.util :as util]
-            [bed-time.sessions.sessions :as sessions]))
+            [bed-time.sessions.sessions :as sessions])
+  (:require-macros [bed-time.macros :refer [with-subs]]))
 
 #_(defn navbar-finish-session-button [current-session]
   (println current-session)
@@ -14,11 +15,12 @@
    "navbar-btn"])
 
 (defn current-session-nav []
-  (let [activity-form-visible? (db/subscribe [:activity-form-visible?])]
+  (with-subs
+    [activity-form-visible? [:activity-form-visible?]]
     (fn []
       (if @activity-form-visible?
-        [activity-form-components/form]
-        [:div] #_[:div.navbar-right [navbar-finish-session-button @current-session]]))))
+;        [activity-form-components/form]
+[:div] #_[:div.navbar-right [navbar-finish-session-button @current-session]]))))
 
 (defn navbar []
   (let [activities-href (page->href {:handler :activities})]
@@ -28,5 +30,6 @@
        [:a.navbar-brand {:href activities-href} "Bed Time!"]]
       [:ul.nav.navbar-nav
        [:li [:a {:href activities-href} "Activities"]]]
-      [current-session-nav]]]))
+       #_[current-session-nav]]]))
+
 

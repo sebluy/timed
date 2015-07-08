@@ -4,6 +4,7 @@
 
 (defonce ^:private db (reagent/atom {}))
 (defonce ^:private derived-queries (reagent/atom {}))
+(defonce ^:private active-subscriptions (atom {}))
 
 (defn register-derived-query [path fn]
   (swap! derived-queries #(assoc-in % path fn)))
@@ -24,8 +25,23 @@
       db-value
       (query-derived path))))
 
+(defn add-active-subscription [path subscription]
+  (println "Adding " path)
+  (swap! active-subscriptions #(assoc % path subscription)))
+
+(defn unsubscribe [path]
+  (println "Removing " path)
+  (swap! active-subscriptions #(dissoc % path)))
+
+(for [key (keys @active-subscriptions)]
+  (println key))
+
 (defn subscribe [path]
-  (reaction (query path)))
+  (if-let [subscription (@active-subscriptions path)]
+    subscription
+    (let [subscription (reaction (query path))]
+      (add-active-subscription path subscription)
+      subscription)))
 
 (defn transition [transition-fn]
   (swap! db #(transition-fn %)))

@@ -14,3 +14,6 @@
   (mount-components)
   (handlers/get-activities))
 
+(macroexpand '(bed-time.macros/with-subs nil
+                          (fn [] "hi")))
+

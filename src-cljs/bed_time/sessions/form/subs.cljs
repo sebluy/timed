@@ -12,3 +12,4 @@
       :error (sessions/error key value))))
 
 (db/register-derived-query [:page :session-form :fields] fields)
+
