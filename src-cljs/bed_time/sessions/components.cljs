@@ -5,10 +5,11 @@
             [bed-time.sessions.form.handlers :as form-handlers]
             [bed-time.sessions.form.transitions :as form-transitions]
             [bed-time.util :as util]
-            [bed-time.framework.db :as db]))
+            [bed-time.framework.db :as db])
+  (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn- start-button [activity class source]
-  (let [pending (db/subscribe [:pending-session])]
+  (with-subs [pending [:pending-session]]
     (fn []
       (cond
         (= @pending nil)
@@ -22,7 +23,7 @@
         [components/pending-button class]))))
 
 (defn- finish-button [source inner class]
-  (let [pending (db/subscribe [:pending-session])]
+  (with-subs [pending [:pending-session]]
     (fn [session]
       (cond
         (= @pending nil)
@@ -36,7 +37,7 @@
         [components/pending-button class]))))
 
 (defn action-button [activity class source]
-  (let [current-session (db/subscribe [:current-session])]
+  (with-subs [current-session [:current-session]]
     (fn []
       (cond (nil? @current-session)
             [start-button activity class source]
@@ -56,7 +57,7 @@
     :on-click #(form-handlers/open session)}])
 
 (defn- delete-button [session]
-  (let [pending (db/subscribe [:pending-session])]
+  (with-subs [pending [:pending-session]]
     (fn []
       (if (and (= (get-in @pending [:pending :action]) :delete)
                (= (@pending :start) (session :start)))
@@ -67,7 +68,7 @@
           :on-click #(session-handlers/delete-session session)}]))))
 
 (defn- show-session []
-  (let [session-under-edit (db/subscribe [:page :session-form :old-session])]
+  (with-subs [session-under-edit [:page :session-form :old-session]]
     (fn [{:keys [start finish] :as session}]
       [:tr
        (if (= session @session-under-edit)
@@ -81,7 +82,7 @@
          [delete-button session]]]])))
 
 (defn session-list [activity]
-  (let [sessions (db/subscribe [:activities activity])]
+  (with-subs [sessions [:activities activity]]
     (fn []
       [:table.table
        [:thead

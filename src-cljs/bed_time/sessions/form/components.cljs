@@ -1,16 +1,13 @@
 (ns bed-time.sessions.form.components
   (:require [bed-time.sessions.form.transitions :as transitions]
-            [bed-time.sessions.form.handlers :as handlers]
             [bed-time.util :as util]
-            [bed-time.framework.db :as db]
             [bed-time.components :as components]
-            [reagent.core :as reagent]))
-
-
+            [bed-time.framework.db :as db])
+  (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn label [key]
-  (let [message (db/subscribe [:page :session-form :fields key :message])
-        error (db/subscribe [:page :session-form :fields key :error])]
+  (with-subs [message [:page :session-form :fields key :message]
+              error [:page :session-form :fields key :error]]
     (fn []
       [:label ({:start "Start: " :finish "Finish: "} key)
        (if @error
@@ -18,7 +15,7 @@
          [:span.label.label-success @message])])))
 
 (defn- input [key]
-  (let [text (db/subscribe [:page :session-form :fields key :text])]
+  (with-subs [text [:page :session-form :fields key :text]]
     (fn []
       [:input.form-control
        {:type      "text"
@@ -33,7 +30,7 @@
    [input key]])
 
 (defn- submit-button []
-  (let [pending (db/subscribe [:pending :session-form])]
+  (with-subs [pending [:pending :session-form]]
     (if @pending
       [components/pending-button]
       [:button.btn.btn-primary {:type "submit"} "Update"])))

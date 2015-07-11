@@ -1,7 +1,7 @@
 (ns bed-time.activities.form.components
   (:require [bed-time.util :as util]
-            [bed-time.activities.form.handlers :as form-handlers]
-            [bed-time.framework.db :as db]))
+            [bed-time.activities.form.handlers :as form-handlers])
+  (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn- activity-input [field]
   [:input.form-control
@@ -20,9 +20,9 @@
     [:button.btn.btn-success {:type "submit"} "Start"]))
 
 (defn form []
-  (let [field (db/subscribe [:page :activity-form :field])
-        error (db/subscribe [:page :activity-form :error])
-        pending (db/subscribe [:page :activity-form :pending])]
+  (with-subs [field [:page :activity-form :field]
+              error [:page :activity-form :error]
+              pending [:page :activity-form :pending]]
     (fn []
       [:form.navbar-form.navbar-right
        {:on-submit #(do (.preventDefault %)

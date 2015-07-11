@@ -93,7 +93,8 @@
          :cljsbuild
          {:builds
           {:app
-           {:source-paths ["env/dev/cljs"] :compiler {:source-map true}}}}
+           {:source-paths ["env/dev/cljs" "test-cljs"]
+            :compiler {:source-map true}}}}
 
          :repl-options {:init-ns bed-time.dev}
 

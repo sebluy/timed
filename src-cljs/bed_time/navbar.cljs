@@ -19,8 +19,8 @@
     [activity-form-visible? [:activity-form-visible?]]
     (fn []
       (if @activity-form-visible?
-;        [activity-form-components/form]
-[:div] #_[:div.navbar-right [navbar-finish-session-button @current-session]]))))
+        [activity-form-components/form]
+        [:div] #_[:div.navbar-right [navbar-finish-session-button @current-session]]))))
 
 (defn navbar []
   (let [activities-href (page->href {:handler :activities})]
@@ -30,6 +30,6 @@
        [:a.navbar-brand {:href activities-href} "Bed Time!"]]
       [:ul.nav.navbar-nav
        [:li [:a {:href activities-href} "Activities"]]]
-       #_[current-session-nav]]]))
+       [current-session-nav]]]))
 
 

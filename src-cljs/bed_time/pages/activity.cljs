@@ -2,7 +2,8 @@
   (:require [bed-time.framework.db :as db]
             [bed-time.sessions.form.components :as form]
             [bed-time.sessions.components :as session-components]
-            [bed-time.activities.components :as activity-components]))
+            [bed-time.activities.components :as activity-components])
+  (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn- page-header [activity]
   [:div.page-header
@@ -13,13 +14,13 @@
      [activity-components/delete-button activity]]]])
 
 (defn edit-form-slot []
-  (let [edit-form (db/subscribe [:page :session-form])]
+  (with-subs [edit-form [:page :session-form]]
     (fn []
       (if @edit-form
         [form/edit-form]))))
 
 (defn page []
-  (let [activity (db/subscribe [:page :route-params :activity])]
+  (with-subs [activity [:page :route-params :activity]]
     (fn []
       [:div.col-md-8.col-md-offset-2
        [page-header @activity]

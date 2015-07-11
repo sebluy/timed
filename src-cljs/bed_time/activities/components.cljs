@@ -1,13 +1,14 @@
 (ns bed-time.activities.components
   (:require [bed-time.sessions.components :as session-components]
             [bed-time.components :as components]
-            [bed-time.framework.db :as db]
             [bed-time.routing :refer [page->href]]
             [bed-time.util :as util]
-            [bed-time.activities.handlers :as activity-handlers]))
+            [bed-time.activities.handlers :as activity-handlers])
+  (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn delete-button [activity]
-  (let [pending (db/subscribe [:pending :delete-activity])]
+  (with-subs
+    [pending [:pending :delete-activity]]
     (fn []
       (if @pending
         [components/pending-button]
@@ -17,16 +18,17 @@
           :on-click #(activity-handlers/delete-activity activity)}]))))
 
 (defn- show-activity [name]
-  (let [daily-total (db/subscribe [:aggregates name :week])
-        href (page->href {:handler :activity :route-params {:activity name}})]
-    (fn []
-      [:tr
-       [:td [:a {:href href} name]]
-       [:td [session-components/action-button name "btn-sm" :activity-table]]
-       (doall
-         (for [day (util/last-weeks-days)]
-           ^{:key day}
-           [:td (util/time-str (@daily-total day))]))])))
+  (let [href (page->href {:handler :activity :route-params {:activity name}})]
+    (with-subs
+      [daily-total [:aggregates name :week]]
+      (fn []
+        [:tr
+         [:td [:a {:href href} name]]
+         [:td [session-components/action-button name "btn-sm" :activity-table]]
+         (doall
+           (for [day (util/last-weeks-days)]
+             ^{:key day}
+             [:td (util/time-str (@daily-total day))]))]))))
 
 (defn- table-head []
   [:thead
@@ -56,7 +58,8 @@
        [:td (util/time-str (- (util/days->ms 1) (@week-totals day)))]))])
 
 (defn- table-body []
-  (let [activities (db/subscribe [:activities])]
+  (with-subs
+    [activities [:activities]]
     (fn []
       [:tbody
        (doall
@@ -65,15 +68,17 @@
            [show-activity activity-name]))])))
 
 (defn- table-foot []
-  (let [week-totals (db/subscribe [:aggregates :total :week])]
+  (with-subs
+    [week-totals [:aggregates :total :week]]
     (fn []
       [:tfoot
        [totals-row week-totals]
        [unaccounted-row week-totals]])))
 
 (defn activities-table []
-  (let [pending (db/subscribe [:pending :activities])
-        activities (db/subscribe [:activities])]
+  (with-subs
+    [pending [:pending :activities]
+     activities [:activities]]
     (fn []
       (cond
         @pending [:div.jumbotron [:h1.text-center "Pending"]]
