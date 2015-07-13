@@ -6,7 +6,7 @@
 (defonce ^:private db (reagent/atom {}))
 (defonce ^:private derived-queries {})
 (defonce ^:private active-reactions {})
-(defonce ^:private pending-unsubscribe #{})
+(defonce ^:private pending-unsubscribe {})
 
 (defn transition [transition-fn]
   (swap! db #(transition-fn %)))
@@ -15,8 +15,11 @@
   (get-in @db path))
 
 (defn- query-derived [path]
-  (let [query (derived-queries path)]
-    ((query) path)))
+  (loop [query derived-queries path path]
+    (cond (map? query)
+          (recur (query (first path)) (rest path))
+          (ifn? query)
+          ((query path)))))
 
 (defn query [path]
   (let [db-value (query-db path)]
@@ -25,14 +28,15 @@
       (query-derived path))))
 
 (defn register-derived-query [path fn]
-  (set! derived-queries (assoc derived-queries path fn)))
+  (set! derived-queries (assoc-in derived-queries path fn)))
 
 (defn batch-unsubscribe []
   (println "flushing")
-  (doseq [path pending-unsubscribe]
+  (doseq [[path subscription] pending-unsubscribe]
     (println "Removing " path)
+    (.reset-reaction subscription)
     (set! active-reactions (dissoc active-reactions path)))
-  (set! pending-unsubscribe #{}))
+  (set! pending-unsubscribe {}))
 
 (defn unsubscribe-flush-loop []
   (batch-unsubscribe)
@@ -42,30 +46,32 @@
 
 (defn add-active-reaction [path reaction]
   (println "adding " path)
-  (set! pending-unsubscribe (disj pending-unsubscribe path))
+  (set! pending-unsubscribe (dissoc pending-unsubscribe path))
   (set! active-reactions (assoc active-reactions path reaction)))
 
-(defn unsubscribe [path]
-  (set! pending-unsubscribe (conj pending-unsubscribe path)))
+(defn unsubscribe [path subscription]
+  (set! pending-unsubscribe (assoc pending-unsubscribe path subscription)))
 
-(defn subscribe [path]
+(defn subscribe [path subscription]
   (if-let [reaction (active-reactions path)]
     reaction
     (let [reaction (ratom/make-reaction
                      #(query path)
                      :on-dispose #(do (println "Disposing" path)
-                                      (unsubscribe path)))]
+                                      (unsubscribe path subscription)))]
       (add-active-reaction path reaction)
       reaction)))
 
 (deftype Subscription [^:mutable reaction path]
+  Object
+  (reset-reaction [_]
+    (set! reaction nil))
   IDeref
-  (-deref [_]
+  (-deref [this]
     (if (nil? reaction)
-      (set! reaction (subscribe path)))
+      (set! reaction (subscribe path this)))
     @reaction))
 
 (defn make-subscription [path]
   (Subscription. nil path))
-
 

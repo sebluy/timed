@@ -3,7 +3,8 @@
             [bed-time.components :as components]
             [bed-time.routing :refer [page->href]]
             [bed-time.util :as util]
-            [bed-time.activities.handlers :as activity-handlers])
+            [bed-time.activities.handlers :as activity-handlers]
+            [bed-time.framework.db :as db])
   (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn delete-button [activity]
@@ -16,6 +17,8 @@
          {:type     "button"
           :value    "Delete"
           :on-click #(activity-handlers/delete-activity activity)}]))))
+
+(bed-time.framework.db/make-subscription [:aggregates name :week])
 
 (defn- show-activity [name]
   (let [href (page->href {:handler :activity :route-params {:activity name}})]

@@ -5,25 +5,38 @@
             [bed-time.sessions.subs]
             [bed-time.sessions.form.subs]
             [bed-time.activities.activities :as activities]
-            [bed-time.sessions.sessions :as sessions]))
+            [bed-time.sessions.sessions :as sessions])
+  (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn- current-session []
-  (sessions/current (db/query-db [:activities])))
+  (with-subs
+    [activities [:activities]]
+    (fn []
+      (sessions/current @activities))))
 
 (defn- aggregates [path]
-  (-> (db/query-db [:activities])
-      (activities/build-aggregates)
-      (activities/add-week-total)
-      (get-in path)))
+  (with-subs
+    [activities [:activities]]
+    (fn []
+      (-> @activities
+          (activities/build-aggregates)
+          (activities/add-week-total)
+          (get-in path)))))
 
 (defn- pending-session []
-  (sessions/pending (db/query [:activities])))
+  (with-subs
+    [activities [:activities]]
+    (fn []
+      (sessions/pending @activities))))
 
 (defn- activity-form-visible? []
-  (let [pending-session (pending-session)
-        {:keys [source action]} (:pending pending-session)]
-    (or (= source :activity-form)
-        (and (nil? (current-session)) (not= :start action)))))
+  (with-subs
+    [pending-session [:pending-session]
+     current-session [:current-session]]
+    (fn []
+      (let [{:keys [source action]} (:pending @pending-session)]
+        (or (= source :activity-form)
+            (and (nil? @current-session) (not= :start action)))))))
 
 (db/register-derived-query [:aggregates] aggregates)
 (db/register-derived-query [:current-session] current-session)

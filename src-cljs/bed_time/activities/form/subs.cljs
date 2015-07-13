@@ -1,14 +1,20 @@
 (ns bed-time.activities.form.subs
   (:require [bed-time.framework.db :as db]
-            [bed-time.activities.activities :as activities]
-            [bed-time.sessions.sessions :as sessions]))
+            [bed-time.activities.activities :as activities])
+  (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn- error []
-  (activities/error (db/query [:page :activity-form :field])))
+  (with-subs
+    [field [:page :activity-form :field]]
+    (fn []
+      (activities/error @field))))
 
 (defn- pending []
-  (= (get-in (sessions/pending (db/query [:activities])) [:pending :source])
-     :activity-form))
+  (with-subs
+    [pending-session [:pending-session]]
+    (fn []
+      (= (get-in @pending-session [:pending :source])
+         :activity-form))))
 
 (db/register-derived-query [:page :activity-form :error] error)
 (db/register-derived-query [:page :activity-form :pending] pending)

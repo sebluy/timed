@@ -15,5 +15,5 @@
 (defn view []
   [:div
    [navbar/navbar]
-   #_[current-page]])
+   [current-page]])
 

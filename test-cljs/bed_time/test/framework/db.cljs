@@ -58,6 +58,7 @@
            :yes  :yes
            :no   :no})
   (reset-subscriptions)
+  ; add subscription reuse
   (testing "subscriptions are held only for active reactions"
     (render [conditional-sub])
     (is (some? (db/active-reactions [:cond])))
@@ -67,7 +68,12 @@
     (reagent/flush)
     (is (some? (db/active-reactions [:cond])))
     (is (nil? (db/active-reactions [:yes])))
-    (is (some? (db/active-reactions [:no])))))
+    (is (some? (db/active-reactions [:no])))
+    (db/transition #(assoc % :cond true))
+    (reagent/flush)
+    (is (some? (db/active-reactions [:cond])))
+    (is (some? (db/active-reactions [:yes])))
+    (is (nil? (db/active-reactions [:no])))))
 
 (defn derived-query []
   (with-subs
@@ -95,4 +101,4 @@
     (is (nil? (db/active-reactions [:test])))
     (is (nil? (db/active-reactions [:derived :test])))))
 
-#_(run-tests)
+;(run-tests)

@@ -19,7 +19,7 @@
     [activity-form-visible? [:activity-form-visible?]]
     (fn []
       (if @activity-form-visible?
-        #_[activity-form-components/form] [:p "hi"]
+        [activity-form-components/form]
         [:div] #_[:div.navbar-right [navbar-finish-session-button @current-session]]))))
 
 (defn navbar []

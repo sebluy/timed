@@ -11,7 +11,7 @@
 
 (defn init! []
   (navigation/hook-browser)
-;  (mount-components)
+  (mount-components)
   (handlers/get-activities))
 
 
