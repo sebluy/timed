@@ -1,26 +1,22 @@
 (ns bed-time.framework.db
   (:require [reagent.core :as reagent]
-            [reagent.impl.batching :as reagent-batching])
-  (:require-macros [reagent.ratom :refer [reaction]]))
-
-; implement dependent subscriptions
+            [reagent.ratom :as ratom]
+            [reagent.impl.batching :as reagent-batching]))
 
 (defonce ^:private db (reagent/atom {}))
-(defonce ^:private derived-queries (reagent/atom {}))
-(defonce ^:private active-subscriptions (atom {}))
+(defonce ^:private derived-queries {})
+(defonce ^:private active-reactions {})
+(defonce ^:private pending-unsubscribe #{})
 
-(defn register-derived-query [path fn]
-  (swap! derived-queries #(assoc-in % path fn)))
+(defn transition [transition-fn]
+  (swap! db #(transition-fn %)))
 
 (defn query-db [path]
   (get-in @db path))
 
 (defn- query-derived [path]
-  (loop [query @derived-queries path path]
-    (cond (map? query)
-          (recur (query (first path)) (rest path))
-          (ifn? query)
-          (query path))))
+  (let [query (derived-queries path)]
+    ((query) path)))
 
 (defn query [path]
   (let [db-value (query-db path)]
@@ -28,16 +24,15 @@
       db-value
       (query-derived path))))
 
-; batching unsubscribe
-
-(defonce pending-unsubscribe (atom #{}))
+(defn register-derived-query [path fn]
+  (set! derived-queries (assoc derived-queries path fn)))
 
 (defn batch-unsubscribe []
   (println "flushing")
-  (doseq [path @pending-unsubscribe]
+  (doseq [path pending-unsubscribe]
     (println "Removing " path)
-    (swap! active-subscriptions #(dissoc % path)))
-  (swap! pending-unsubscribe empty))
+    (set! active-reactions (dissoc active-reactions path)))
+  (set! pending-unsubscribe #{}))
 
 (defn unsubscribe-flush-loop []
   (batch-unsubscribe)
@@ -45,28 +40,32 @@
 
 (reagent-batching/do-after-flush unsubscribe-flush-loop)
 
-(defn add-active-subscription [path subscription]
-  (println "Adding " path)
-;  (swap! pending-unsubscribe #(disj % path))
-  (swap! active-subscriptions #(assoc % path {:reaction subscription :count 0})))
+(defn add-active-reaction [path reaction]
+  (println "adding " path)
+  (set! pending-unsubscribe (disj pending-unsubscribe path))
+  (set! active-reactions (assoc active-reactions path reaction)))
 
 (defn unsubscribe [path]
-  (let [count (get-in @active-subscriptions [path :count])]
-    (if (and count (<= count 1))
-      (swap! active-subscriptions #(dissoc % path))
-      (swap! active-subscriptions #(update-in % [path :count] dec)))))
-
-(defn increment-count [path]
-  (swap! active-subscriptions #(update-in % [path :count] inc)))
+  (set! pending-unsubscribe (conj pending-unsubscribe path)))
 
 (defn subscribe [path]
-  (if-let [subscription (get-in @active-subscriptions [path :reaction])]
-    (do (increment-count path)
-        subscription)
-    (let [subscription (reaction (query path))]
-      (add-active-subscription path subscription)
-      subscription)))
+  (if-let [reaction (active-reactions path)]
+    reaction
+    (let [reaction (ratom/make-reaction
+                     #(query path)
+                     :on-dispose #(do (println "Disposing" path)
+                                      (unsubscribe path)))]
+      (add-active-reaction path reaction)
+      reaction)))
 
-(defn transition [transition-fn]
-  (swap! db #(transition-fn %)))
+(deftype Subscription [^:mutable reaction path]
+  IDeref
+  (-deref [_]
+    (if (nil? reaction)
+      (set! reaction (subscribe path)))
+    @reaction))
+
+(defn make-subscription [path]
+  (Subscription. nil path))
+
 
