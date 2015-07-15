@@ -75,3 +75,12 @@
 (defn make-subscription [path]
   (Subscription. nil path))
 
+; this "library" needs some serious refactoring/decoupling from reagent
+(defn query-once [path]
+  (let [subscription (make-subscription path)
+        reaction (ratom/make-reaction (fn [] @subscription))
+        value (ratom/capture-derefed (fn [] @reaction) #js{})]
+    (ratom/dispose! reaction)
+    (batch-unsubscribe)
+    value))
+

@@ -5,7 +5,7 @@
   (fn [db]
     (assoc-in db [:page :session-form]
               (merge {:activity activity
-                      :input    {:start  (util/date->str start)
+                      :inputs   {:start  (util/date->str start)
                                  :finish (util/date->str finish)}}
                      (if new
                        {:new true}
@@ -13,7 +13,7 @@
 
 (defn update-field [key text]
   (fn [db]
-    (assoc-in db [:page :session-form :input key] text)))
+    (assoc-in db [:page :session-form :inputs key] text)))
 
 (defn close [db]
   (update-in db [:page] #(dissoc % :session-form)))

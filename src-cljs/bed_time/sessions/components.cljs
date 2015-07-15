@@ -81,8 +81,8 @@
          (edit-button session)
          [delete-button session]]]])))
 
-(defn session-list [activity]
-  (with-subs [sessions [:activities activity]]
+(defn session-list []
+  (with-subs [sessions [:page :sessions]]
     (fn []
       [:table.table
        [:thead

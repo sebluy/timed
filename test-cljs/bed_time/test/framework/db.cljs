@@ -101,4 +101,19 @@
     (is (nil? (db/active-reactions [:test])))
     (is (nil? (db/active-reactions [:derived :test])))))
 
+(deftest test-query-once
+  (render [:div])
+  (set-db {:test "it's"})
+  (reset-subscriptions)
+  (db/register-derived-query [:derived :test] derived-query)
+  (testing "query once does not create lasting subscriptions"
+    (is (= (db/query-once [:derived :test]) "it's working?"))
+    (is (nil? (db/active-reactions [:test])))
+    (is (nil? (db/active-reactions [:derived :test]))))
+  (testing "query once should use existing subscriptions"
+    (render [derived-component])
+    (is (= (db/query-once [:derived :test]) "it's working?"))
+    (is (some? (db/active-reactions [:test])))
+    (is (some? (db/active-reactions [:derived :test])))))
+
 ;(run-tests)

@@ -1,5 +1,6 @@
 (ns bed-time.sessions.form.components
   (:require [bed-time.sessions.form.transitions :as transitions]
+            [bed-time.sessions.form.handlers :as handlers]
             [bed-time.util :as util]
             [bed-time.components :as components]
             [bed-time.framework.db :as db])
@@ -30,13 +31,13 @@
    [input key]])
 
 (defn- submit-button []
-  (with-subs [pending [:pending :session-form]]
+  (with-subs [pending [:page :session-form :pending]]
     (if @pending
       [components/pending-button]
       [:button.btn.btn-primary {:type "submit"} "Update"])))
 
 (defn edit-form []
-  [:form {:on-submit #(do (.preventDefault %) #_(handlers/submit))}
+  [:form {:on-submit #(do (.preventDefault %) (handlers/submit))}
    [form-group :start]
    [form-group :finish]
    [:div.btn-toolbar
@@ -45,5 +46,4 @@
      {:type     "button"
       :on-click #(db/transition transitions/close)}
      "Cancel"]]])
-
 

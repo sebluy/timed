@@ -25,5 +25,5 @@
       [:div.col-md-8.col-md-offset-2
        [page-header @activity]
        [edit-form-slot]
-       [session-components/session-list @activity]])))
+       [session-components/session-list]])))
 

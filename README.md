@@ -1,5 +1,15 @@
 Todo:
 
+Fix session form.
+
+Add ticks back in.
+
+Update dependencies without breaking everything.
+
+Push to heroku and migrate db.
+
+Add plots.
+
 Rethink subscription tree semantics.
 
 Separate remote and local data.
@@ -13,14 +23,6 @@ Do not allow session collision.
 Add change activity option to session form.
 
 Add rename activity button.
-
-Update dependencies without breaking everything.
-
-Add ticks back in.
-
-Add plots.
-
-Push to heroku and migrate db.
 
 Done:
 

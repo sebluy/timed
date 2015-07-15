@@ -9,25 +9,33 @@
             [bed-time.transitions :as transitions])
   (:require-macros [cljs.core.async.macros :as async]))
 
-#_(defn update-session-transition-chan [session]
-  (let [response-chan (async/chan)
-        transition-chan (async/chan)]
-    (ajax/POST
-      "/update-session"
-      {:params          {:session session}
-       :handler         #(async/close! response-chan)
-       :format          :edn
-       :response-format :edn})
-    (async/go
-      (async/<! response-chan)
-      (async/put!
-        transition-chan
-        (session-transitions/update-session (dissoc session :new))))
-    transition-chan))
+(defn add-session
+  ([session source] (add-session session source identity))
+  ([session source post-transition]
+   (db/transition (session-transitions/add-session
+                    (assoc session :pending {:action :add :source source})))
+   (async/go
+     (async/<! (remote-handlers/add-session session))
+     (db/transition
+       (comp
+         post-transition
+         (session-transitions/update-session session #(dissoc % :pending)))))))
 
-#_(defn update-session [session]
-  (async/go
-    (db/transition (async/<! (update-session-transition-chan session)))))
+(defn update-session
+  ([old-session new-session source]
+   (update-session old-session new-session source identity))
+  ([old-session new-session source post-transition]
+   (db/transition (session-transitions/update-session
+                    old-session
+                    #(assoc % :pending {:action :update :source source})))
+   (async/go
+     (async/<! (remote-handlers/update-session old-session new-session))
+     (db/transition
+       (comp
+         post-transition
+         (session-transitions/update-session
+           old-session
+           #(identity new-session)))))))
 
 (defn start-session
   ([activity source] (start-session activity source identity))
@@ -64,25 +72,4 @@
     (async/<! (remote-handlers/delete-session session))
     (db/transition
       (session-transitions/delete-session session))))
-
-#_(defn swap-session-transition-chan [old-session new-session]
-  (let [response-chan (async/chan)
-        transition-chan (async/chan)]
-    (ajax/POST "/swap-session"
-               {:params         {:old-session old-session
-                                 :new-session new-session}
-                :handler        #(async/close! response-chan)
-                :format         :edn
-                :reponse-format :edn})
-    (async/go
-      (async/<! response-chan)
-      (async/put!
-        transition-chan
-        (session-transitions/swap-session old-session new-session)))
-    transition-chan))
-
-#_(defn swap-session [old-session new-session]
-  (async/go
-    (db/transition
-      (async/<! (swap-session-transition-chan old-session new-session)))))
 
