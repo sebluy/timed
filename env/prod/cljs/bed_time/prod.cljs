@@ -1,5 +1,5 @@
-(ns bed-time.app
-  (:require [bed-time.core :as core]))
+(ns timed.app
+  (:require [timed.core :as core]))
 
 ;;ignore println statements in prod
 (set! *print-fn* (fn [& _]))
