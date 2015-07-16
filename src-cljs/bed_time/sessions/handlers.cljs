@@ -1,12 +1,8 @@
 (ns bed-time.sessions.handlers
   (:require [cljs.core.async :as async]
             [bed-time.framework.db :as db]
-            [ajax.core :as ajax]
             [bed-time.sessions.transitions :as session-transitions]
-            [bed-time.sessions.sessions :as sessions]
-            [bed-time.handlers :as handlers]
-            [bed-time.remote-handlers :as remote-handlers]
-            [bed-time.transitions :as transitions])
+            [bed-time.remote-handlers :as remote-handlers])
   (:require-macros [cljs.core.async.macros :as async]))
 
 (defn add-session
@@ -39,18 +35,21 @@
 
 (defn start-session
   ([activity source] (start-session activity source identity))
-  ([activity source pre-transition]
+  ([activity source post-transition]
    (let [session {:activity activity
                   :start    (js/Date.)
                   :finish   nil}]
      (db/transition
-       (comp pre-transition
-             (session-transitions/add-session
-               (assoc session :pending {:source source :action :start}))))
+       (session-transitions/add-session
+         (assoc session :pending {:source source :action :start})))
      (async/go
        (async/<! (remote-handlers/add-session session))
        (db/transition
-         (session-transitions/update-session session #(dissoc % :pending)))))))
+         (comp
+           post-transition
+           (session-transitions/update-session
+             session
+             #(dissoc % :pending))))))))
 
 (defn finish-session [session source]
   (db/transition

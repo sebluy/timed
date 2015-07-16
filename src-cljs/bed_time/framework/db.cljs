@@ -31,9 +31,7 @@
   (set! derived-queries (assoc-in derived-queries path fn)))
 
 (defn batch-unsubscribe []
-  (println "flushing")
   (doseq [[path subscription] pending-unsubscribe]
-    (println "Removing " path)
     (.reset-reaction subscription)
     (set! active-reactions (dissoc active-reactions path)))
   (set! pending-unsubscribe {}))
@@ -45,7 +43,6 @@
 (reagent-batching/do-after-flush unsubscribe-flush-loop)
 
 (defn add-active-reaction [path reaction]
-  (println "adding " path)
   (set! pending-unsubscribe (dissoc pending-unsubscribe path))
   (set! active-reactions (assoc active-reactions path reaction)))
 
@@ -57,8 +54,7 @@
     reaction
     (let [reaction (ratom/make-reaction
                      #(query path)
-                     :on-dispose #(do (println "Disposing" path)
-                                      (unsubscribe path subscription)))]
+                     :on-dispose #(unsubscribe path subscription))]
       (add-active-reaction path reaction)
       reaction)))
 

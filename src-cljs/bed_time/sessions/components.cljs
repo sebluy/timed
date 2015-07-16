@@ -1,48 +1,40 @@
 (ns bed-time.sessions.components
-  (:require [bed-time.components :as components]
+  (:require [bed-time.pages.components :as page-components]
             [bed-time.sessions.sessions :as sessions]
             [bed-time.sessions.handlers :as session-handlers]
             [bed-time.sessions.form.handlers :as form-handlers]
-            [bed-time.sessions.form.transitions :as form-transitions]
-            [bed-time.util :as util]
-            [bed-time.framework.db :as db])
+            [bed-time.util :as util])
   (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn- start-button [activity class source]
-  (with-subs [pending [:pending-session]]
-    (fn []
-      (cond
-        (= @pending nil)
-        [:input.btn
-         {:type     "button"
-          :class    (str class " btn-success")
-          :value    "Start"
-          :on-click #(session-handlers/start-session activity source identity)}]
-        (and (= (:activity @pending) activity)
-             (= (get-in @pending [:pending :source]) source))
-        [components/pending-button class]))))
+  [:input.btn
+   {:type     "button"
+    :class    (str class " btn-success")
+    :value    "Start"
+    :on-click #(session-handlers/start-session
+                activity source identity)}])
 
-(defn- finish-button [source inner class]
-  (with-subs [pending [:pending-session]]
-    (fn [session]
-      (cond
-        (= @pending nil)
-        [:button.btn
-         {:type     "button"
-          :class    (str class " btn-danger")
-          :on-click #(session-handlers/finish-session session source)}
-         inner]
-        (and (= (:activity @pending) (:activity session))
-             (= (get-in @pending [:pending :source]) source))
-        [components/pending-button class]))))
+(defn- finish-button [class source]
+  (with-subs
+    [current-session [:current-session]]
+    (fn []
+      [:input.btn
+       {:type     "button"
+        :class    (str class " btn-danger")
+        :value    "Finish"
+        :on-click #(session-handlers/finish-session
+                    @current-session source)}])))
 
 (defn action-button [activity class source]
-  (with-subs [current-session [:current-session]]
+  (with-subs
+    [current-session [:current-session]
+     action-button-status [:action-button-status activity source]]
     (fn []
-      (cond (nil? @current-session)
-            [start-button activity class source]
-            (= activity (@current-session :activity))
-            [(finish-button source "Finish" class) @current-session]))))
+      (condp = @action-button-status
+        :start [start-button activity class source]
+        :finish [finish-button class source]
+        :pending [page-components/pending-button class]
+        :hidden nil))))
 
 (defn new-button [activity]
   [:input.btn.btn-primary
@@ -57,18 +49,21 @@
     :on-click #(form-handlers/open session)}])
 
 (defn- delete-button [session]
-  (with-subs [pending [:pending-session]]
+  (with-subs
+    [delete-button-status [:delete-button-status session]]
     (fn []
-      (if (and (= (get-in @pending [:pending :action]) :delete)
-               (= (@pending :start) (session :start)))
-        [components/pending-button "btn-sm"]
+      (condp = @delete-button-status
+        :visible
         [:input.btn.btn-sm.btn-danger
          {:type     "button"
           :value    "Delete"
-          :on-click #(session-handlers/delete-session session)}]))))
+          :on-click #(session-handlers/delete-session session)}]
+        :pending
+        [page-components/pending-button "btn-sm"]))))
 
 (defn- show-session []
-  (with-subs [session-under-edit [:page :session-form :old-session]]
+  (with-subs
+    [session-under-edit [:page :session-form :old-session]]
     (fn [{:keys [start finish] :as session}]
       [:tr
        (if (= session @session-under-edit)
@@ -83,13 +78,13 @@
 
 (defn session-list []
   (with-subs [sessions [:page :sessions]]
-    (fn []
-      [:table.table
-       [:thead
-        [:tr [:td "Start"] [:td "Finish"] [:td "Time Spent"]]]
-       [:tbody
-        (doall
-          (for [[start session] @sessions]
-            ^{:key start}
-            [show-session session]))]])))
+             (fn []
+               [:table.table
+                [:thead
+                 [:tr [:td "Start"] [:td "Finish"] [:td "Time Spent"]]]
+                [:tbody
+                 (doall
+                   (for [[start session] @sessions]
+                     ^{:key start}
+                     [show-session session]))]])))
 

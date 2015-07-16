@@ -9,7 +9,7 @@
   [:div.page-header
    [:h1 activity
     [:p.pull-right.btn-toolbar
-     [session-components/action-button activity]
+     [session-components/action-button activity "" :header]
      [session-components/new-button activity]
      [activity-components/delete-button activity]]]])
 

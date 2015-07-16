@@ -3,8 +3,10 @@
             [cljs.core.async :as async]
             [bed-time.activities.transitions :as activities-transitions]
             [bed-time.framework.db :as db]
-            [bed-time.transitions :as transitions])
+            [bed-time.pages.transitions :as transitions])
   (:require-macros [cljs.core.async.macros :refer [go]]))
+
+; todo: split into remote handlers
 
 (defn delete-activity [activity]
   (db/transition (transitions/add-pending :delete-activity true))

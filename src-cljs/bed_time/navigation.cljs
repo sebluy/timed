@@ -3,7 +3,7 @@
             [bed-time.history :as history]
             [goog.events :as events]
             [clojure.string :as string]
-            [bed-time.transitions :as transitions]
+            [bed-time.pages.transitions :as transitions]
             [bed-time.framework.db :as db])
   (:import goog.history.EventType))
 

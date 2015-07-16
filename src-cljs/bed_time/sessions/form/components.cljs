@@ -1,9 +1,7 @@
 (ns bed-time.sessions.form.components
-  (:require [bed-time.sessions.form.transitions :as transitions]
-            [bed-time.sessions.form.handlers :as handlers]
+  (:require [bed-time.sessions.form.handlers :as handlers]
             [bed-time.util :as util]
-            [bed-time.components :as components]
-            [bed-time.framework.db :as db])
+            [bed-time.pages.components :as page-components])
   (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn label [key]
@@ -21,9 +19,7 @@
       [:input.form-control
        {:type      "text"
         :value     @text
-        :on-change #(db/transition
-                     (transitions/update-field key
-                                               (util/get-event-value %)))}])))
+        :on-change #(handlers/update-field key (util/get-event-value %))}])))
 
 (defn- form-group [key]
   [:div.form-group
@@ -33,7 +29,7 @@
 (defn- submit-button []
   (with-subs [pending [:page :session-form :pending]]
     (if @pending
-      [components/pending-button]
+      [page-components/pending-button]
       [:button.btn.btn-primary {:type "submit"} "Update"])))
 
 (defn edit-form []
@@ -44,6 +40,6 @@
     [submit-button]
     [:button.btn.btn-danger
      {:type     "button"
-      :on-click #(db/transition transitions/close)}
+      :on-click #(handlers/close)}
      "Cancel"]]])
 

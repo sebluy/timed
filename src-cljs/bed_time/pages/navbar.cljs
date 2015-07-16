@@ -1,10 +1,6 @@
-(ns bed-time.navbar
+(ns bed-time.pages.navbar
   (:require [bed-time.routing :refer [page->href]]
-            [bed-time.activities.form.components :as activity-form-components]
-            [bed-time.framework.db :as db]
-            [bed-time.sessions.components :as session-components]
-            [bed-time.util :as util]
-            [bed-time.sessions.sessions :as sessions])
+            [bed-time.activities.form.components :as activity-form-components])
   (:require-macros [bed-time.macros :refer [with-subs]]))
 
 #_(defn navbar-finish-session-button [current-session]
@@ -14,13 +10,13 @@
    (util/time-str (sessions/time-spent current-session))
    "navbar-btn"])
 
-(defn current-session-nav []
+(defn- form-slot []
   (with-subs
-    [activity-form-visible? [:activity-form-visible?]]
+    [status [:page :activity-form :status]]
     (fn []
-      (if @activity-form-visible?
+      (if-not (= @status :hidden)
         [activity-form-components/form]
-        [:div] #_[:div.navbar-right [navbar-finish-session-button @current-session]]))))
+        [:div]))))
 
 (defn navbar []
   (let [activities-href (page->href {:handler :activities})]
@@ -30,6 +26,5 @@
        [:a.navbar-brand {:href activities-href} "Bed Time!"]]
       [:ul.nav.navbar-nav
        [:li [:a {:href activities-href} "Activities"]]]
-       [current-session-nav]]]))
-
+      [form-slot]]]))
 

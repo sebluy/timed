@@ -1,7 +1,7 @@
 (ns bed-time.pages.pages
   (:require [bed-time.pages.activity :as activity]
             [bed-time.pages.activities :as activities]
-            [bed-time.navbar :as navbar])
+            [bed-time.pages.navbar :as navbar])
   (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defonce pages {:activities activities/page

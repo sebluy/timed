@@ -1,10 +1,9 @@
 (ns bed-time.activities.components
   (:require [bed-time.sessions.components :as session-components]
-            [bed-time.components :as components]
+            [bed-time.pages.components :as page-components]
             [bed-time.routing :refer [page->href]]
             [bed-time.util :as util]
-            [bed-time.activities.handlers :as activity-handlers]
-            [bed-time.framework.db :as db])
+            [bed-time.activities.handlers :as activity-handlers])
   (:require-macros [bed-time.macros :refer [with-subs]]))
 
 (defn delete-button [activity]
@@ -12,13 +11,11 @@
     [pending [:pending :delete-activity]]
     (fn []
       (if @pending
-        [components/pending-button]
+        [page-components/pending-button]
         [:input.btn.btn-danger
          {:type     "button"
           :value    "Delete"
           :on-click #(activity-handlers/delete-activity activity)}]))))
-
-(bed-time.framework.db/make-subscription [:aggregates name :week])
 
 (defn- show-activity [name]
   (let [href (page->href {:handler :activity :route-params {:activity name}})]

@@ -1,4 +1,4 @@
-(ns bed-time.components)
+(ns bed-time.pages.components)
 
 (defn pending-button [class]
   [:input.btn

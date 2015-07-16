@@ -1,5 +1,5 @@
-(ns bed-time.handlers
-  (:require [bed-time.transitions :as transitions]
+(ns bed-time.pages.handlers
+  (:require [bed-time.pages.transitions :as transitions]
             [bed-time.framework.db :as db]
             [bed-time.activities.activities :as activities]
             [cljs.core.async :as async]

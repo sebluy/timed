@@ -24,13 +24,15 @@
   (some? pending))
 
 (defn- find-pending-in-sessions [sessions]
-  (first (filter #(pending? %) (vals sessions))))
+  (filter #(pending? %) (vals sessions)))
 
 (defn pending [activities]
   (condp = activities
     :pending :activities-pending
     nil nil
-    (some #(find-pending-in-sessions %) (vals activities))))
+    (reduce (fn [pending activity-sessions]
+              (into pending (find-pending-in-sessions activity-sessions)))
+            (list) (vals activities))))
 
 (defn time-spent
   ([session] (time-spent session (js/Date.)))

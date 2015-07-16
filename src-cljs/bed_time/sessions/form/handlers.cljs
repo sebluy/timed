@@ -2,16 +2,18 @@
   (:require [bed-time.sessions.sessions :as sessions]
             [bed-time.framework.db :as db]
             [bed-time.util :as util]
-            [bed-time.sessions.sessions :as sessions]
-            [bed-time.sessions.handlers :as handlers]
             [bed-time.sessions.form.transitions :as form-transitions]
-            [cljs.core.async :as async]
-            [bed-time.transitions :as transitions]
-            [bed-time.sessions.handlers :as session-handlers])
-  (:require-macros [cljs.core.async.macros :as async]))
+            [bed-time.sessions.handlers :as session-handlers]))
 
 (defn open [session]
   (db/transition (form-transitions/open session)))
+
+(defn close []
+  (db/transition form-transitions/close))
+
+(defn update-field [key text]
+  (db/transition
+    (form-transitions/update-field key text)))
 
 (defn submit []
   (let [{:keys [activity new old-session inputs]}

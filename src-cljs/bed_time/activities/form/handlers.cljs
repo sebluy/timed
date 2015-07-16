@@ -6,9 +6,11 @@
 (defn update-field [text]
   (db/transition (transitions/update-field text)))
 
-(defn submit [activity error pending]
-  (when-not (or error pending)
-    (session-handlers/start-session
-      activity
-     :activity-form
-     (transitions/update-field nil))))
+(defn submit []
+  (let [activity (db/query-once [:page :activity-form :field])
+        status (db/query-once [:page :activity-form :status])]
+    (when (= status :valid)
+      (session-handlers/start-session
+        activity
+        :activity-form
+        (transitions/update-field nil)))))
