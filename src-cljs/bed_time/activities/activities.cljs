@@ -4,9 +4,10 @@
             [clojure.string :as string]))
 
 (defn coerce-activities-to-sorted [new-activities]
-  (into {} (map (fn [[activity sessions]]
-                  [activity (into (sessions/sessions-map) sessions)])
-                new-activities)))
+  (into {} (map (fn [[name activity]]
+                  [name (update-in activity [:sessions]
+                                   #(into (sessions/sessions-map) %))])
+                  new-activities)))
 
 (defn sessions-from-last-n-days [sessions n]
   (take-while #(> (.getTime (first %))
@@ -25,7 +26,7 @@
           {} (sessions-from-last-n-days sessions 7)))
 
 (defn build-aggregates [activities]
-  (reduce (fn [aggregates [name sessions]]
+  (reduce (fn [aggregates [name {sessions :sessions}]]
             (let [week (build-week sessions)
                   today (or (week (util/midnight (js/Date.))) 0)
                   weekly (reduce #(+ %1 (second %2)) 0 week)]

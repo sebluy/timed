@@ -1,27 +1,22 @@
 (ns bed-time.activities.handlers
-  (:require [ajax.core :as ajax]
-            [cljs.core.async :as async]
-            [bed-time.activities.transitions :as activities-transitions]
+  (:require [cljs.core.async :as async]
             [bed-time.framework.db :as db]
-            [bed-time.pages.transitions :as transitions])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+            [bed-time.activities.transitions :as transitions]
+            [bed-time.pages.transitions :as page-transitions]
+            [bed-time.remote-handlers :as remote-handlers])
+  (:require-macros [cljs.core.async.macros :as async]))
 
 ; todo: split into remote handlers
 
 (defn delete-activity [activity]
-  (db/transition (transitions/add-pending :delete-activity true))
-  (let [response-chan (async/chan)]
-    (ajax/POST
-      "/delete-activity"
-      {:params          {:activity activity}
-       :handler         #(async/close! response-chan)
-       :format          :edn
-       :response-format :edn})
-    (go
-      (async/<! response-chan)
-      (db/transition
-        (comp
-          (transitions/redirect {:handler :activities})
-          (transitions/remove-pending :delete-activity)
-          (activities-transitions/delete-activity activity))))))
+  (db/transition
+    (transitions/update-activity
+      activity
+      #(assoc % :pending {:action :delete})))
+  (async/go
+    (async/<! (remote-handlers/delete-activity activity))
+    (db/transition
+      (comp
+        (page-transitions/redirect {:handler :activities})
+        (transitions/delete-activity activity)))))
 

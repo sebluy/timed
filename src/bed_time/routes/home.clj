@@ -24,7 +24,7 @@
     (reduce (fn [activities session]
               (let [activity-name (session :activity)]
                 (update-in activities [activity-name]
-                           #(assoc % (session :start) session))))
+                           #(assoc-in % [:sessions (session :start)] session))))
                 {} (db/get-activities))))
 
 (defn delete-activity [activity]

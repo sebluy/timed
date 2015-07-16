@@ -8,7 +8,7 @@
 
 (defn delete-button [activity]
   (with-subs
-    [pending [:pending :delete-activity]]
+    [pending [:pending :delete-activity activity]]
     (fn []
       (if @pending
         [page-components/pending-button]

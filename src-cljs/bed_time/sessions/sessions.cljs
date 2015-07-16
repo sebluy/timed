@@ -11,6 +11,9 @@
 (defn current? [{:keys [finish pending]}]
   (and (nil? finish) (not= (:action pending) :start)))
 
+(defn activities-sessions-list [activities]
+  (map (fn [[_ activity]] (activity :sessions)) activities))
+
 (defn- find-current-in-sessions [sessions]
   (first (filter #(current? %) (vals sessions))))
 
@@ -18,7 +21,7 @@
   (condp = activities
     :pending :activities-pending
     nil nil
-    (some #(find-current-in-sessions %) (vals activities))))
+    (some #(find-current-in-sessions %) (activities-sessions-list activities))))
 
 (defn pending? [{pending :pending}]
   (some? pending))
@@ -32,7 +35,7 @@
     nil nil
     (reduce (fn [pending activity-sessions]
               (into pending (find-pending-in-sessions activity-sessions)))
-            (list) (vals activities))))
+            (list) (activities-sessions-list activities))))
 
 (defn time-spent
   ([session] (time-spent session (js/Date.)))

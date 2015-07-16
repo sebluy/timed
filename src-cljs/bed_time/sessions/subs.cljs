@@ -7,7 +7,7 @@
     [activity [:page :route-params :activity]
      activities [:activities]]
      (fn []
-       (get @activities @activity))))
+       (get-in @activities [@activity :sessions]))))
 
 (defn- action-button-status [[activity source]]
   (with-subs
