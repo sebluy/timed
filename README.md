@@ -2,8 +2,6 @@ Current:
 
 Todo:
 
-Remove 1 sec response delay.
-
 Add ticks back in.
 
 Update dependencies without breaking everything.
