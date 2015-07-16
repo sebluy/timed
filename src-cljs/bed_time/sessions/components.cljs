@@ -49,17 +49,12 @@
     :on-click #(form-handlers/open session)}])
 
 (defn- delete-button [session]
-  (with-subs
-    [delete-button-status [:delete-button-status session]]
-    (fn []
-      (condp = @delete-button-status
-        :visible
-        [:input.btn.btn-sm.btn-danger
-         {:type     "button"
-          :value    "Delete"
-          :on-click #(session-handlers/delete-session session)}]
-        :pending
-        [page-components/pending-button "btn-sm"]))))
+  (if-not (= (get-in session [:pending :action]) :delete)
+    [:input.btn.btn-sm.btn-danger
+     {:type     "button"
+      :value    "Delete"
+      :on-click #(session-handlers/delete-session session)}]
+    [page-components/pending-button "btn-sm"]))
 
 (defn- show-session []
   (with-subs
@@ -77,14 +72,15 @@
          [delete-button session]]]])))
 
 (defn session-list []
-  (with-subs [sessions [:page :sessions]]
-             (fn []
-               [:table.table
-                [:thead
-                 [:tr [:td "Start"] [:td "Finish"] [:td "Time Spent"]]]
-                [:tbody
-                 (doall
-                   (for [[start session] @sessions]
-                     ^{:key start}
-                     [show-session session]))]])))
+  (with-subs
+    [sessions [:page :sessions]]
+    (fn []
+      [:table.table
+       [:thead
+        [:tr [:td "Start"] [:td "Finish"] [:td "Time Spent"]]]
+       [:tbody
+        (doall
+          (for [[start session] @sessions]
+            ^{:key start}
+            [show-session session]))]])))
 
