@@ -1,14 +1,16 @@
 Current:
 
+Change name to timed.
+
 Todo:
+
+Fix update start index on session change.
 
 Add ticks back in.
 
 Update dependencies without breaking everything.
 
 Add plots.
-
-Change name to timed.
 
 Add tests as things break.
 

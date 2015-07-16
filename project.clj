@@ -1,4 +1,4 @@
-(defproject bed-time "0.1.0-SNAPSHOT"
+(defproject timed "0.1.0-SNAPSHOT"
 
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
@@ -34,10 +34,10 @@
                  [clj-time "0.9.0"]]
 
   :min-lein-version "2.0.0"
-  :uberjar-name "bed-time.jar"
+  :uberjar-name "timed.jar"
   :jvm-opts ["-server"]
 
-  :main bed-time.core
+  :main timed.core
 
   :plugins [[lein-environ "1.0.0"]
             [lein-ancient "0.6.5"]
@@ -48,7 +48,7 @@
   :ragtime
   {:migrations ragtime.sql.files/migrations
    :database
-   "jdbc:postgresql://localhost/bedtime?user=admin&password=admin"}
+   "jdbc:postgresql://localhost/timed?user=admin&password=admin"}
   
   :clean-targets ^{:protect false} ["resources/public/js"]
   
@@ -96,7 +96,7 @@
            {:source-paths ["env/dev/cljs" "test-cljs"]
             :compiler {:source-map true}}}}
 
-         :repl-options {:init-ns bed-time.dev}
+         :repl-options {:init-ns timed.dev}
 
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]
