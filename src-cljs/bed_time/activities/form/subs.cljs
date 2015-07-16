@@ -22,7 +22,7 @@
      error [:page :activity-form :error]]
     (fn []
       (cond
-        (or (nil? @pending-sessions) (= @pending-sessions :activities-pending))
+        (or (nil? @pending-sessions) (= @pending-sessions :pending))
         :hidden
         (some activity-form-source? @pending-sessions)
         :pending

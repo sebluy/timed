@@ -31,7 +31,7 @@
 
 (defn pending [activities]
   (condp = activities
-    :pending :activities-pending
+    :pending :pending
     nil nil
     (reduce (fn [pending activity-sessions]
               (into pending (find-pending-in-sessions activity-sessions)))

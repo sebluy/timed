@@ -59,11 +59,11 @@
 
 (defn- table-body []
   (with-subs
-    [activities [:activities]]
+    [confirmed-activities [:confirmed-activities]]
     (fn []
       [:tbody
        (doall
-         (for [activity-name (keys @activities)]
+         (for [activity-name (keys @confirmed-activities)]
            ^{:key activity-name}
            [show-activity activity-name]))])))
 
@@ -77,14 +77,13 @@
 
 (defn activities-table []
   (with-subs
-    [pending [:pending :activities]
-     activities [:activities]]
+    [confirmed-activities [:confirmed-activities]]
     (fn []
       (cond
-        @pending [:div.jumbotron [:h1.text-center "Pending"]]
-        (seq @activities) [:table.table
-                           [table-head]
-                           [table-body]
-                           [table-foot]]
-        :else [:div.jumbotron [:h1.text-center "No Activities"]]))))
+        (= @confirmed-activities :pending)
+        [:div.jumbotron [:h1.text-center "Pending"]]
+        (seq @confirmed-activities)
+        [:table.table [table-head] [table-body] [table-foot]]
+        :else
+        [:div.jumbotron [:h1.text-center "No Activities"]]))))
 
