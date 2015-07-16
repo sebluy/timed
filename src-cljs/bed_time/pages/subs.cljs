@@ -32,4 +32,3 @@
 (db/register-derived-query [:aggregates] aggregates)
 (db/register-derived-query [:current-session] current-session)
 (db/register-derived-query [:pending-sessions] pending-sessions)
-(db/register-derived-query [:activity-form-status] activity-form-status)

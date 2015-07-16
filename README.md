@@ -2,13 +2,15 @@ Current:
 
 Todo:
 
+Remove 1 sec response delay.
+
 Add ticks back in.
 
 Update dependencies without breaking everything.
 
-Push to heroku and migrate db.
-
 Add plots.
+
+Change name to timed.
 
 Add tests as things break.
 

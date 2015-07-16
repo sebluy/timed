@@ -16,10 +16,11 @@
 
 (defn pending []
   (with-subs
-    [pending-session [:pending-session]]
+    [pending-sessions [:pending-sessions]]
     (fn []
-      (= (get-in @pending-session [:pending :source])
-         :session-form))))
+      (some (fn [session]
+              (= (get-in session [:pending :source]) :session-form))
+            @pending-sessions))))
 
 (db/register-derived-query [:page :session-form :fields] fields)
 (db/register-derived-query [:page :session-form :pending] pending)
