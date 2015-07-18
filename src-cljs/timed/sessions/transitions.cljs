@@ -8,7 +8,5 @@
   (fn [db]
     (assoc-in db [:activities activity :sessions start] session)))
 
-(defn update-session [{:keys [activity start]} f]
-  (fn [db]
-    (update-in db [:activities activity :sessions start] f)))
-
+(defn update-session [old-session new-session]
+  (comp (add-session new-session) (delete-session old-session)))

@@ -5,7 +5,8 @@
             [timed.sessions.subs]
             [timed.sessions.form.subs]
             [timed.activities.activities :as activities]
-            [timed.sessions.sessions :as sessions])
+            [timed.sessions.sessions :as sessions]
+            [timed.util :as util])
   (:require-macros [timed.macros :refer [with-subs]]))
 
 (defn- current-session []
@@ -29,6 +30,52 @@
     (fn []
       (sessions/pending @activities))))
 
+(defn- current-session-time-spent []
+  (with-subs
+    [current-session [:current-session]
+     now [:tick :now]]
+    (fn []
+      (util/time-diff (@current-session :start) @now))))
+
+(defn- navbar-finish-status []
+  (with-subs
+    [pending-sessions [:pending-sessions]]
+    (fn []
+      (cond
+        (or (nil? @pending-sessions) (= @pending-sessions :pending))
+        :hidden
+        (some (fn [session] (= (get-in session [:pending :source]) :navbar))
+              @pending-sessions)
+        :pending
+        (some (fn [session] (= (get-in session [:pending :action]) :finish))
+              @pending-sessions)
+        :hidden
+        :else
+        :visible))))
+
+#_(defn- status []
+  (with-subs
+    [pending-sessions [:pending-sessions]
+     current-session [:current-session]
+     error [:page :activity-form :error]]
+    (fn []
+      (cond
+        (or (nil? @pending-sessions) (= @pending-sessions :pending))
+        :hidden
+        (some activity-form-source? @pending-sessions)
+        :pending
+        (some action-start? @pending-sessions) ; hide on start from other source
+        :hidden
+        @current-session
+        :hidden
+        @error
+        :error
+        :else
+        :valid))))
+
+(db/register-derived-query [:navbar-finish-status] navbar-finish-status)
 (db/register-derived-query [:aggregates] aggregates)
 (db/register-derived-query [:current-session] current-session)
+(db/register-derived-query [:current-session-time-spent]
+                           current-session-time-spent)
 (db/register-derived-query [:pending-sessions] pending-sessions)

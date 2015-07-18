@@ -27,8 +27,13 @@
         [:button.btn.btn-success {:type "submit"} "Start"]))))
 
 (defn form []
-  [:form.navbar-form.navbar-right
-   {:on-submit #(do (.preventDefault %) (form-handlers/submit))}
-   [:div.form-group [activity-input]]
-   [submit-button]])
+  (with-subs
+    [status [:page :activity-form :status]]
+    (fn []
+      (if (= @status :hidden)
+        nil
+        [:form.navbar-form
+         {:on-submit #(do (.preventDefault %) (form-handlers/submit))}
+         [:div.form-group [activity-input]]
+         [submit-button]]))))
 

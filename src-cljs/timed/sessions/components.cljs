@@ -71,7 +71,7 @@
          (edit-button session)
          [delete-button session]]]])))
 
-(defn session-list []
+(defn- session-list []
   (with-subs
     [sessions [:page :sessions]]
     (fn []
@@ -84,3 +84,14 @@
             ^{:key start}
             [show-session session]))]])))
 
+(defn session-list-slot []
+  (with-subs
+    [sessions [:page :sessions]]
+    (fn []
+      (cond
+        (= @sessions :pending)
+        [:div.jumbotron [:h1.text-center "Pending"]]
+        (seq @sessions)
+        [session-list]
+        :else
+        [:div.jumbotron [:h1.text-center "No Sessions"]]))))

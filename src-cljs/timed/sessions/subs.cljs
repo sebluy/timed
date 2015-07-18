@@ -7,7 +7,9 @@
     [activity [:page :route-params :activity]
      activities [:activities]]
      (fn []
-       (get-in @activities [@activity :sessions]))))
+       (if (= @activities :pending)
+         :pending
+         (get-in @activities [@activity :sessions])))))
 
 (defn- pending-this-action-button? [activity source session]
   (and (= (:activity session) activity)
@@ -23,6 +25,8 @@
     (fn []
       (let [{current-activity :activity} @current-session]
         (cond
+          (or (nil? @pending-sessions) (= @pending-sessions :pending))
+          :hidden
           (some #(pending-this-action-button? activity source %)
                 @pending-sessions)
           :pending

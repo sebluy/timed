@@ -2,7 +2,9 @@
   (:require [cljs.core.async :as async]
             [timed.framework.db :as db]
             [timed.sessions.transitions :as session-transitions]
-            [timed.remote-handlers :as remote-handlers])
+            [timed.remote-handlers :as remote-handlers]
+            [timed.pages.transitions :as page-transitions]
+            [timed.sessions.sessions :as sessions])
   (:require-macros [cljs.core.async.macros :as async]))
 
 (defn add-session
@@ -15,7 +17,10 @@
      (db/transition
        (comp
          post-transition
-         (session-transitions/update-session session #(dissoc % :pending)))))))
+         (if (sessions/current? session)
+           page-transitions/start-tick
+           identity)
+         (session-transitions/update-session session session))))))
 
 (defn update-session
   ([old-session new-session source]
@@ -23,15 +28,20 @@
   ([old-session new-session source post-transition]
    (db/transition (session-transitions/update-session
                     old-session
-                    #(assoc % :pending {:action :update :source source})))
+                    (assoc old-session
+                      :pending {:action :update :source source})))
    (async/go
      (async/<! (remote-handlers/update-session old-session new-session))
      (db/transition
        (comp
          post-transition
-         (session-transitions/update-session
-           old-session
-           #(identity new-session)))))))
+         (condp = (map sessions/current? [old-session new-session])
+           [true false]
+           page-transitions/stop-tick
+           [false true]
+           page-transitions/start-tick
+           identity)
+         (session-transitions/update-session old-session new-session))))))
 
 (defn start-session
   ([activity source] (start-session activity source identity))
@@ -47,28 +57,33 @@
        (db/transition
          (comp
            post-transition
-           (session-transitions/update-session
-             session
-             #(dissoc % :pending))))))))
+           page-transitions/start-tick
+           (session-transitions/update-session session session)))))))
 
 (defn finish-session [session source]
   (db/transition
     (session-transitions/update-session
       session
-      #(assoc % :pending {:source source :action :finish})))
+      (assoc session :pending {:source source :action :finish})))
   (async/go
     (let [finished (assoc session :finish (js/Date.))]
       (async/<! (remote-handlers/update-session session finished))
       (db/transition
-        (session-transitions/update-session session #(identity finished))))))
+        (comp
+          page-transitions/stop-tick
+          (session-transitions/update-session session finished))))))
 
 (defn delete-session [session]
   (db/transition
     (session-transitions/update-session
       session
-      #(assoc % :pending {:action :delete})))
+      (assoc session :pending {:action :delete})))
   (async/go
     (async/<! (remote-handlers/delete-session session))
     (db/transition
-      (session-transitions/delete-session session))))
+      (comp
+        (if (sessions/current? session)
+          page-transitions/stop-tick
+          identity)
+        (session-transitions/delete-session session)))))
 

@@ -3,7 +3,7 @@
             [goog.dom :as dom]
             [timed.framework.db :as db]
             [reagent.core :as reagent])
-  (:require-macros [bed-time.macros :refer [with-subs]]))
+  (:require-macros [timed.macros :refer [with-subs]]))
 
 (defn set-db [db]
   (db/transition (fn [_] db)))

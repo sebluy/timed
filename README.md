@@ -1,12 +1,14 @@
 Current:
 
-Change name to timed.
-
-Todo:
+Add ticks back in.
 
 Fix update start index on session change.
 
-Add ticks back in.
+Todo:
+
+Allow tick to be managed on-demand using subscriptions.
+
+Fix aggregate time (should add up to 24 hours).
 
 Update dependencies without breaking everything.
 
