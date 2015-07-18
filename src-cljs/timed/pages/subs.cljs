@@ -15,14 +15,19 @@
     (fn []
       (sessions/current @activities))))
 
-(defn- aggregates [path]
+(defn- aggregates-base []
   (with-subs
     [activities [:activities]]
     (fn []
       (-> @activities
           (activities/build-aggregates)
-          (activities/add-week-total)
-          (get-in path)))))
+          (activities/add-week-total)))))
+
+(defn- aggregates [path]
+  (with-subs
+    [aggregates [:aggregates-base]]
+    (fn []
+      (get-in @aggregates path))))
 
 (defn- pending-sessions []
   (with-subs
@@ -57,6 +62,7 @@
 
 (db/register-derived-query [:navbar-finish-status] navbar-finish-status)
 (db/register-derived-query [:aggregates] aggregates)
+(db/register-derived-query [:aggregates-base] aggregates-base)
 (db/register-derived-query [:current-session] current-session)
 (db/register-derived-query [:current-session-time-spent]
                            current-session-time-spent)

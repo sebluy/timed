@@ -58,14 +58,17 @@
 
 (defn- show-session []
   (with-subs
-    [session-under-edit [:page :session-form :old-session]]
+    [session-under-edit [:page :session-form :old-session]
+     current-session-time-spent [:current-session-time-spent]]
     (fn [{:keys [start finish] :as session}]
       [:tr
        (if (= session @session-under-edit)
          {:class "active"})
        [:td (sessions/string :start start)]
        [:td (sessions/string :finish finish)]
-       [:td (util/time-str (sessions/time-spent session))]
+       [:td (util/time-str (if (sessions/current? session)
+                             @current-session-time-spent
+                             (sessions/time-spent session)))]
        [:td
         [:p.btn-toolbar
          (edit-button session)

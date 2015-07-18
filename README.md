@@ -1,8 +1,14 @@
 Current:
 
-Add timer to page title.
+Add timer to running time spent in table and list.
 
 Todo:
+
+Build network for building aggregates.
+
+Readme implement subscriptions with equality rather than identity.
+
+Fix insecure html blah blah blah.
 
 Allow tick to be managed on-demand using subscriptions.
 
