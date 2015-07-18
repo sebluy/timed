@@ -1,8 +1,6 @@
 Current:
 
-Add ticks back in.
-
-Fix update start index on session change.
+Add timer to page title.
 
 Todo:
 

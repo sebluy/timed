@@ -19,7 +19,7 @@
 
 (defn current [activities]
   (condp = activities
-    :pending :activities-pending
+    :pending nil
     nil nil
     (some #(find-current-in-sessions %) (activities-sessions-list activities))))
 

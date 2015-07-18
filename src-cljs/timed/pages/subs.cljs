@@ -35,7 +35,9 @@
     [current-session [:current-session]
      now [:tick :now]]
     (fn []
-      (util/time-diff (@current-session :start) @now))))
+      (if @current-session
+        (util/time-diff (@current-session :start) @now)
+        0))))
 
 (defn- navbar-finish-status []
   (with-subs
@@ -52,26 +54,6 @@
         :hidden
         :else
         :visible))))
-
-#_(defn- status []
-  (with-subs
-    [pending-sessions [:pending-sessions]
-     current-session [:current-session]
-     error [:page :activity-form :error]]
-    (fn []
-      (cond
-        (or (nil? @pending-sessions) (= @pending-sessions :pending))
-        :hidden
-        (some activity-form-source? @pending-sessions)
-        :pending
-        (some action-start? @pending-sessions) ; hide on start from other source
-        :hidden
-        @current-session
-        :hidden
-        @error
-        :error
-        :else
-        :valid))))
 
 (db/register-derived-query [:navbar-finish-status] navbar-finish-status)
 (db/register-derived-query [:aggregates] aggregates)
