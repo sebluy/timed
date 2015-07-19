@@ -1,6 +1,6 @@
 Current:
 
-Add timer to running time spent in table and list.
+Fix aggregate time (should add up to 24 hours).
 
 Todo:
 
@@ -11,8 +11,6 @@ Readme implement subscriptions with equality rather than identity.
 Fix insecure html blah blah blah.
 
 Allow tick to be managed on-demand using subscriptions.
-
-Fix aggregate time (should add up to 24 hours).
 
 Update dependencies without breaking everything.
 

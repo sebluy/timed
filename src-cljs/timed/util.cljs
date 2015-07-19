@@ -23,16 +23,33 @@
 (defn days->ms [n]
   (* n ms-per-day))
 
+(defn round [x]
+  (.round js/Math x))
+
+(defn floor [x]
+  (.floor js/Math x))
+
+(defn hours-mins-secs-str [millis]
+  (let [raw-secs (round (/ millis 1000))
+        secs (floor (mod raw-secs 60))
+        raw-mins (/ raw-secs 60)
+        mins (floor (mod raw-mins 60))
+        raw-hours (/ raw-mins 60)
+        hours (floor (mod raw-hours 24))]
+    (->> [hours mins secs]
+         (map #(str (if (< % 10) "0" nil) %))
+         (string/join ":"))))
+
+(defn days-str [millis]
+  (-> millis
+      (/ (days->ms 1))
+      (.toFixed 2)
+      (str " days")))
+
 (defn time-str [millis]
   (if (>= millis (days->ms 1))
-    (-> millis
-        (/ (days->ms 1))
-        (.toFixed 2)
-        (str " days"))
-    (-> millis
-        (js/Date.)
-        (.toUTCString)
-        (subs 17 25))))
+    (days-str millis)
+    (hours-mins-secs-str millis)))
 
 (defn time-of-day [datetime]
   [(.getHours datetime)
