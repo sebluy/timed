@@ -11,27 +11,13 @@
          :pending
          (get-in @activities [@activity :sessions])))))
 
-(defn- pending-this-action-button? [activity source session]
-  (and (= (:activity session) activity)
-       (= (get-in session [:pending :source]) source)))
-
-(defn- pending-action? [actions session]
-  (contains? actions (get-in session [:pending :action])))
-
-(defn- action-button-status [[activity source]]
+(defn- action-button-status [[activity _]]
   (with-subs
-    [pending-sessions [:pending-sessions]
-     current-session [:current-session]]
+    [current-session [:current-session]]
     (fn []
       (let [{current-activity :activity} @current-session]
         (cond
-          (or (nil? @pending-sessions) (= @pending-sessions :pending))
-          :hidden
-          (some #(pending-this-action-button? activity source %)
-                @pending-sessions)
-          :pending
-          (or (and current-activity (not= activity current-activity))
-              (some #(pending-action? #{:start :finish} %) @pending-sessions))
+          (and current-activity (not= activity current-activity))
           :hidden
           (= activity current-activity)
           :finish

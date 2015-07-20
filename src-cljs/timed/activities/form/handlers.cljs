@@ -8,8 +8,8 @@
 
 (defn submit []
   (let [activity (db/query-once [:page :activity-form :field])
-        status (db/query-once [:page :activity-form :status])]
-    (when (= status :valid)
+        error (db/query-once [:page :activity-form :status])]
+    (when (nil? error)
       (session-handlers/start-session
         activity
         :activity-form

@@ -29,12 +29,6 @@
     (fn []
       (get-in @aggregates path))))
 
-(defn- pending-sessions []
-  (with-subs
-    [activities [:activities]]
-    (fn []
-      (sessions/pending @activities))))
-
 (defn- current-session-time-spent []
   (with-subs
     [current-session [:current-session]
@@ -44,26 +38,8 @@
         (util/time-diff (@current-session :start) @now)
         0))))
 
-(defn- navbar-finish-status []
-  (with-subs
-    [pending-sessions [:pending-sessions]]
-    (fn []
-      (cond
-        (or (nil? @pending-sessions) (= @pending-sessions :pending))
-        :hidden
-        (some (fn [session] (= (get-in session [:pending :source]) :navbar))
-              @pending-sessions)
-        :pending
-        (some (fn [session] (= (get-in session [:pending :action]) :finish))
-              @pending-sessions)
-        :hidden
-        :else
-        :visible))))
-
-(db/register-derived-query [:navbar-finish-status] navbar-finish-status)
 (db/register-derived-query [:aggregates] aggregates)
 (db/register-derived-query [:aggregates-base] aggregates-base)
 (db/register-derived-query [:current-session] current-session)
 (db/register-derived-query [:current-session-time-spent]
                            current-session-time-spent)
-(db/register-derived-query [:pending-sessions] pending-sessions)

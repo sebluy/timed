@@ -14,14 +14,5 @@
           :message (sessions/string key value)
           :error (sessions/error key value))))))
 
-(defn pending []
-  (with-subs
-    [pending-sessions [:pending-sessions]]
-    (fn []
-      (some (fn [session]
-              (= (get-in session [:pending :source]) :session-form))
-            @pending-sessions))))
-
 (db/register-derived-query [:page :session-form :fields] fields)
-(db/register-derived-query [:page :session-form :pending] pending)
 
