@@ -1,7 +1,7 @@
 (ns timed.routes.home
   (:require [timed.layout :as layout]
             [timed.db.core :as db]
-            [compojure.core :refer [defroutes GET POST]]
+            [compojure.core :refer [defroutes GET POST ANY]]
             [ring.util.response :refer [response]])
   (:import (java.sql Timestamp)))
 
@@ -26,29 +26,28 @@
                            #(assoc-in % [:sessions (session :start)] session))))
                 {} (db/get-activities))))
 
-(defn delete-activity [activity]
-  (db/delete-activity! {:activity activity})
-  (response nil))
+(defmulti api-action first)
 
-(defn update-session [old-session new-session]
+(defmethod api-action :add-session [[_ session]]
+  (db/add-session! (db-session session)))
+
+(defmethod api-action :delete-activity [[_ activity]]
+  (db/delete-activity! {:activity activity}))
+
+(defmethod api-action :update-session [[_ old-session new-session]]
   (db/delete-session! (db-session old-session))
-  (db/add-session! (db-session new-session))
-  (response nil))
+  (db/add-session! (db-session new-session)))
 
-(defn add-session [session]
-  (db/add-session! (db-session session))
-  (response nil))
+(defmethod api-action :delete-session [[_ session]]
+  (db/delete-session! {:start (sql-datetime (session :start))}))
 
-(defn delete-session [{:keys [start]}]
-  (db/delete-session! {:start (sql-datetime start)})
+(defn api [actions]
+  (doseq [action actions]
+    (api-action action))
   (response nil))
 
 (defroutes home-routes
-           (POST "/add-session" [session] (add-session session))
-           (POST "/update-session" [old-session new-session]
-             (update-session old-session new-session))
-           (POST "/delete-session" [session] (delete-session session))
-           (POST "/delete-activity" [activity] (delete-activity activity))
+           (ANY "/api" {actions :body-params} (api actions))
            (GET "/activities" [] (get-activities))
            (GET "/" [] (home-page)))
 

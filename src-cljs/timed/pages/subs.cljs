@@ -19,15 +19,19 @@
   (with-subs
     [activities [:activities]]
     (fn []
-      (-> @activities
-          (activities/build-aggregates)
-          (activities/add-week-total)))))
+      (if (= @activities :pending)
+        :pending
+        (-> @activities
+            (activities/build-aggregates)
+            (activities/add-week-total))))))
 
 (defn- aggregates [path]
   (with-subs
     [aggregates [:aggregates-base]]
     (fn []
-      (get-in @aggregates path))))
+      (if (= @aggregates :pending)
+        :pending
+        (get-in @aggregates path)))))
 
 (defn- current-session-time-spent []
   (with-subs

@@ -1,11 +1,11 @@
 Current:
 
+Add refresh activities button
+
 Todo:
 
 Allow for offline usage where pending remote operations are put on queue and
 executed when network returns.
-- Remove pending
-- Remove "source" "action" semantics
 - Abstract remote layer
 ...
 
