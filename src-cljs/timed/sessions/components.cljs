@@ -5,15 +5,14 @@
             [timed.util :as util])
   (:require-macros [timed.macros :refer [with-subs]]))
 
-(defn- start-button [activity class source]
+(defn- start-button [activity class]
   [:input.btn
    {:type     "button"
     :class    (str class " btn-success")
     :value    "Start"
-    :on-click #(session-handlers/start-session
-                activity source identity)}])
+    :on-click #(session-handlers/start-session activity identity)}])
 
-(defn- finish-button [class source]
+(defn- finish-button [class]
   (with-subs
     [current-session [:current-session]]
     (fn []
@@ -21,17 +20,16 @@
        {:type     "button"
         :class    (str class " btn-danger")
         :value    "Finish"
-        :on-click #(session-handlers/finish-session
-                    @current-session source)}])))
+        :on-click #(session-handlers/finish-session @current-session)}])))
 
-(defn action-button [activity class source]
+(defn action-button [activity class]
   (with-subs
     [current-session [:current-session]
-     action-button-status [:action-button-status activity source]]
+     action-button-status [:action-button-status activity]]
     (fn []
       (condp = @action-button-status
-        :start [start-button activity class source]
-        :finish [finish-button class source]
+        :start [start-button activity class]
+        :finish [finish-button class]
         :hidden nil))))
 
 (defn new-button [activity]

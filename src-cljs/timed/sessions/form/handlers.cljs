@@ -26,11 +26,9 @@
       (if new
         (session-handlers/add-session
           new-session
-          :session-form
           form-transitions/close)
         (session-handlers/update-session
           old-session
           new-session
-          :session-form
           form-transitions/close)))))
 

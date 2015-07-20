@@ -12,5 +12,4 @@
     (when (nil? error)
       (session-handlers/start-session
         activity
-        :activity-form
         (transitions/update-field nil)))))
