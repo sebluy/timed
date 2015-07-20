@@ -1,6 +1,5 @@
 (ns timed.pages.activity
-  (:require [timed.framework.db :as db]
-            [timed.sessions.form.components :as form]
+  (:require [timed.sessions.form.components :as form]
             [timed.sessions.components :as session-components]
             [timed.activities.components :as activity-components])
   (:require-macros [timed.macros :refer [with-subs]]))

@@ -1,7 +1,6 @@
 (ns timed.sessions.form.components
   (:require [timed.sessions.form.handlers :as handlers]
-            [timed.util :as util]
-            [timed.pages.components :as page-components])
+            [timed.util :as util])
   (:require-macros [timed.macros :refer [with-subs]]))
 
 (defn label [key]
@@ -27,10 +26,7 @@
    [input key]])
 
 (defn- submit-button []
-  (with-subs [pending [:page :session-form :pending]]
-    (if @pending
-      [page-components/pending-button]
-      [:button.btn.btn-primary {:type "submit"} "Update"])))
+  [:button.btn.btn-primary {:type "submit"} "Update"])
 
 (defn edit-form []
   [:form {:on-submit #(do (.preventDefault %) (handlers/submit))}

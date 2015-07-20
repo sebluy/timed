@@ -1,6 +1,5 @@
 (ns timed.sessions.components
-  (:require [timed.pages.components :as page-components]
-            [timed.sessions.sessions :as sessions]
+  (:require [timed.sessions.sessions :as sessions]
             [timed.sessions.handlers :as session-handlers]
             [timed.sessions.form.handlers :as form-handlers]
             [timed.util :as util])
@@ -33,7 +32,6 @@
       (condp = @action-button-status
         :start [start-button activity class source]
         :finish [finish-button class source]
-        :pending [page-components/pending-button class]
         :hidden nil))))
 
 (defn new-button [activity]
@@ -49,12 +47,10 @@
     :on-click #(form-handlers/open session)}])
 
 (defn- delete-button [session]
-  (if-not (= (get-in session [:pending :action]) :delete)
-    [:input.btn.btn-sm.btn-danger
-     {:type     "button"
-      :value    "Delete"
-      :on-click #(session-handlers/delete-session session)}]
-    [page-components/pending-button "btn-sm"]))
+  [:input.btn.btn-sm.btn-danger
+   {:type     "button"
+    :value    "Delete"
+    :on-click #(session-handlers/delete-session session)}])
 
 (defn- show-session []
   (with-subs

@@ -1,21 +1,15 @@
 (ns timed.activities.components
   (:require [timed.sessions.components :as session-components]
-            [timed.pages.components :as page-components]
             [timed.routing :refer [page->href]]
             [timed.util :as util]
             [timed.activities.handlers :as activity-handlers])
   (:require-macros [timed.macros :refer [with-subs]]))
 
 (defn delete-button [activity]
-  (with-subs
-    [pending [:pending :delete-activity activity]]
-    (fn []
-      (if @pending
-        [page-components/pending-button]
-        [:input.btn.btn-danger
-         {:type     "button"
-          :value    "Delete"
-          :on-click #(activity-handlers/delete-activity activity)}]))))
+  [:input.btn.btn-danger
+   {:type     "button"
+    :value    "Delete"
+    :on-click #(activity-handlers/delete-activity activity)}])
 
 (defn- show-activity [name]
   (let [href (page->href {:handler :activity :route-params {:activity name}})]
@@ -59,11 +53,11 @@
 
 (defn- table-body []
   (with-subs
-    [confirmed-activities [:confirmed-activities]]
+    [activities [:activities]]
     (fn []
       [:tbody
        (doall
-         (for [activity-name (keys @confirmed-activities)]
+         (for [activity-name (keys @activities)]
            ^{:key activity-name}
            [show-activity activity-name]))])))
 
@@ -77,12 +71,12 @@
 
 (defn activities-table []
   (with-subs
-    [confirmed-activities [:confirmed-activities]]
+    [activities [:activities]]
     (fn []
       (cond
-        (= @confirmed-activities :pending)
+        (= @activities :pending)
         [:div.jumbotron [:h1.text-center "Pending"]]
-        (seq @confirmed-activities)
+        (seq @activities)
         [:table.table [table-head] [table-body] [table-foot]]
         :else
         [:div.jumbotron [:h1.text-center "No Activities"]]))))
