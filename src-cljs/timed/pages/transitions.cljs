@@ -26,3 +26,17 @@
   (history/replace-token page)
   (set-page page))
 
+(defn go-online [db]
+  (-> db
+      (assoc :mode :online)
+      (dissoc :offline-actions)))
+
+(defn go-offline [db]
+  (-> db
+      (assoc :mode :offline)
+      (assoc :offline-actions [])))
+
+(defn add-offline-action [action]
+  (fn [db]
+    (update-in db [:offline-actions] conj action)))
+

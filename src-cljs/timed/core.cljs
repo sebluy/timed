@@ -10,8 +10,8 @@
   (reagent/render-component [pages/view] (dom/getElement "app")))
 
 (defn init! []
+  (handlers/go-online)
   (navigation/hook-browser)
   (mount-components)
   (handlers/get-activities))
-
 

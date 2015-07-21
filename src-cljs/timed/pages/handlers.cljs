@@ -34,3 +34,11 @@
             identity)
           (transitions/update-activities sorted))))))
 
+(defn go-offline []
+  (db/transition transitions/go-offline))
+
+(defn go-online []
+  (let [actions (db/query-once [:offline-actions])]
+    (if (seq actions)
+      (remote-handlers/post-actions actions)))
+  (db/transition transitions/go-online))
