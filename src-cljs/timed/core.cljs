@@ -1,6 +1,7 @@
 (ns timed.core
   (:require [timed.pages.pages :as pages]
             [timed.pages.subs]
+            [timed.local-storage]
             [timed.pages.handlers :as handlers]
             [timed.navigation :as navigation]
             [reagent.core :as reagent]

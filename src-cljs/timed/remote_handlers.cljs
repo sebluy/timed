@@ -14,6 +14,8 @@
        :response-format :edn})
     response-chan))
 
+(db/query-once [:offline-actions])
+
 (defn queue-action [action]
   (if (= :online (db/query-once [:mode]))
     (post-actions [action])

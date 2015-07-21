@@ -1,6 +1,6 @@
 Current:
 
-Add refresh activities button
+Add local storage
 
 Todo:
 
