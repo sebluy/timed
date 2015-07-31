@@ -1,6 +1,5 @@
 (ns timed.sessions.handlers
-  (:require [cljs.core.async :as async]
-            [timed.framework.db :as db]
+  (:require [timed.db :as db]
             [timed.sessions.transitions :as session-transitions]
             [timed.remote-handlers :as remote-handlers]
             [timed.pages.transitions :as page-transitions]

@@ -1,7 +1,6 @@
 (ns timed.pages.transitions
   (:require [timed.history :as history]
-            [timed.framework.db :as db]
-            [timed.sessions.sessions :as sessions]))
+            [timed.db :as db]))
 
 (defn set-page [page]
   (fn [db]

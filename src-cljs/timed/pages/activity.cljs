@@ -1,11 +1,11 @@
 (ns timed.pages.activity
   (:require [timed.sessions.form.components :as form]
             [timed.sessions.components :as session-components]
-            [timed.activities.components :as activity-components])
-  (:require-macros [timed.macros :refer [with-subs]]))
+            [timed.activities.components :as activity-components]
+            [sigsub.core :as sigsub :include-macros :true]))
 
 (defn- page-header [activity]
-  (with-subs
+  (sigsub/with-reagent-subs
     [activity [:page :route-params :activity]]
     (fn []
       [:div.page-header
@@ -16,7 +16,8 @@
          [activity-components/delete-button @activity]]]])))
 
 (defn edit-form-slot []
-  (with-subs [edit-form [:page :session-form]]
+  (sigsub/with-reagent-subs
+    [edit-form [:page :session-form]]
     (fn []
       (if @edit-form
         [form/edit-form]))))

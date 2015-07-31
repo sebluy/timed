@@ -1,6 +1,6 @@
 (ns timed.sessions.form.handlers
   (:require [timed.sessions.sessions :as sessions]
-            [timed.framework.db :as db]
+            [timed.db :as db]
             [timed.util :as util]
             [timed.sessions.form.transitions :as form-transitions]
             [timed.sessions.handlers :as session-handlers]))
@@ -17,7 +17,7 @@
 
 (defn submit []
   (let [{:keys [activity new old-session inputs]}
-        (db/query-once [:page :session-form])
+        (db/query [:page :session-form])
         new-session
         {:activity activity
          :start    (util/str->date (inputs :start))

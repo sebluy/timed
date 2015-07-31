@@ -1,6 +1,6 @@
 (ns timed.pages.handlers
   (:require [timed.pages.transitions :as transitions]
-            [timed.framework.db :as db]
+            [timed.db :as db]
             [timed.activities.activities :as activities]
             [cljs.core.async :as async]
             [timed.remote-handlers :as remote-handlers]
@@ -12,7 +12,7 @@
     (let [raw (async/<! (remote-handlers/get-activities))
           sorted (activities/coerce-activities-to-sorted raw)
           current-session (sessions/current sorted)
-          tick (db/query-once [:tick])]
+          tick (db/query [:tick])]
       (db/transition
         (comp
           (cond
@@ -38,7 +38,7 @@
   (db/transition transitions/go-offline))
 
 (defn go-online []
-  (let [actions (db/query-once [:offline-actions])]
+  (let [actions (db/query [:offline-actions])]
     (if (seq actions)
       (remote-handlers/post-actions actions)))
   (db/transition transitions/go-online))

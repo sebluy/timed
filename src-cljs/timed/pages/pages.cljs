@@ -3,14 +3,14 @@
             [timed.pages.activities :as activities]
             [timed.pages.navbar :as navbar]
             [goog.dom :as dom]
-            [timed.util :as util])
-  (:require-macros [timed.macros :refer [with-subs]]))
+            [timed.util :as util]
+            [sigsub.core :as sigsub :include-macros :true]))
 
 (defonce pages {:activities activities/page
                 :activity   activity/page})
 
 (defn- current-page []
-  (with-subs [handler [:page :handler]]
+  (sigsub/with-reagent-subs [handler [:page :handler]]
     (fn []
       [(or (pages @handler) :div)])))
 
@@ -21,7 +21,7 @@
 
 ; super hack to the rescue
 (defn title []
-  (with-subs
+  (sigsub/with-reagent-subs
     [current-session [:current-session]
      time-spent [:current-session-time-spent]]
     (fn []

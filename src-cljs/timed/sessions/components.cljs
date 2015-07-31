@@ -2,8 +2,8 @@
   (:require [timed.sessions.sessions :as sessions]
             [timed.sessions.handlers :as session-handlers]
             [timed.sessions.form.handlers :as form-handlers]
-            [timed.util :as util])
-  (:require-macros [timed.macros :refer [with-subs]]))
+            [timed.util :as util]
+            [sigsub.core :as sigsub :include-macros :true]))
 
 (defn- start-button [activity class]
   [:input.btn
@@ -13,7 +13,7 @@
     :on-click #(session-handlers/start-session activity identity)}])
 
 (defn- finish-button [class]
-  (with-subs
+  (sigsub/with-reagent-subs
     [current-session [:current-session]]
     (fn []
       [:input.btn
@@ -23,7 +23,7 @@
         :on-click #(session-handlers/finish-session @current-session)}])))
 
 (defn action-button [activity class]
-  (with-subs
+  (sigsub/with-reagent-subs
     [current-session [:current-session]
      action-button-status [:action-button-status activity]]
     (fn []
@@ -51,7 +51,7 @@
     :on-click #(session-handlers/delete-session session)}])
 
 (defn- show-session []
-  (with-subs
+  (sigsub/with-reagent-subs
     [session-under-edit [:page :session-form :old-session]
      current-session-time-spent [:current-session-time-spent]]
     (fn [{:keys [start finish] :as session}]
@@ -69,7 +69,7 @@
          [delete-button session]]]])))
 
 (defn- session-list []
-  (with-subs
+  (sigsub/with-reagent-subs
     [sessions [:page :sessions]]
     (fn []
       [:table.table
@@ -82,7 +82,7 @@
             [show-session session]))]])))
 
 (defn session-list-slot []
-  (with-subs
+  (sigsub/with-reagent-subs
     [sessions [:page :sessions]]
     (fn []
       (cond

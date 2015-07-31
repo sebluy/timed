@@ -4,7 +4,7 @@
             [goog.events :as events]
             [clojure.string :as string]
             [timed.pages.transitions :as transitions]
-            [timed.framework.db :as db])
+            [timed.db :as db])
   (:import goog.history.EventType))
 
 (defn navigate [page]

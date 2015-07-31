@@ -1,7 +1,7 @@
 (ns timed.local-storage
   (:require [cljs.reader :as reader]
             [goog.events :as events]
-            [timed.framework.db :as db]
+            [timed.db :as db]
             [timed.pages.handlers :as handlers]
             [timed.pages.transitions :as transitions])
   (:import (goog.storage.mechanism HTML5LocalStorage)
@@ -18,7 +18,7 @@
   (reader/read-string (.get storage :db)))
 
 (defn save-db []
-  (save (select-keys @db/db saved)))
+  (save (select-keys (db/query) saved)))
 
 (defn load-db []
   (let [db (load)]

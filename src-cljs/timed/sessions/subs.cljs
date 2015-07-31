@@ -1,9 +1,10 @@
 (ns timed.sessions.subs
-  (:require [timed.framework.db :as db])
-  (:require-macros [timed.macros :refer [with-subs]]))
+  (:require [timed.db :as db]
+            [sigsub.core :as sigsub :include-macros :true]))
+
 
 (defn- sessions []
-  (with-subs
+  (sigsub/with-signals
     [activity [:page :route-params :activity]
      activities [:activities]]
      (fn []
@@ -12,7 +13,7 @@
          (get-in @activities [@activity :sessions])))))
 
 (defn- action-button-status [[activity _]]
-  (with-subs
+  (sigsub/with-signals
     [current-session [:current-session]]
     (fn []
       (let [{current-activity :activity} @current-session]
@@ -24,5 +25,5 @@
           :else
           :start)))))
 
-(db/register-derived-query [:page :sessions] sessions)
-(db/register-derived-query [:action-button-status] action-button-status)
+(sigsub/register-derived-signal-fn [:page :sessions] sessions)
+(sigsub/register-derived-signal-fn [:action-button-status] action-button-status)

@@ -1,23 +1,22 @@
 (ns timed.pages.subs
-  (:require [timed.framework.db :as db]
-            [timed.activities.subs]
+  (:require [timed.activities.subs]
             [timed.activities.form.subs]
             [timed.sessions.subs]
             [timed.sessions.form.subs]
             [timed.activities.activities :as activities]
             [timed.sessions.sessions :as sessions]
-            [timed.util :as util])
-  (:require-macros [timed.macros :refer [with-subs]]))
+            [timed.util :as util]
+            [sigsub.core :as sigsub :include-macros :true]))
 
 (defn- current-session []
-  (with-subs
+  (sigsub/with-signals
     [activities [:activities]]
     (fn []
       (println "Running current-session")
       (sessions/current @activities))))
 
 (defn- aggregates-base []
-  (with-subs
+  (sigsub/with-signals
     [activities [:activities]]
     (fn []
       (if (= @activities :pending)
@@ -27,7 +26,7 @@
             (activities/add-week-total))))))
 
 (defn- aggregates [path]
-  (with-subs
+  (sigsub/with-signals
     [aggregates [:aggregates-base]]
     (fn []
       (if (= @aggregates :pending)
@@ -35,7 +34,7 @@
         (get-in @aggregates path)))))
 
 (defn- current-session-time-spent []
-  (with-subs
+  (sigsub/with-signals
     [current-session [:current-session]
      now [:tick :now]]
     (fn []
@@ -44,8 +43,8 @@
         (util/time-diff (@current-session :start) @now)
         0))))
 
-(db/register-derived-query [:aggregates] aggregates)
-(db/register-derived-query [:aggregates-base] aggregates-base)
-(db/register-derived-query [:current-session] current-session)
-(db/register-derived-query [:current-session-time-spent]
-                           current-session-time-spent)
+(sigsub/register-derived-signal-fn [:aggregates] aggregates)
+(sigsub/register-derived-signal-fn [:aggregates-base] aggregates-base)
+(sigsub/register-derived-signal-fn [:current-session] current-session)
+(sigsub/register-derived-signal-fn [:current-session-time-spent]
+                                   current-session-time-spent)

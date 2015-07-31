@@ -1,7 +1,7 @@
 (ns timed.remote-handlers
   (:require [cljs.core.async :as async]
             [ajax.core :as ajax]
-            [timed.framework.db :as db]
+            [timed.db :as db]
             [timed.pages.transitions :as transitions]))
 
 (defn post-actions [actions]
@@ -15,7 +15,7 @@
     response-chan))
 
 (defn queue-action [action]
-  (if (= :online (db/query-once [:mode]))
+  (if (= :online (db/query [:mode]))
     (post-actions [action])
     (db/transition (transitions/add-offline-action action))))
 

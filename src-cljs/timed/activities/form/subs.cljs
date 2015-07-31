@@ -1,13 +1,12 @@
 (ns timed.activities.form.subs
-  (:require [timed.framework.db :as db]
-            [timed.activities.activities :as activities])
-  (:require-macros [timed.macros :refer [with-subs]]))
+  (:require [timed.activities.activities :as activities]
+            [sigsub.core :as sigsub :include-macros :true]))
 
 (defn- error []
-  (with-subs
+  (sigsub/with-signals
     [field [:page :activity-form :field]]
     (fn []
       (println "running error")
       (activities/error @field))))
 
-(db/register-derived-query [:page :activity-form :error] error)
+(sigsub/register-derived-signal-fn [:page :activity-form :error] error)

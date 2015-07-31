@@ -2,8 +2,8 @@
   (:require [timed.sessions.components :as session-components]
             [timed.routing :refer [page->href]]
             [timed.util :as util]
-            [timed.activities.handlers :as activity-handlers])
-  (:require-macros [timed.macros :refer [with-subs]]))
+            [timed.activities.handlers :as activity-handlers]
+            [sigsub.core :as sigsub :include-macros :true]))
 
 (defn delete-button [activity]
   [:input.btn.btn-danger
@@ -13,7 +13,7 @@
 
 (defn- show-activity [name]
   (let [href (page->href {:handler :activity :route-params {:activity name}})]
-    (with-subs
+    (sigsub/with-reagent-subs
       [daily-total [:aggregates name :week]]
       (fn []
         [:tr
@@ -52,7 +52,7 @@
        [:td (util/time-str (- (util/days->ms 1) (@week-totals day)))]))])
 
 (defn- table-body []
-  (with-subs
+  (sigsub/with-reagent-subs
     [activities [:activities]]
     (fn []
       [:tbody
@@ -62,7 +62,7 @@
            [show-activity activity-name]))])))
 
 (defn- table-foot []
-  (with-subs
+  (sigsub/with-reagent-subs
     [week-totals [:aggregates :total :week]]
     (fn []
       [:tfoot
@@ -70,7 +70,7 @@
        [unaccounted-row week-totals]])))
 
 (defn activities-table []
-  (with-subs
+  (sigsub/with-reagent-subs
     [activities [:activities]]
     (fn []
       (cond

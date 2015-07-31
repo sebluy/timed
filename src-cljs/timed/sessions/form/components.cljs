@@ -1,11 +1,12 @@
 (ns timed.sessions.form.components
   (:require [timed.sessions.form.handlers :as handlers]
-            [timed.util :as util])
-  (:require-macros [timed.macros :refer [with-subs]]))
+            [timed.util :as util]
+            [sigsub.core :as sigsub :include-macros :true]))
 
 (defn label [key]
-  (with-subs [message [:page :session-form :fields key :message]
-              error [:page :session-form :fields key :error]]
+  (sigsub/with-reagent-subs
+    [message [:page :session-form :fields key :message]
+     error [:page :session-form :fields key :error]]
     (fn []
       [:label ({:start "Start: " :finish "Finish: "} key)
        (if @error
@@ -13,7 +14,8 @@
          [:span.label.label-success @message])])))
 
 (defn- input [key]
-  (with-subs [text [:page :session-form :fields key :text]]
+  (sigsub/with-reagent-subs
+    [text [:page :session-form :fields key :text]]
     (fn []
       [:input.form-control
        {:type      "text"

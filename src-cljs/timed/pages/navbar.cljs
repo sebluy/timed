@@ -3,11 +3,11 @@
             [timed.activities.form.components :as activity-form-components]
             [timed.pages.handlers :as page-handlers]
             [timed.util :as util]
-            [timed.sessions.handlers :as session-handlers])
-  (:require-macros [timed.macros :refer [with-subs]]))
+            [timed.sessions.handlers :as session-handlers]
+            [sigsub.core :as sigsub :include-macros :true]))
 
 (defn finish-session-button []
-  (with-subs
+  (sigsub/with-reagent-subs
     [current-session [:current-session]
      time-spent [:current-session-time-spent]]
     (fn []
@@ -17,7 +17,7 @@
        "Finish " [:span.badge (util/time-str @time-spent)]])))
 
 (defn- form-slot []
-  (with-subs
+  (sigsub/with-reagent-subs
     [current-session [:current-session]]
     (fn []
       (if @current-session
@@ -37,7 +37,7 @@
     :on-click #(page-handlers/go-online)}])
 
 (defn mode-button-slot []
-  (with-subs
+  (sigsub/with-reagent-subs
     [mode [:mode]]
     (if (= @mode :online)
       (go-offline-button)
