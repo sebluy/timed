@@ -5,6 +5,8 @@
             [reagent.core :as reagent])
   (:require-macros [timed.macros :refer [with-subs]]))
 
+; could use some refactoring
+
 (defn set-db [db]
   (db/transition (fn [_] db)))
 
@@ -14,8 +16,6 @@
 (defn render [component]
   (reagent/render component (dom/getElement "app"))
   (reagent/flush))
-
-; test components
 
 (defn without-deref []
   (with-subs
@@ -101,6 +101,28 @@
     (is (nil? (db/active-reactions [:test])))
     (is (nil? (db/active-reactions [:derived :test])))))
 
+(defn derived-query-with-count [count]
+  (fn []
+    (with-subs
+      [test [:test]]
+      (fn []
+        (swap! count inc)
+        (println @count)
+        (str @test " working?")))))
+
+(deftest test-dependent-subscription
+  (render [:div])
+  (set-db {:test "hi"})
+  (reset-subscriptions)
+  (let [count (atom 0)]
+    (db/register-derived-query [:derived :test]
+                               (derived-query-with-count count))
+    (testing "derived subscriptions should only update with their dependencies"
+      (render [derived-component])
+      (is (= 1 @count))
+      (db/transition (fn [db] (assoc db :not-test 69)))
+      (is (= 1 @count)))))
+
 (deftest test-query-once
   (render [:div])
   (set-db {:test "it's"})
@@ -116,4 +138,4 @@
     (is (some? (db/active-reactions [:test])))
     (is (some? (db/active-reactions [:derived :test])))))
 
-;(run-tests)
+(run-tests)

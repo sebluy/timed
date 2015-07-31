@@ -1,6 +1,6 @@
 Current:
 
-Add local storage
+FIX SUBSCRIPTIONS
 
 Todo:
 

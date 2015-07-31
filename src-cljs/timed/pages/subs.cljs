@@ -13,6 +13,7 @@
   (with-subs
     [activities [:activities]]
     (fn []
+      (println "Running current-session")
       (sessions/current @activities))))
 
 (defn- aggregates-base []
@@ -38,6 +39,7 @@
     [current-session [:current-session]
      now [:tick :now]]
     (fn []
+      (println "running time-spent")
       (if @current-session
         (util/time-diff (@current-session :start) @now)
         0))))

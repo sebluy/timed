@@ -7,6 +7,7 @@
   (with-subs
     [field [:page :activity-form :field]]
     (fn []
+      (println "running error")
       (activities/error @field))))
 
 (db/register-derived-query [:page :activity-form :error] error)
