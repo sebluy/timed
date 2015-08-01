@@ -3,6 +3,7 @@
             [timed.util :as util]
             [clojure.string :as string]))
 
+
 (defn coerce-activities-to-sorted [new-activities]
   (into {} (map (fn [[name activity]]
                   [name (update-in activity [:sessions]

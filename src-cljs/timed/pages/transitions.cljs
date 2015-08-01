@@ -7,7 +7,6 @@
     (assoc db :page page)))
 
 (defn- tick [db]
-  (println "ticking")
   (assoc-in db [:tick :now] (js/Date.)))
 
 (defn start-tick [db]

@@ -1,7 +1,5 @@
 (ns timed.sessions.subs
-  (:require [timed.db :as db]
-            [sigsub.core :as sigsub :include-macros :true]))
-
+  (:require [sigsub.core :as sigsub :include-macros :true]))
 
 (defn- sessions []
   (sigsub/with-signals

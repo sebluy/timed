@@ -1,12 +1,13 @@
 Current:
 
-FIX SUBSCRIPTIONS
+Add today page
 
 Todo:
 
 Allow for offline usage where pending remote operations are put on queue and
 executed when network returns.
 - Abstract remote layer
+- Make user visible
 ...
 
 Make mobile friendly.
@@ -17,8 +18,6 @@ Allow for activities to be added/modified independent of sessions.
 
 Build network for building aggregates.
 
-Readme implement subscriptions with equality rather than identity.
-
 Fix insecure html blah blah blah.
 
 Allow tick to be managed on-demand using subscriptions.
@@ -28,8 +27,6 @@ Update dependencies without breaking everything.
 Add plots.
 
 Add tests as things break.
-
-Rethink subscription tree semantics.
 
 Separate remote and local data.
 

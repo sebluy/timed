@@ -1,8 +1,9 @@
 (ns timed.routing
   (:require [bidi.bidi :as bidi]))
 
-(defonce routes ["activities" {""              :activities
-                               ["/" :activity] :activity}])
+(defonce routes ["" {"today"      :today
+                     "activities" {""              :activities
+                                   ["/" :activity] :activity}}])
 
 (defn- route->page [route]
   (bidi/match-route routes route))

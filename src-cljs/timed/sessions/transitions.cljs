@@ -10,3 +10,4 @@
 
 (defn update-session [old-session new-session]
   (comp (add-session new-session) (delete-session old-session)))
+

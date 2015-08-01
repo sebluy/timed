@@ -50,6 +50,7 @@
       [:div.navbar-header
        [:a.navbar-brand {:href activities-href} "Timed"]]
       [:ul.nav.navbar-nav
+       [:li [:a {:href (page->href {:handler :today})} "Today"]]
        [:li [:a {:href activities-href} "Activities"]]]
       [:ul.nav.navbar-nav.pull-right
        [:li [form-slot]]

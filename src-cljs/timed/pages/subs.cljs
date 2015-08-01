@@ -12,7 +12,6 @@
   (sigsub/with-signals
     [activities [:activities]]
     (fn []
-      (println "Running current-session")
       (sessions/current @activities))))
 
 (defn- aggregates-base []
@@ -38,7 +37,6 @@
     [current-session [:current-session]
      now [:tick :now]]
     (fn []
-      (println "running time-spent")
       (if @current-session
         (util/time-diff (@current-session :start) @now)
         0))))
@@ -48,3 +46,4 @@
 (sigsub/register-derived-signal-fn [:current-session] current-session)
 (sigsub/register-derived-signal-fn [:current-session-time-spent]
                                    current-session-time-spent)
+
