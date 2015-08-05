@@ -4,6 +4,8 @@ Add today page
 
 Todo:
 
+Fix bug with activity form, errors are being submitted
+
 Allow for offline usage where pending remote operations are put on queue and
 executed when network returns.
 - Abstract remote layer

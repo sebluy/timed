@@ -6,7 +6,6 @@
   (sigsub/with-signals
     [field [:page :activity-form :field]]
     (fn []
-      (println "running error")
       (activities/error @field))))
 
 (sigsub/register-derived-signal-fn [:page :activity-form :error] error)

@@ -2391,3 +2391,15 @@ google.visualization.ChartRangeFilter.prototype.draw =
 google.visualization.ChartRangeFilter.prototype.applyFilter = function() {};
 google.visualization.ChartRangeFilter.prototype.getState = function() {};
 google.visualization.ChartRangeFilter.prototype.resetControl = function() {};
+
+/**
+ * @param {Node} container
+ * @constructor
+ */
+google.visualization.Timeline = function(container) {};
+
+/**
+ * @override
+ */
+google.visualization.Timeline.prototype.draw = function(data, opt_options) {};
+
