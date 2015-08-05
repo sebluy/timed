@@ -45,61 +45,60 @@
             [lein-figwheel "0.3.3"]
             [ragtime/ragtime.lein "0.3.8"]
             [lein-cljsbuild "1.0.5"]]
-  
+
   :ragtime
   {:migrations ragtime.sql.files/migrations
    :database
-   "jdbc:postgresql://localhost/timed?user=admin&password=admin"}
-  
+               "jdbc:postgresql://localhost/timed?user=admin&password=admin"}
+
   :clean-targets ^{:protect false} ["resources/public/js"]
-  
+
   :cljsbuild
   {:builds
    {:app
     {:source-paths ["src-cljs"]
      :compiler
-     {:output-dir "resources/public/js/out"
-      :externs ["react/externs/react.js"
-                "externs/google_loader_api.js"
-                "externs/google_visualization_api.js"]
-      :optimizations :none
-      :output-to "resources/public/js/app.js"
-      :pretty-print true}}}}
+                   {:output-dir    "resources/public/js/out"
+                    :externs       ["react/externs/react.js"
+                                    "externs/google_loader_api.js"
+                                    "externs/google_visualization_api.js"]
+                    :optimizations :none
+                    :output-to     "resources/public/js/app.js"
+                    :pretty-print  true}}}}
 
   :profiles
-  {:uberjar {:omit-source true
+  {:uberjar {:omit-source  true
              :source-paths ["env/prod/clj"]
-             :env {:production true}
-             :hooks [leiningen.cljsbuild]
+             :env          {:production true}
+             :hooks        [leiningen.cljsbuild]
              :cljsbuild
-             {:jar true
-              :builds
-              {:app
-               {:source-paths ["env/prod/cljs"]
-                :compiler {:optimizations :advanced
-                           :elide-asserts :true
-                           :pretty-print false}}}}
-             :aot :all}
+                           {:jar true
+                            :builds
+                                 {:app
+                                  {:source-paths ["env/prod/cljs"]
+                                   :compiler     {:optimizations :advanced
+                                                  :elide-asserts :true
+                                                  :pretty-print  false}}}}
+             :aot          :all}
 
-   :dev {:dependencies [[ring-mock "0.1.5"]
-                        [ring/ring-devel "1.3.2"]
-                        [pjstadig/humane-test-output "0.7.0"]
-                        [lein-figwheel "0.3.3"]]
+   :dev     {:dependencies [[ring-mock "0.1.5"]
+                            [ring/ring-devel "1.3.2"]
+                            [pjstadig/humane-test-output "0.7.0"]]
 
-         :source-paths ["env/dev/clj"]
-         :figwheel {:http-server-root "public"
-                    :nrepl-port 7888
-                    :css-dirs ["resources/public/css"]}
+             :source-paths ["env/dev/clj"]
+             :figwheel     {:http-server-root "public"
+                            :nrepl-port       7888
+                            :css-dirs         ["resources/public/css"]}
 
-         :cljsbuild
-         {:builds
-          {:app
-           {:source-paths ["env/dev/cljs" "test-cljs"]
-            :compiler {:source-map true}}}}
+             :cljsbuild
+                           {:builds
+                            {:app
+                             {:source-paths ["env/dev/cljs" "test-cljs"]
+                              :compiler     {:source-map true}}}}
 
-         :repl-options {:init-ns timed.dev}
+             :repl-options {:init-ns timed.dev}
 
-         :injections [(require 'pjstadig.humane-test-output)
-                      (pjstadig.humane-test-output/activate!)]
+             :injections   [(require 'pjstadig.humane-test-output)
+                            (pjstadig.humane-test-output/activate!)]
 
-         :env {:dev true}}})
+             :env          {:dev true}}})

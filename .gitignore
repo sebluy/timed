@@ -8,9 +8,9 @@ pom.xml
 /.lein-*
 /.env
 *.log
+*.iml
 /resources/public/js
 /out
 .nrepl-port
 .idea
 .repl
-bed_time.iml
