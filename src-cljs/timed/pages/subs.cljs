@@ -41,9 +41,9 @@
         (util/time-diff (@current-session :start) @now)
         0))))
 
-(sigsub/register-derived-signal-fn [:aggregates] aggregates)
-(sigsub/register-derived-signal-fn [:aggregates-base] aggregates-base)
-(sigsub/register-derived-signal-fn [:current-session] current-session)
-(sigsub/register-derived-signal-fn [:current-session-time-spent]
+(sigsub/register-signal-skeleton [:aggregates] aggregates)
+(sigsub/register-signal-skeleton [:aggregates-base] aggregates-base)
+(sigsub/register-signal-skeleton [:current-session] current-session)
+(sigsub/register-signal-skeleton [:current-session-time-spent]
                                    current-session-time-spent)
 

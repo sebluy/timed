@@ -23,5 +23,5 @@
           :else
           :start)))))
 
-(sigsub/register-derived-signal-fn [:page :sessions] sessions)
-(sigsub/register-derived-signal-fn [:action-button-status] action-button-status)
+(sigsub/register-signal-skeleton [:page :sessions] sessions)
+(sigsub/register-signal-skeleton [:action-button-status] action-button-status)

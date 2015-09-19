@@ -13,5 +13,5 @@
           :message (sessions/string key value)
           :error (sessions/error key value))))))
 
-(sigsub/register-derived-signal-fn [:page :session-form :fields] fields)
+(sigsub/register-signal-skeleton [:page :session-form :fields] fields)
 

@@ -8,4 +8,4 @@
     (fn []
       (activities/error @field))))
 
-(sigsub/register-derived-signal-fn [:page :activity-form :error] error)
+(sigsub/register-signal-skeleton [:page :activity-form :error] error)

@@ -3,7 +3,8 @@
             [goog.events :as events]
             [timed.db :as db]
             [timed.pages.handlers :as handlers]
-            [timed.pages.transitions :as transitions])
+            [timed.pages.transitions :as transitions]
+            [timed.activities.activities :as activities])
   (:import (goog.storage.mechanism HTML5LocalStorage)
            (goog.storage Storage)))
 
@@ -15,7 +16,11 @@
   (.set storage :db (pr-str value)))
 
 (defn load []
-  (reader/read-string (.get storage :db)))
+  (let [raw-db (reader/read-string (.get storage :db))
+        unsorted-activites (raw-db :activities)
+        sorted-activites (activities/coerce-activities-to-sorted
+                           unsorted-activites)]
+    (assoc raw-db :activities sorted-activites)))
 
 (defn save-db []
   (save (select-keys (db/query) saved)))
