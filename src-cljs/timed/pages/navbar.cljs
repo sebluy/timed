@@ -24,24 +24,13 @@
         [finish-session-button]
         [activity-form-components/form]))))
 
-(defn go-offline-button []
-  [:input.btn.btn-danger.navbar-btn
-   {:type  "button"
-    :value "Go Offline"
-    :on-click #(page-handlers/go-offline)}])
-
-(defn go-online-button []
-  [:input.btn.btn-success.navbar-btn
-   {:type  "button"
-    :value "Go Online"
-    :on-click #(page-handlers/go-online)}])
-
-(defn mode-button-slot []
+(defn status []
   (sigsub/with-reagent-subs
-    [mode [:mode]]
-    (if (= @mode :online)
-      (go-offline-button)
-      (go-online-button))))
+    [status [:status]]
+    [:h3.navbar-text
+     (if (= @status :online)
+       [:span.label.label-success.label-as-badge "Online"]
+       [:span.label.label-danger.label-as-badge "Offline"])]))
 
 (defn remote-link []
   (sigsub/with-reagent-subs
@@ -50,8 +39,8 @@
     (fn []
       [:a {:href (page->href {:handler :remote})}
        "Remote "
-       [:span.label.label-success.label-as-badge (count @pending)]
-       [:span.label.label-warning.label-as-badge (count @queued)]])))
+        [:span.label.label-success.label-as-badge (count @pending)]
+        [:span.label.label-warning.label-as-badge (count @queued)]])))
 
 (defn navbar []
   (let [activities-href (page->href {:handler :activities})]
@@ -65,5 +54,5 @@
        [:li [remote-link]]]
       [:ul.nav.navbar-nav.pull-right
        [:li [form-slot]]
-       [:li [mode-button-slot]]]]]))
+       [:li [status]]]]]))
 

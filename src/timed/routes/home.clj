@@ -41,7 +41,6 @@
   (db/delete-session! {:start (sql-datetime (session :start))}))
 
 (defn api [actions]
-  (Thread/sleep 4000)
   (response (map api-action actions)))
 
 (defroutes home-routes

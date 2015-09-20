@@ -1,10 +1,21 @@
 (ns timed.remote-handlers
   (:require [ajax.core :as ajax]
+            [goog.events :as events]
             [timed.db :as db]))
 
-(declare handle-responses)
+(declare on-response)
+(declare post-queued)
 
 (def callbacks (atom {}))
+
+(db/transition (fn [db] (assoc db :remote {:pending [] :queued []})))
+
+(events/listen js/window "online"
+               (fn []
+                 (post-queued)
+                 (db/transition (fn [db] (assoc db :status :online)))))
+(events/listen js/window "offline"
+               (fn [] (db/transition (fn [db] (assoc db :status :offline)))))
 
 ; maintain key reference to callback functions so they can be serialized
 ; to storage when offline
@@ -18,29 +29,34 @@
   (ajax/POST
     "/api"
     {:params          actions
-     :handler         handle-responses
+     :handler         on-response
      :format          :edn
      :response-format :edn}))
 
 (defn queue-action [action callback]
-  (if (seq (db/query [:remote :pending]))
+  (if (or (seq (db/query [:remote :pending])) (= (db/query [:status]) :offline))
     (db/transition
       (fn [db] (update-in db [:remote :queued] conj [action callback])))
     (do (post-actions [action])
         (db/transition
           (fn [db] (assoc-in db [:remote :pending] [[action callback]]))))))
 
-(defn handle-responses [responses]
-  (doall (map (fn [[_ callback] response] ((get-callback callback) response))
-              (db/query [:remote :pending])
-              responses))
+(defn post-queued []
   (let [queued (db/query [:remote :queued])]
     (if (seq queued)
       (do (post-actions (mapv first queued))
           (db/transition
-            (fn [db] (update db :remote assoc :pending queued :queued []))))
-      (db/transition
-        (fn [db] (update db :remote assoc :pending [] :queued []))))))
+            (fn [db] (update db :remote assoc :pending queued :queued [])))))))
+
+(defn handle-responses [responses]
+  (doall (map (fn [[_ callback] response] ((get-callback callback) response))
+              (db/query [:remote :pending])
+              responses))
+  (db/transition (fn [db] (update db :remote assoc :pending []))))
+
+(defn on-response [responses]
+  (handle-responses responses)
+  (post-queued))
 
 (defn post-action
   ([action] (post-action action identity))
