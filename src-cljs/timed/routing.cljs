@@ -2,6 +2,7 @@
   (:require [bidi.bidi :as bidi]))
 
 (defonce routes ["" {"today"      :today
+                     "remote"     :remote
                      "activities" {""              :activities
                                    ["/" :activity] :activity}}])
 

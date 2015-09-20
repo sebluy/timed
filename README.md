@@ -4,6 +4,9 @@ Add today page
 
 Todo:
 
+Add callback lookup hash, so callbacks can be serialized
+Add pending/queued action table page
+
 Fix bug with activity form, errors are being submitted
 
 Allow for offline usage where pending remote operations are put on queue and

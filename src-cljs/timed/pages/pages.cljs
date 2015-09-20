@@ -3,13 +3,15 @@
             [timed.pages.activities :as activities]
             [timed.pages.today :as today]
             [timed.pages.navbar :as navbar]
+            [timed.pages.remote :as remote]
             [goog.dom :as dom]
             [timed.util :as util]
             [sigsub.core :as sigsub :include-macros :true]))
 
 (defonce pages {:activities activities/page
                 :activity   activity/page
-                :today      today/page})
+                :today      today/page
+                :remote     remote/page})
 
 (defn- current-page []
   (sigsub/with-reagent-subs

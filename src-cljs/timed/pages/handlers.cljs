@@ -2,15 +2,13 @@
   (:require [timed.pages.transitions :as transitions]
             [timed.db :as db]
             [timed.activities.activities :as activities]
-            [cljs.core.async :as async]
             [timed.remote-handlers :as remote-handlers]
-            [timed.sessions.sessions :as sessions])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+            [timed.sessions.sessions :as sessions]))
 
-(defn refresh-activities []
-  (go
-    (let [raw (async/<! (remote-handlers/get-activities))
-          sorted (activities/coerce-activities-to-sorted raw)
+(remote-handlers/register-callback
+  :refresh-activities
+  (fn [raw-activities]
+    (let [sorted (activities/coerce-activities-to-sorted raw-activities)
           current-session (sessions/current sorted)
           tick (db/query [:tick])]
       (db/transition
@@ -21,11 +19,13 @@
             :else identity)
           (transitions/update-activities sorted))))))
 
-(defn get-activities []
-  (db/transition (transitions/update-activities :pending))
-  (go
-    (let [raw (async/<! (remote-handlers/get-activities))
-          sorted (activities/coerce-activities-to-sorted raw)
+(defn refresh-activities []
+  (remote-handlers/get-activities :refresh-activities))
+
+(remote-handlers/register-callback
+  :get-activities
+  (fn [raw-activities]
+    (let [sorted (activities/coerce-activities-to-sorted raw-activities)
           current-session (sessions/current sorted)]
       (db/transition
         (comp
@@ -33,6 +33,10 @@
             transitions/start-tick
             identity)
           (transitions/update-activities sorted))))))
+
+(defn get-activities []
+  (db/transition (transitions/update-activities :pending))
+  (remote-handlers/get-activities :get-activities))
 
 (defn go-offline []
   (db/transition transitions/go-offline))

@@ -18,15 +18,14 @@
    :start (sql-datetime start)
    :finish (sql-datetime finish)})
 
-(defn get-activities []
-  (response
-    (reduce (fn [activities session]
-              (let [activity-name (session :activity)]
-                (update-in activities [activity-name]
-                           #(assoc-in % [:sessions (session :start)] session))))
-                {} (db/get-activities))))
-
 (defmulti api-action first)
+
+(defmethod api-action :get-activities [_]
+  (reduce (fn [activities session]
+            (let [activity-name (session :activity)]
+              (update-in activities [activity-name]
+                         #(assoc-in % [:sessions (session :start)] session))))
+          {} (db/get-activities)))
 
 (defmethod api-action :add-session [[_ session]]
   (db/add-session! (db-session session)))
@@ -42,12 +41,10 @@
   (db/delete-session! {:start (sql-datetime (session :start))}))
 
 (defn api [actions]
-  (doseq [action actions]
-    (api-action action))
-  (response nil))
+  (Thread/sleep 4000)
+  (response (map api-action actions)))
 
 (defroutes home-routes
            (ANY "/api" {actions :body-params} (api actions))
-           (GET "/activities" [] (get-activities))
            (GET "/" [] (home-page)))
 

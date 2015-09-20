@@ -43,6 +43,16 @@
       (go-offline-button)
       (go-online-button))))
 
+(defn remote-link []
+  (sigsub/with-reagent-subs
+    [pending [:remote :pending]
+     queued [:remote :queued]]
+    (fn []
+      [:a {:href (page->href {:handler :remote})}
+       "Remote "
+       [:span.label.label-success.label-as-badge (count @pending)]
+       [:span.label.label-warning.label-as-badge (count @queued)]])))
+
 (defn navbar []
   (let [activities-href (page->href {:handler :activities})]
     [:div.navbar.navbar-inverse.navbar-fixed-top
@@ -51,7 +61,8 @@
        [:a.navbar-brand {:href activities-href} "Timed"]]
       [:ul.nav.navbar-nav
        [:li [:a {:href (page->href {:handler :today})} "Today"]]
-       [:li [:a {:href activities-href} "Activities"]]]
+       [:li [:a {:href activities-href} "Activities"]]
+       [:li [remote-link]]]
       [:ul.nav.navbar-nav.pull-right
        [:li [form-slot]]
        [:li [mode-button-slot]]]]]))
