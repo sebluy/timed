@@ -77,8 +77,6 @@
   (handle-responses responses)
   (post-queued))
 
-(queue-action "la" :identity)
-
 (defn on-error [error]
   (db/transition (fn [db] (update db :remote assoc
                                   :error-message (str error)

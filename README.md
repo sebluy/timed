@@ -2,6 +2,8 @@ Current:
 
 Add today page
 
+This shit is going to need a serious refactor
+
 Todo:
 
 Save state out to local storage on every "persistent" state change
