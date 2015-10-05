@@ -30,8 +30,13 @@
       default-db
       (parse-db db-string))))
 
-(defn save-db []
-  (save (select-keys (db/query) saved)))
+(defn db-watcher [_ _ old-state new-state]
+  (let [old (select-keys old-state saved)
+        new (select-keys new-state saved)]
+    (if (not= old new)
+      (save new))))
+
+(add-watch db/db :saver db-watcher)
 
 (defn load-db []
   (let [status (if (.-onLine js/navigator) :online :offline)
@@ -39,7 +44,5 @@
     (db/transition (fn [_] db))
     (if (nil? (db :activities)) (handlers/get-activities))
     (if (db :tick) (db/transition transitions/start-tick))))
-
-(events/listenOnce js/window "unload" save-db)
 
 

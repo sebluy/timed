@@ -34,15 +34,15 @@
             identity)
           (transitions/update-activities sorted))))))
 
+(remote-handlers/register-callback :identity identity)
+
 (defn get-activities []
   (db/transition (transitions/update-activities :pending))
   (remote-handlers/get-activities :get-activities))
 
-(defn go-offline []
-  (db/transition transitions/go-offline))
+(defn retry-failed-remote []
+  (remote-handlers/retry-failed))
 
-(defn go-online []
-  (let [actions (db/query [:offline-actions])]
-    (if (seq actions)
-      (remote-handlers/post-actions actions)))
-  (db/transition transitions/go-online))
+(defn cancel-failed-remote []
+  (remote-handlers/cancel-failed))
+

@@ -4,6 +4,7 @@
             [timed.db :as db]))
 
 (declare on-response)
+(declare on-error)
 (declare post-queued)
 
 (def callbacks (atom {}))
@@ -30,11 +31,14 @@
     "/api"
     {:params          actions
      :handler         on-response
+     :error-handler   on-error
      :format          :edn
      :response-format :edn}))
 
 (defn queue-action [action callback]
-  (if (or (seq (db/query [:remote :pending])) (= (db/query [:status]) :offline))
+  (if (or (seq (db/query [:remote :pending]))
+          (seq (db/query [:remote :errors]))
+          (= (db/query [:status]) :offline))
     (db/transition
       (fn [db] (update-in db [:remote :queued] conj [action callback])))
     (do (post-actions [action])
@@ -54,12 +58,35 @@
               responses))
   (db/transition (fn [db] (update db :remote assoc :pending []))))
 
+(defn retry-failed []
+  (let [errors (db/query [:remote :errors])]
+    (post-actions errors)
+    (db/transition
+      (fn [db]
+        (update db :remote
+                (fn [remote]
+                  (-> remote
+                      (assoc :pending errors)
+                      (dissoc :errors :error-message))))))))
+
+(defn cancel-failed []
+  (db/transition (fn [db] (update db :remote dissoc :errors :error-message)))
+  (post-queued))
+
 (defn on-response [responses]
   (handle-responses responses)
   (post-queued))
 
+(queue-action "la" :identity)
+
+(defn on-error [error]
+  (db/transition (fn [db] (update db :remote assoc
+                                  :error-message (str error)
+                                  :errors (get-in db [:remote :pending])
+                                  :pending []))))
+
 (defn post-action
-  ([action] (post-action action identity))
+  ([action] (post-action action :identity))
   ([action callback] (queue-action action callback)))
 
 (defn add-session [session]

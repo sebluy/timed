@@ -35,12 +35,14 @@
 (defn remote-link []
   (sigsub/with-reagent-subs
     [pending [:remote :pending]
-     queued [:remote :queued]]
+     queued [:remote :queued]
+     errors [:remote :errors]]
     (fn []
       [:a {:href (page->href {:handler :remote})}
        "Remote "
-        [:span.label.label-success.label-as-badge (count @pending)]
-        [:span.label.label-warning.label-as-badge (count @queued)]])))
+       [:span.label.label-danger.label-as-badge (count @errors)]
+       [:span.label.label-success.label-as-badge (count @pending)]
+       [:span.label.label-warning.label-as-badge (count @queued)]])))
 
 (defn navbar []
   (let [activities-href (page->href {:handler :activities})]

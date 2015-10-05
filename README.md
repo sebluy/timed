@@ -4,8 +4,14 @@ Add today page
 
 Todo:
 
+Save state out to local storage on every "persistent" state change
+
+Allow error ajax calls to be retried
+
 Add callback lookup hash, so callbacks can be serialized
 Add pending/queued action table page
+
+Only serve data from last week
 
 Fix bug with activity form, errors are being submitted
 
